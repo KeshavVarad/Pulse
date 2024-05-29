@@ -31,7 +31,7 @@ export default function Register() {
         try {
             setLoading(true);
             await register(email, password);
-            navigate("/profile");
+            navigate("/");
         } catch (e) {
             setError("Failed to register");
         }
