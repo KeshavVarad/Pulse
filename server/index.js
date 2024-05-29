@@ -1,7 +1,19 @@
-const express = require('express');
-const PORT = process.env.PORT || 3001;
+import express from "express"
+import cors from "cors"
+import dotenv from "dotenv"
+
+import { VerifyToken } from "./middleware/VerifyToken.js";
+
+dotenv.config();
+
+const PORT = process.env.PORT || 8000;
 
 const app = express();
+
+app.use(cors());
+app.use(express.json());
+app.use(express.urlencoded({ extended: false }));
+app.use(VerifyToken);
 
 app.get("/api", (req, res) => {
     res.json({ message: "Hello from server!" });

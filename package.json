@@ -3,13 +3,17 @@
   "version": "1.0.0",
   "description": "A website to help give medical students feedback on practicals",
   "main": "index.js",
+  "type": "module",
   "scripts": {
-    "start": "node server/index.js"
+    "start": "nodemon server/index.js"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "express": "^4.19.2"
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
+    "express": "^4.19.2",
+    "firebase-admin": "^12.1.1"
   }
 }

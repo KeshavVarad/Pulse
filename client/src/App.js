@@ -5,11 +5,14 @@ import Login from './components/accounts/Login';
 import Home from './components/Home';
 import { AuthProvider } from './contexts/AuthContext';
 import ErrorMessage from './components/layouts/ErrorMessage';
+import Header from './components/layouts/Header';
+import WithPrivateRoute from './utils/WithPrivateRoute';
 
 function App() {
   return (
     <AuthProvider>
       <Router>
+        <Header />
         <ErrorMessage />
         <Routes>
           <Route exact path="/" element={<Home />} />
