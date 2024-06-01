@@ -18,6 +18,9 @@ import NavBar from '../elements/SideBar';
 import Header from '../elements/Header';
 import SideBar from '../elements/SideBar';
 import Grid from '@mui/material/Unstable_Grid2';
+import EditIcon from '@mui/icons-material/Edit';
+import Edit from "@mui/icons-material/Edit";
+import DoneIcon from '@mui/icons-material/Done';
 
 
 export default function Practical() {
@@ -43,6 +46,8 @@ export default function Practical() {
     const [userInstructors, setUserInstructors] = useState([])
     const [tasks, setTasks] = useState([])
     const [comments, setComments] = useState([])
+    const [commentFeedbacks, setCommentFeedbacks] = useState([])
+    const [commentEditable, setCommentEditable] = useState([])
     const [videoTimeStamp, setVideoTimeStamp] = useState(0)
 
     const [newTask, setNewTask] = useState("")
@@ -70,7 +75,7 @@ export default function Practical() {
                 body: JSON.stringify({ tasks: newTasks })
 
             };
-            const res = await fetch(`http://localhost:3001/api/practicalUpdate/${practicalId}`, requestOptions);
+            const res = await fetch(`http://localhost:3001/api/updatePractical/${practicalId}`, requestOptions);
         } catch (e) {
             console.log(e);
         }
@@ -124,7 +129,7 @@ export default function Practical() {
                 body: JSON.stringify({ comments: newComments })
 
             };
-            const updateRes = await fetch(`http://localhost:3001/api/practicalUpdate/${practicalId}`, requestOptions);
+            const updateRes = await fetch(`http://localhost:3001/api/updatePractical/${practicalId}`, requestOptions);
         } catch (e) {
             console.log(e);
         }
@@ -135,6 +140,56 @@ export default function Practical() {
 
 
         setVideoTimeStamp(curTime)
+    }
+
+    const handleCommentFeedbackChange = async (e, idx) => {
+        let newFeedbacks = commentFeedbacks.slice()
+
+        newFeedbacks[idx] = e.target.value
+
+        setCommentFeedbacks(newFeedbacks)
+    }
+
+    const handleEditButton = async (idx) => {
+        let newCommentEditable = commentEditable.slice()
+        let newFeedbacks = commentFeedbacks.slice()
+
+        newCommentEditable[idx] = true
+        newFeedbacks[idx] = comments[idx].feedback
+
+        setCommentEditable(newCommentEditable)
+        setCommentFeedbacks(newFeedbacks)
+
+    }
+
+    const handleSubmitButton = async (idx) => {
+        let newCommentEditable = commentEditable.slice()
+
+        newCommentEditable[idx] = false
+
+        setCommentEditable(newCommentEditable)
+
+        try {
+            const user = auth.currentUser;
+            const token = user && (await user.getIdToken());
+
+            const commentId = comments[idx].id
+
+            const requestOptions = {
+                method: "PUT",
+                mode: "cors",
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${token}`,
+                },
+                body: JSON.stringify({ feedback: commentFeedbacks[idx] })
+
+            };
+            const updateRes = await fetch(`http://localhost:3001/api/updateComment/${commentId}`, requestOptions);
+        } catch (e) {
+            console.log(e);
+        }
+
     }
 
     useEffect(() => {
@@ -151,11 +206,19 @@ export default function Practical() {
 
             const commentIds = practical.comments
             const commentsData = []
+            let newCommentFeedbacks = commentFeedbacks
+            let newCommentEditable = commentEditable
 
-            commentIds.map(async (commentId) => {
+            commentIds.map(async (commentId, idx) => {
                 const commentRes = await fetch(`http://localhost:3001/api/comment/${commentId}`);
                 const commentData = await commentRes.json()
                 commentsData.push(commentData)
+
+                if (idx > newCommentFeedbacks.length) {
+                    newCommentFeedbacks.push(commentData.feedback)
+                    newCommentEditable.push(false)
+                }
+
             })
 
             setComments(commentsData)
@@ -171,142 +234,169 @@ export default function Practical() {
 
     return (
         <Box sx={{
-            minHeight:"100%",
-            minWidth:"100%"
+            minHeight: "100%",
+            minWidth: "100%"
         }}>
 
             <Grid container spacing={0}>
-            <Grid xs={2}>
-                <SideBar/>
-            </Grid>
-            <Grid xs={10}>
-                <Box sx={{
-                    Height:"100%",
-                    Width:"100%",
-                    justifyContent: "center",
-                    alignItems: "center",
-                }}>
-                    <Header/>
+                <Grid xs={2}>
+                    <SideBar />
+                </Grid>
+                <Grid xs={10}>
                     <Box sx={{
-                    minHeight: "100%",
-                    width: 10/12,
-                    display: "flex",
-                    justifyContent: "space-between",
-                    alignItems: "center",
-                    py: 12,
-                    px: 4,
-                    flexDirection: "column",
-                }}>
-                    <Box sx={{
-                        pb: 5
+                        Height: "100%",
+                        Width: "100%",
+                        justifyContent: "center",
+                        alignItems: "center",
                     }}>
-                        <Typography variant="h3"> Practical </Typography>
-                    </Box>
-
-                    <Box sx={{
-                        display: "flex",
-                        width: "100%"
-                    }}>
-                        <YouTube videoId={videoId} onStateChange={handleVideoChange} />
+                        <Header />
                         <Box sx={{
+                            minHeight: "100%",
+                            width: 10 / 12,
                             display: "flex",
-                            flexDirection: "column",
-                            width: "100%",
                             justifyContent: "space-between",
                             alignItems: "center",
+                            py: 12,
+                            px: 4,
+                            flexDirection: "column",
                         }}>
-                            <Typography variant="h5">
-                                Make Ratings
-                            </Typography>
+                            <Box sx={{
+                                pb: 5
+                            }}>
+                                <Typography variant="h3"> Practical </Typography>
+                            </Box>
 
-                            {tasks.map(task => (
+                            <Box sx={{
+                                display: "flex",
+                                width: "100%"
+                            }}>
+                                <YouTube videoId={videoId} onStateChange={handleVideoChange} />
                                 <Box sx={{
                                     display: "flex",
+                                    flexDirection: "column",
+                                    width: "100%",
                                     justifyContent: "space-between",
-                                    width: "75%"
+                                    alignItems: "center",
                                 }}>
-                                    <Typography variant="text">{task}</Typography>
+                                    <Typography variant="h5">
+                                        Make Ratings
+                                    </Typography>
 
-                                    <Box>
+                                    {tasks.map(task => (
+                                        <Box sx={{
+                                            display: "flex",
+                                            justifyContent: "space-between",
+                                            width: "75%"
+                                        }}>
+                                            <Typography variant="text">{task}</Typography>
 
-                                        <Button onClick={() => { handleRating(task, -1) }} variant="contained" color="primary">RED</Button>
-                                        <Button onClick={() => { handleRating(task, 0) }} variant="contained" color="secondary">YELLOW</Button>
-                                        <Button onClick={() => { handleRating(task, 1) }} variant="contained">GREEN</Button>
+                                            <Box>
+
+                                                <Button onClick={() => { handleRating(task, -1) }} variant="contained" color="primary">RED</Button>
+                                                <Button onClick={() => { handleRating(task, 0) }} variant="contained" color="secondary">YELLOW</Button>
+                                                <Button onClick={() => { handleRating(task, 1) }} variant="contained">GREEN</Button>
+                                            </Box>
+
+                                        </Box>
+                                    ))}
+
+
+                                    <Box sx={{
+                                        display: "flex",
+                                        justifyContent: "center",
+                                        alignItems: "center",
+                                        width: "60%",
+                                    }}>
+                                        <TextField label="New Task"
+                                            variant="outlined"
+                                            color="secondary"
+                                            sx={{
+                                                mx: 2
+                                            }}
+                                            onChange={e => setNewTask(e.target.value)}
+                                            fullWidth
+                                            value={newTask} />
+
+
+                                        <Button variant="contained" onClick={handleNewTaskChange}>Add Task</Button>
                                     </Box>
 
                                 </Box>
-                            ))}
+                            </Box>
 
 
                             <Box sx={{
                                 display: "flex",
-                                justifyContent: "center",
-                                alignItems: "center",
-                                width: "60%",
+                                flexDirection: "column",
+                                pt: 5,
+                                width: "100%",
+                                justifyContent: 'center',
+                                alignItems: "center"
                             }}>
-                                <TextField label="New Task"
-                                    variant="outlined"
-                                    color="secondary"
-                                    sx={{
-                                        mx: 2
-                                    }}
-                                    onChange={e => setNewTask(e.target.value)}
-                                    fullWidth
-                                    value={newTask} />
+                                <Typography variant="h3">Comments</Typography>
+
+                                <TableContainer component={Paper}>
+                                    <Table sx={{ minWidth: 650 }} aria-label="simple table">
+                                        <TableHead>
+                                            <TableRow>
+                                                <TableCell>Task</TableCell>
+                                                <TableCell align="right">Rating</TableCell>
+                                                <TableCell align="right">Time Stamp</TableCell>
+                                                <TableCell align="right">Additional Feedback</TableCell>
+                                                <TableCell align="right">Edit Feedback</TableCell>
+                                            </TableRow>
+                                        </TableHead>
+                                        <TableBody>
+                                            {comments.map((comment, idx) => (
+                                                <TableRow
+                                                    key={comment.id}
+                                                    sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
+                                                >
+                                                    <TableCell component="th" scope="row">
+                                                        {comment.task}
+                                                    </TableCell>
+                                                    <TableCell align="right">{comment.rating}</TableCell>
+                                                    <TableCell align="right">{comment.timestamp}</TableCell>
+                                                    {
+                                                        !commentEditable[idx] ?
+                                                            (<TableCell align="right">
+                                                                {comment.feedback}
+                                                            </TableCell>) :
+                                                            (<TableCell align="right">
+                                                                <TextField label="Feedback"
+                                                                    onChange={e => handleCommentFeedbackChange(e, idx)}
+                                                                    variant="outlined"
+                                                                    color="secondary"
+                                                                    sx={{ mb: 3 }}
+                                                                    fullWidth
+                                                                    value={commentFeedbacks[idx]} />
+                                                            </TableCell>)
+                                                    }
+                                                    <TableCell align="right">
+                                                        {
+                                                            !commentEditable[idx] ?
+                                                                (<Button onClick={() => handleEditButton(idx)}>
+                                                                    <EditIcon />
+                                                                </Button>) :
+                                                                (<Button onClick={() => handleSubmitButton(idx)}>
+                                                                    <DoneIcon />
+                                                                </Button>)
+                                                        }
+
+                                                    </TableCell>
+                                                </TableRow>
+                                            ))}
+                                        </TableBody>
+                                    </Table>
+                                </TableContainer>
 
 
-                                <Button variant="contained" onClick={handleNewTaskChange}>Add Task</Button>
+
                             </Box>
 
                         </Box>
                     </Box>
-
-
-                    <Box sx={{
-                        display: "flex",
-                        flexDirection: "column",
-                        pt: 5,
-                        width: "100%",
-                        justifyContent: 'center',
-                        alignItems: "center"
-                    }}>
-                        <Typography variant="h3">Comments</Typography>
-
-                        <TableContainer component={Paper}>
-                            <Table sx={{ minWidth: 650 }} aria-label="simple table">
-                                <TableHead>
-                                    <TableRow>
-                                        <TableCell>Task</TableCell>
-                                        <TableCell align="right">Rating</TableCell>
-                                        <TableCell align="right">Time Stamp</TableCell>
-                                        <TableCell align="right">Additional Feedback</TableCell>
-                                    </TableRow>
-                                </TableHead>
-                                <TableBody>
-                                    {comments.map((comment) => (
-                                        <TableRow
-                                            key={comment.id}
-                                            sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
-                                        >
-                                            <TableCell component="th" scope="row">
-                                                {comment.task}
-                                            </TableCell>
-                                            <TableCell align="right">{comment.rating}</TableCell>
-                                            <TableCell align="right">{comment.timestamp}</TableCell>
-                                            <TableCell align="right">{comment.feedback}</TableCell>
-                                        </TableRow>
-                                    ))}
-                                </TableBody>
-                            </Table>
-                        </TableContainer>
-
-
-
-                    </Box>
-
-                </Box>
-                </Box>
-            </Grid>
+                </Grid>
             </Grid>
         </Box>
 
