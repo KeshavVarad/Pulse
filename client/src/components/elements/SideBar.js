@@ -20,6 +20,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import AccountCircleOutlinedIcon from '@mui/icons-material/AccountCircleOutlined';
 import LogoutOutlinedIcon from '@mui/icons-material/LogoutOutlined';
 import { Link, useNavigate } from 'react-router-dom'
+import MonitorHeartIcon from '@mui/icons-material/MonitorHeart';
 
 
 
@@ -49,9 +50,8 @@ export default function SideBar() {
                 variant="permanent"
                 anchor="left">
                     <Toolbar>
-                        <Icon>
-                            <SpaceDashboardOutlinedIcon />
-                        </Icon>
+                    <MonitorHeartIcon fontSize='large'/>
+                        <h3> Pulse</h3>
                     </Toolbar>
                     <Divider />
                     
@@ -67,7 +67,7 @@ export default function SideBar() {
                         <ListItem key={text} disablePadding>
                         <ListItemButton component={Link} to=
                         {
-                            index === 0 ? "/dashboard" : index === 1? "":""
+                            index === 0 ? "/dashboard" : index === 1? "/makepractical":""
                         }
                          variant="contained" color="secondary">
                             <ListItemIcon>
