@@ -1,5 +1,4 @@
 import React from 'react'
-import MonitorHeartIcon from '@mui/icons-material/MonitorHeart';
 import Box from '@mui/material/Box';
 import Container from '@mui/material/Container';
 import NavBar from '../elements/SideBar';

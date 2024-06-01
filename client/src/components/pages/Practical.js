@@ -13,6 +13,11 @@ import TableRow from '@mui/material/TableRow';
 import Paper from '@mui/material/Paper';
 import auth from "../../config/firebase.js";
 import { v4 as uuidv4 } from 'uuid';
+import Container from '@mui/material/Container';
+import NavBar from '../elements/SideBar';
+import Header from '../elements/Header';
+import SideBar from '../elements/SideBar';
+import Grid from '@mui/material/Unstable_Grid2';
 
 
 export default function Practical() {
@@ -166,122 +171,147 @@ export default function Practical() {
 
     return (
         <Box sx={{
-            minHeight: "100%",
-            width: "100%",
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center",
-            py: 12,
-            px: 4,
-            flexDirection: "column",
+            minHeight:"100%",
+            minWidth:"100%"
         }}>
-            <Box sx={{
-                pb: 5
-            }}>
-                <Typography variant="h3"> Practical </Typography>
-            </Box>
 
-            <Box sx={{
-                display: "flex",
-                width: "100%"
-            }}>
-                <YouTube videoId={videoId} onStateChange={handleVideoChange} />
+            <Grid container spacing={0}>
+            <Grid xs={2}>
+                <SideBar/>
+            </Grid>
+            <Grid xs={10}>
                 <Box sx={{
-                    display: "flex",
-                    flexDirection: "column",
-                    width: "100%",
-                    justifyContent: "space-between",
+                    Height:"100%",
+                    Width:"100%",
+                    justifyContent: "center",
                     alignItems: "center",
                 }}>
-                    <Typography variant="h5">
-                        Make Ratings
-                    </Typography>
+                    <Header/>
+                    <Box sx={{
+                    minHeight: "100%",
+                    width: 10/12,
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                    py: 12,
+                    px: 4,
+                    flexDirection: "column",
+                }}>
+                    <Box sx={{
+                        pb: 5
+                    }}>
+                        <Typography variant="h3"> Practical </Typography>
+                    </Box>
 
-                    {tasks.map(task => (
+                    <Box sx={{
+                        display: "flex",
+                        width: "100%"
+                    }}>
+                        <YouTube videoId={videoId} onStateChange={handleVideoChange} />
                         <Box sx={{
                             display: "flex",
+                            flexDirection: "column",
+                            width: "100%",
                             justifyContent: "space-between",
-                            width: "75%"
+                            alignItems: "center",
                         }}>
-                            <Typography variant="text">{task}</Typography>
+                            <Typography variant="h5">
+                                Make Ratings
+                            </Typography>
 
-                            <Box>
+                            {tasks.map(task => (
+                                <Box sx={{
+                                    display: "flex",
+                                    justifyContent: "space-between",
+                                    width: "75%"
+                                }}>
+                                    <Typography variant="text">{task}</Typography>
 
-                                <Button onClick={() => { handleRating(task, -1) }} variant="contained" color="primary">RED</Button>
-                                <Button onClick={() => { handleRating(task, 0) }} variant="contained" color="secondary">YELLOW</Button>
-                                <Button onClick={() => { handleRating(task, 1) }} variant="contained">GREEN</Button>
+                                    <Box>
+
+                                        <Button onClick={() => { handleRating(task, -1) }} variant="contained" color="primary">RED</Button>
+                                        <Button onClick={() => { handleRating(task, 0) }} variant="contained" color="secondary">YELLOW</Button>
+                                        <Button onClick={() => { handleRating(task, 1) }} variant="contained">GREEN</Button>
+                                    </Box>
+
+                                </Box>
+                            ))}
+
+
+                            <Box sx={{
+                                display: "flex",
+                                justifyContent: "center",
+                                alignItems: "center",
+                                width: "60%",
+                            }}>
+                                <TextField label="New Task"
+                                    variant="outlined"
+                                    color="secondary"
+                                    sx={{
+                                        mx: 2
+                                    }}
+                                    onChange={e => setNewTask(e.target.value)}
+                                    fullWidth
+                                    value={newTask} />
+
+
+                                <Button variant="contained" onClick={handleNewTaskChange}>Add Task</Button>
                             </Box>
 
                         </Box>
-                    ))}
+                    </Box>
 
 
                     <Box sx={{
                         display: "flex",
-                        justifyContent: "center",
-                        alignItems: "center",
-                        width: "60%",
+                        flexDirection: "column",
+                        pt: 5,
+                        width: "100%",
+                        justifyContent: 'center',
+                        alignItems: "center"
                     }}>
-                        <TextField label="New Task"
-                            variant="outlined"
-                            color="secondary"
-                            sx={{
-                                mx: 2
-                            }}
-                            onChange={e => setNewTask(e.target.value)}
-                            fullWidth
-                            value={newTask} />
+                        <Typography variant="h3">Comments</Typography>
+
+                        <TableContainer component={Paper}>
+                            <Table sx={{ minWidth: 650 }} aria-label="simple table">
+                                <TableHead>
+                                    <TableRow>
+                                        <TableCell>Task</TableCell>
+                                        <TableCell align="right">Rating</TableCell>
+                                        <TableCell align="right">Time Stamp</TableCell>
+                                        <TableCell align="right">Additional Feedback</TableCell>
+                                    </TableRow>
+                                </TableHead>
+                                <TableBody>
+                                    {comments.map((comment) => (
+                                        <TableRow
+                                            key={comment.id}
+                                            sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
+                                        >
+                                            <TableCell component="th" scope="row">
+                                                {comment.task}
+                                            </TableCell>
+                                            <TableCell align="right">{comment.rating}</TableCell>
+                                            <TableCell align="right">{comment.timestamp}</TableCell>
+                                            <TableCell align="right">{comment.feedback}</TableCell>
+                                        </TableRow>
+                                    ))}
+                                </TableBody>
+                            </Table>
+                        </TableContainer>
 
 
-                        <Button variant="contained" onClick={handleNewTaskChange}>Add Task</Button>
+
                     </Box>
 
                 </Box>
-            </Box>
-
-
-            <Box sx={{
-                display: "flex",
-                flexDirection: "column",
-                pt: 5,
-                width: "100%",
-                justifyContent: 'center',
-                alignItems: "center"
-            }}>
-                <Typography variant="h3">Comments</Typography>
-
-                <TableContainer component={Paper}>
-                    <Table sx={{ minWidth: 650 }} aria-label="simple table">
-                        <TableHead>
-                            <TableRow>
-                                <TableCell>Task</TableCell>
-                                <TableCell align="right">Rating</TableCell>
-                                <TableCell align="right">Time Stamp</TableCell>
-                                <TableCell align="right">Additional Feedback</TableCell>
-                            </TableRow>
-                        </TableHead>
-                        <TableBody>
-                            {comments.map((comment) => (
-                                <TableRow
-                                    key={comment.id}
-                                    sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
-                                >
-                                    <TableCell component="th" scope="row">
-                                        {comment.task}
-                                    </TableCell>
-                                    <TableCell align="right">{comment.rating}</TableCell>
-                                    <TableCell align="right">{comment.timestamp}</TableCell>
-                                    <TableCell align="right">{comment.feedback}</TableCell>
-                                </TableRow>
-                            ))}
-                        </TableBody>
-                    </Table>
-                </TableContainer>
-
-
-
-            </Box>
-
+                </Box>
+            </Grid>
+            </Grid>
         </Box>
+
+
+
+
     )
 }
