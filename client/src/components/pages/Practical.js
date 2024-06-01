@@ -50,22 +50,21 @@ export default function Practical() {
     return (
         <Box sx={{
             minHeight: "100%",
+            width: "100%",
             display: "flex",
             justifyContent: "center",
             alignItems: "center",
             py: 12,
             px: 4,
-            flexDirection: "column"
+            flexDirection: "column",
+            backgroundColor: "blue"
         }}>
             <Box sx={{
-                my: 5,
-                width: "100%"
             }}>
                 <Typography variant="h3"> Practical </Typography>
             </Box>
 
             <Box sx={{
-                display: "flex",
             }}>
                 <YouTube videoId={videoId} />
                 <Box sx={{

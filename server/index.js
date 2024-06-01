@@ -5,6 +5,7 @@ import dotenv from "dotenv"
 import { VerifyToken } from "./middleware/VerifyToken.js";
 
 import userRoute from "./routes/userRoutes.js"
+import practicalRoute from "./routes/practicalRoutes.js"
 
 dotenv.config();
 
@@ -18,6 +19,7 @@ app.use(express.urlencoded({ extended: false }));
 // app.use(VerifyToken);
 
 app.use('/api', userRoute);
+app.use('/api', practicalRoute);
 
 app.listen(PORT, () => {
     console.log(`Server listening on ${PORT}`);
