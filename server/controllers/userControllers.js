@@ -11,7 +11,8 @@ import {
     deleteDoc,
     query,
     where,
-    limit
+    limit,
+    setDoc,
 } from 'firebase/firestore';
 
 const db = getFirestore(firebase);
@@ -19,7 +20,7 @@ const db = getFirestore(firebase);
 export const createUser = async (req, res, next) => {
     try {
         const data = req.body;
-        await addDoc(collection(db, 'users'), data);
+        await setDoc(doc(db, 'users', data.id), data);
         res.status(200).send('User created successfully');
     } catch (error) {
         res.status(400).send(error.message);
@@ -55,28 +56,13 @@ export const getUsers = async (req, res, next) => {
 
 export const getUser = async (req, res, next) => {
     try {
-        const email = req.params.email;
-        const userQuery = query(collection(db, "users"), where("email", "==", email), limit(1));
-
-        const users = await getDocs(userQuery);
-        const userArray = [];
-
-        if (users.empty) {
-            res.status(400).send('No Users found');
+        const id = req.params.id;
+        const user = doc(db, 'users', id);
+        const data = await getDoc(user);
+        if (data.exists()) {
+            res.status(200).send(data.data());
         } else {
-            users.forEach((doc) => {
-                const user = new User(
-                    doc.id,
-                    doc.data().name,
-                    doc.data().real_name,
-                    doc.data().email,
-                    doc.data().createdPracticals,
-                    doc.data().inPracticals,
-                );
-                userArray.push(user);
-            });
-
-            res.status(200).send(userArray);
+            res.status(404).send('User not found');
         }
     } catch (error) {
         res.status(400).send(error.message);
