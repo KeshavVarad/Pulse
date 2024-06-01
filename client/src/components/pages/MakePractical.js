@@ -5,6 +5,9 @@ import { Box, Typography, TextField, Button } from '@mui/material'
 import { useAuth } from '../../contexts/AuthContext';
 import { useEffect } from "react";
 import auth from "../../config/firebase.js";
+import SideBar from '../elements/SideBar';
+import Grid from '@mui/material/Unstable_Grid2';
+import Header from '../elements/Header';
 
 export default function MakePractical() {
 
@@ -94,105 +97,132 @@ export default function MakePractical() {
     }
 
     return (
+
         <Box sx={{
-            minHeight: "100%",
-            minWidth: "100%",
-            display: "flex",
-            justifyContent: "center",
-            alignItems: "center",
-            pt: 12,
+            minHeight:"100%",
+            minWidth:"100%"
         }}>
-
-            <Box sx={{
-
-                justifyContent: "center",
-                alignItems: "center",
-                my: 5,
-            }}>
-                <Box sx={{
-                    my: 4
-                }}>
-                    <Typography variant='h3'>
-                        Create a Practical
-                    </Typography>
-                </Box>
-
-                <form onSubmit={handleFormSubmit}>
-                    <TextField label="Name"
-                        onChange={e => setPracticalName(e.target.value)}
-                        required
-                        variant="outlined"
-                        color="secondary"
-                        sx={{ mb: 3 }}
-                        fullWidth
-                        value={practicalName} />
-
-                    <TextField label="Video Link"
-                        onChange={e => setVideoLink(e.target.value)}
-                        required
-                        variant="outlined"
-                        color="secondary"
-                        sx={{ mb: 3 }}
-                        fullWidth
-                        value={videoLink} />
-
+                
+            <Grid container spacing={0}>
+                <Grid xs={2}>
+                    <SideBar/>
+                </Grid>
+                <Grid xs={10}>
                     <Box sx={{
-                        display: "flex",
-                        flexDirection: "row",
+                        Height:"100%",
+                        Width:"83.33%",
                         justifyContent: "center",
                         alignItems: "center",
                     }}>
-                        <TextField label="Participant"
-                            onChange={e => setCurParticipant(e.target.value)}
-                            variant="outlined"
-                            color="secondary"
-                            fullWidth
-                            value={curParticipant} />
+                        <Header/>
+                        <Box sx={{
+                            minHeight: "100%",
+                            minWidth: "83.33%",
+                            display: "flex",
+                            justifyContent: "center",
+                            alignItems: "center",
+                            pt: 3,
+                        }}>
 
-                        <Button variant='contained' onClick={handleAddParticipant}>
-                            Add Participant
-                        </Button>
+                            
+                            <Box sx={{
 
+                                justifyContent: "center",
+                                alignItems: "center",
+                                my: 5,
+                            }}>
+                                <Box sx={{
+                                    my: 4
+                                }}>
+                                    <Typography variant='h3'>
+                                        Create a Practical
+                                    </Typography>
+                                </Box>
+
+                                <form onSubmit={handleFormSubmit}>
+                                    <TextField label="Name"
+                                        onChange={e => setPracticalName(e.target.value)}
+                                        required
+                                        variant="outlined"
+                                        color="secondary"
+                                        sx={{ mb: 3 }}
+                                        fullWidth
+                                        value={practicalName} />
+
+                                    <TextField label="Video Link"
+                                        onChange={e => setVideoLink(e.target.value)}
+                                        required
+                                        variant="outlined"
+                                        color="secondary"
+                                        sx={{ mb: 3 }}
+                                        fullWidth
+                                        value={videoLink} />
+
+                                    <Box sx={{
+                                        display: "flex",
+                                        flexDirection: "row",
+                                        justifyContent: "center",
+                                        alignItems: "center",
+                                    }}>
+                                        <TextField label="Participant"
+                                            onChange={e => setCurParticipant(e.target.value)}
+                                            variant="outlined"
+                                            color="secondary"
+                                            fullWidth
+                                            value={curParticipant} />
+
+                                        <Button variant='contained' onClick={handleAddParticipant}>
+                                            Add Participant
+                                        </Button>
+
+                                    </Box>
+
+                                    <Box sx={{
+                                        display: "flex",
+                                        flexDirection: "column",
+                                        justifyContent: "center",
+                                        alignItems: "center",
+                                        mb: 3
+                                    }}>
+
+                                        {participants.map((participant) => (
+                                            <Typography variant='text'>
+                                                {participant}
+                                            </Typography>
+                                        ))}
+                                    </Box>
+
+                                    <TextField label="Instructor"
+                                        onChange={e => setInstructor(e.target.value)}
+                                        required
+                                        variant="outlined"
+                                        color="secondary"
+                                        sx={{ mb: 3 }}
+                                        fullWidth
+                                        value={instructor} />
+
+                                    <Box sx={{
+                                        display: "flex",
+                                        flexDirection: "row",
+                                        justifyContent: "center",
+                                        alignItems: "center",
+                                    }}>
+                                        <Button variant='contained' type='submit' disabled={loading} sx={{ mx: 1 }}>
+                                            Create Practical
+                                        </Button>
+                                    </Box>
+
+                                </form>
+                            </Box>
+
+                        </Box>
                     </Box>
-
-                    <Box sx={{
-                        display: "flex",
-                        flexDirection: "column",
-                        justifyContent: "center",
-                        alignItems: "center",
-                        my: 3
-                    }}>
-
-                        {participants.map((participant) => (
-                            <Typography variant='text'>
-                                {participant}
-                            </Typography>
-                        ))}
-                    </Box>
-
-                    <TextField label="Instructor"
-                        onChange={e => setInstructor(e.target.value)}
-                        required
-                        variant="outlined"
-                        color="secondary"
-                        sx={{ mb: 3 }}
-                        fullWidth
-                        value={instructor} />
-
-                    <Box sx={{
-                        display: "flex",
-                        flexDirection: "row",
-                        justifyContent: "center",
-                        alignItems: "center",
-                    }}>
-                        <Button variant='contained' type='submit' disabled={loading} sx={{ mx: 1 }}>
-                            Create Practical
-                        </Button>
-                    </Box>
-
-                </form>
-            </Box>
-
+                </Grid>
+            </Grid>
         </Box>
+
+
+
+        
     )
 }
