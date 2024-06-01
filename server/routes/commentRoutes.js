@@ -12,7 +12,7 @@ const router = express.Router();
 
 router.get('/', getComments);
 router.post('/new', createComment);
-router.get('/comment/:email', getComment);
+router.get('/comment/:id', getComment);
 router.put('/update/:id', updateComment);
 router.delete('/delete/:id', deleteComment);
 
