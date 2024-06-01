@@ -4,13 +4,22 @@ import { useEffect, useState } from "react";
 
 import YouTube from "react-youtube"
 import { Typography, Box, Button, TextField } from "@mui/material"
-import e from "cors";
+import Table from '@mui/material/Table';
+import TableBody from '@mui/material/TableBody';
+import TableCell from '@mui/material/TableCell';
+import TableContainer from '@mui/material/TableContainer';
+import TableHead from '@mui/material/TableHead';
+import TableRow from '@mui/material/TableRow';
+import Paper from '@mui/material/Paper';
+import auth from "../../config/firebase.js";
+import { v4 as uuidv4 } from 'uuid';
+
 
 export default function Practical() {
 
 
     const params = useParams();
-    const id = params.id
+    const practicalId = params.id
 
     /*
 
@@ -29,17 +38,104 @@ export default function Practical() {
     const [userInstructors, setUserInstructors] = useState([])
     const [tasks, setTasks] = useState([])
     const [comments, setComments] = useState([])
+    const [videoTimeStamp, setVideoTimeStamp] = useState(0)
 
     const [newTask, setNewTask] = useState("")
 
     const handleNewTaskChange = async () => {
-        console.log("new task: " + newTask)
+
+        if (newTask == "") {
+            return
+        }
+
+        var newTasks = tasks
+        newTasks.push(newTask)
+
+        try {
+            const user = auth.currentUser;
+            const token = user && (await user.getIdToken());
+
+            const requestOptions = {
+                method: "PUT",
+                mode: "cors",
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${token}`,
+                },
+                body: JSON.stringify({ tasks: newTasks })
+
+            };
+            const res = await fetch(`http://localhost:3001/api/practicalUpdate/${practicalId}`, requestOptions);
+        } catch (e) {
+            console.log(e);
+        }
+
+
+    }
+
+    const handleRating = async (task, rating) => {
+
+        const practical_res = await fetch(`http://localhost:3001/api/practical/${practicalId}`);
+        const practical = await practical_res.json()
+
+        const commentId = uuidv4()
+
+        const newComment = {
+            id: commentId,
+            task: task,
+            rating: rating,
+            timestamp: videoTimeStamp,
+            feedback: "NA",
+            replies: []
+        }
+
+        try {
+            const user = auth.currentUser;
+            const token = user && (await user.getIdToken());
+
+            const createNewCommenOptions = {
+                method: "POST",
+                mode: "cors",
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${token}`,
+                },
+                body: JSON.stringify(newComment)
+
+            };
+
+            const res = await fetch(`http://localhost:3001/api/newComment`, createNewCommenOptions);
+
+            let newComments = practical.comments
+            newComments.push(commentId)
+
+            const requestOptions = {
+                method: "PUT",
+                mode: "cors",
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${token}`,
+                },
+                body: JSON.stringify({ comments: newComments })
+
+            };
+            const updateRes = await fetch(`http://localhost:3001/api/practicalUpdate/${practicalId}`, requestOptions);
+        } catch (e) {
+            console.log(e);
+        }
+    }
+
+    const handleVideoChange = async (e) => {
+        const curTime = await e.target.getCurrentTime();
+
+
+        setVideoTimeStamp(curTime)
     }
 
     useEffect(() => {
         async function fetchPractical() {
 
-            const practical_res = await fetch(`http://localhost:3001/api/practical/${id}`);
+            const practical_res = await fetch(`http://localhost:3001/api/practical/${practicalId}`);
             const practical = await practical_res.json()
 
             const videoParams = practical.video_link.split("/")
@@ -89,7 +185,7 @@ export default function Practical() {
                 display: "flex",
                 width: "100%"
             }}>
-                <YouTube videoId={videoId} />
+                <YouTube videoId={videoId} onStateChange={handleVideoChange} />
                 <Box sx={{
                     display: "flex",
                     flexDirection: "column",
@@ -111,9 +207,9 @@ export default function Practical() {
 
                             <Box>
 
-                                <Button variant="contained" color="primary">RED</Button>
-                                <Button variant="contained" color="secondary">GREEN</Button>
-                                <Button variant="contained">BLUE</Button>
+                                <Button onClick={() => { handleRating(task, -1) }} variant="contained" color="primary">RED</Button>
+                                <Button onClick={() => { handleRating(task, 0) }} variant="contained" color="secondary">YELLOW</Button>
+                                <Button onClick={() => { handleRating(task, 1) }} variant="contained">GREEN</Button>
                             </Box>
 
                         </Box>
@@ -154,46 +250,36 @@ export default function Practical() {
             }}>
                 <Typography variant="h3">Comments</Typography>
 
-                <Box sx={{
-                    display: "flex",
-                    width: "50%",
-                    justifyContent: "space-between",
-                    mx: 5
-                }}>
-                    <Typography variant="h5" fontWeight="bold">
-                        Task
-                    </Typography>
+                <TableContainer component={Paper}>
+                    <Table sx={{ minWidth: 650 }} aria-label="simple table">
+                        <TableHead>
+                            <TableRow>
+                                <TableCell>Task</TableCell>
+                                <TableCell align="right">Rating</TableCell>
+                                <TableCell align="right">Time Stamp</TableCell>
+                                <TableCell align="right">Additional Feedback</TableCell>
+                            </TableRow>
+                        </TableHead>
+                        <TableBody>
+                            {comments.map((comment) => (
+                                <TableRow
+                                    key={comment.id}
+                                    sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
+                                >
+                                    <TableCell component="th" scope="row">
+                                        {comment.task}
+                                    </TableCell>
+                                    <TableCell align="right">{comment.rating}</TableCell>
+                                    <TableCell align="right">{comment.timestamp}</TableCell>
+                                    <TableCell align="right">{comment.feedback}</TableCell>
+                                </TableRow>
+                            ))}
+                        </TableBody>
+                    </Table>
+                </TableContainer>
 
-                    <Typography variant="h5" fontWeight="bold">
-                        Rating
-                    </Typography>
 
-                    <Typography variant="h5" fontWeight="bold">
-                        Time Stamp (seconds)
-                    </Typography>
 
-                </Box>
-                {comments.map((comment) => (
-                    <Box sx={{
-                        display: "flex",
-                        width: "50%",
-                        justifyContent: "space-between",
-                        mx: 5
-                    }}>
-                        <Typography variant="h5">
-                            {comment.task}
-                        </Typography>
-
-                        <Typography variant="h5">
-                            {comment.rating}
-                        </Typography>
-
-                        <Typography variant="h5">
-                            {comment.timestamp}
-                        </Typography>
-
-                    </Box>
-                ))}
             </Box>
 
         </Box>

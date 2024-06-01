@@ -10,6 +10,7 @@ import {
     getDocs,
     updateDoc,
     deleteDoc,
+    setDoc,
 } from 'firebase/firestore';
 
 const db = getFirestore(firebase);
@@ -17,7 +18,7 @@ const db = getFirestore(firebase);
 export const createComment = async (req, res, next) => {
     try {
         const data = req.body;
-        await addDoc(collection(db, 'comments'), data);
+        await setDoc(doc(db, 'comments', data.id), data);
         res.status(200).send('Comment created successfully');
     } catch (error) {
         res.status(400).send(error.message);

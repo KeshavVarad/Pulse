@@ -70,6 +70,7 @@ export const updatePractical = async (req, res, next) => {
     try {
         const id = req.params.id;
         const data = req.body;
+
         const practical = doc(db, 'practicals', id);
         await updateDoc(practical, data);
         res.status(200).send('Practical updated successfully');

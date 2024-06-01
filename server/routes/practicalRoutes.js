@@ -11,9 +11,9 @@ import {
 const router = express.Router();
 
 router.get('/', getPracticals);
-router.post('/new', createPractical);
+router.post('/newPractical', createPractical);
 router.get('/practical/:id', getPractical);
-router.put('/update/:id', updatePractical);
-router.delete('/delete/:id', deletePractical);
+router.put('/practicalUpdate/:id', updatePractical);
+router.delete('/practicalDelete/:id', deletePractical);
 
 export default router;
