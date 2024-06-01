@@ -28,7 +28,7 @@ export default function Login() {
         try {
             setLoading(true);
             await login(email, password);
-            navigate("/");
+            navigate("/dashboard");
         } catch (e) {
             setError("Failed to register");
         }

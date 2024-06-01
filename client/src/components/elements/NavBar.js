@@ -17,8 +17,6 @@ import AddchartIcon from '@mui/icons-material/Addchart';
 import { Box } from '@mui/material';
 import InsightsIcon from '@mui/icons-material/Insights';
 import { useAuth } from '../../contexts/AuthContext';
-import LoginOutlinedIcon from '@mui/icons-material/LoginOutlined';
-import HowToRegOutlinedIcon from '@mui/icons-material/HowToRegOutlined';
 import AccountCircleOutlinedIcon from '@mui/icons-material/AccountCircleOutlined';
 import LogoutOutlinedIcon from '@mui/icons-material/LogoutOutlined';
 import { Link, useNavigate } from 'react-router-dom'
@@ -28,6 +26,17 @@ import { Link, useNavigate } from 'react-router-dom'
 const drawerWidth = 240;
 export default function NavBar() {
     const { currentUser, logout, setError } = useAuth();
+
+    const navigate = useNavigate();
+    async function handleLogout() {
+        try {
+            setError("");
+            await logout();
+            navigate("/login");
+        } catch {
+            setError("Failed to logout");
+        }
+    }
     return (
             <Drawer sx={{
                 width: drawerWidth,
@@ -54,7 +63,7 @@ export default function NavBar() {
                         <ListItem key={text} disablePadding>
                         <ListItemButton component={Link} to=
                         {
-                            index === 0 ? "" : index === 1? "": index === 2? "":""
+                            index === 0 ? "/dashboard" : index === 1? "": index === 2? "":""
                         }
                          variant="contained" color="secondary">
                             <ListItemIcon>
@@ -74,20 +83,22 @@ export default function NavBar() {
                     </Box>
                     { 
                         <List>
-                        {['Account', 'Log out'].map((text, index) => (
-                        <ListItem key={text} disablePadding>
-                        <ListItemButton>
-                            <ListItemIcon>
-                            {index === 0 ? <AccountCircleOutlinedIcon /> : <LoginOutlinedIcon />}
+                            <ListItem key={"Account"} disablePadding>
+                            <ListItemButton component={Link} to={""}
+                            variant="contained" color="secondary">
+                                <ListItemIcon><AccountCircleOutlinedIcon /></ListItemIcon>
+                                <ListItemText primary={"Account"} />
+                            </ListItemButton>
+                            </ListItem>
 
-                            </ListItemIcon>
-                            <ListItemText primary={text} />
-                        </ListItemButton>
-                        </ListItem>
-                        ))}
+                            <ListItem key={"Log Out"} disablePadding>
+                            <ListItemButton onClick={handleLogout} variant="contained" color="secondary">
+                                <ListItemIcon><LogoutOutlinedIcon /></ListItemIcon>
+                                <ListItemText primary={"Log Out"} />
+                            </ListItemButton>
+                            </ListItem>
                         </List>
                     }
-        
             </Drawer>
     )
 }
