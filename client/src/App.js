@@ -18,9 +18,10 @@ function App() {
   return (
     <AuthProvider>
       <Router>
-        <Header />
+      <Header />
         <Box sx={{ display: 'flex' }}>
           <NavBar />
+          
           <ErrorMessage />
           <Routes>
             <Route exact path="/" element={<Dashboard />} />

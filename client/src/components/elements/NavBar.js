@@ -3,13 +3,31 @@ import Drawer from '@mui/material/Drawer';
 import Toolbar from '@mui/material/Toolbar';
 import Divider from '@mui/material/Divider';
 import List from '@mui/material/List';
+import CssBaseline from '@mui/material/CssBaseline';
+import AppBar from '@mui/material/AppBar';
+import Typography from '@mui/material/Typography';
+import ListItem from '@mui/material/ListItem';
+import ListItemButton from '@mui/material/ListItemButton';
+import ListItemIcon from '@mui/material/ListItemIcon';
+import ListItemText from '@mui/material/ListItemText';
 
-
+import SpaceDashboardOutlinedIcon from '@mui/icons-material/SpaceDashboardOutlined';
+import AssessmentOutlinedIcon from '@mui/icons-material/AssessmentOutlined';
+import AddchartIcon from '@mui/icons-material/Addchart';
+import { Box } from '@mui/material';
+import InsightsIcon from '@mui/icons-material/Insights';
+import { useAuth } from '../../contexts/AuthContext';
+import LoginOutlinedIcon from '@mui/icons-material/LoginOutlined';
+import HowToRegOutlinedIcon from '@mui/icons-material/HowToRegOutlined';
+import AccountCircleOutlinedIcon from '@mui/icons-material/AccountCircleOutlined';
+import LogoutOutlinedIcon from '@mui/icons-material/LogoutOutlined';
+import { Link, useNavigate } from 'react-router-dom'
 
 
 
 const drawerWidth = 240;
 export default function NavBar() {
+    const { currentUser, logout, setError } = useAuth();
     return (
             <Drawer sx={{
                 width: drawerWidth,
@@ -23,19 +41,52 @@ export default function NavBar() {
                 anchor="left">
                     <Toolbar />
                     <Divider />
+                    
+                    <Box sx={{
+                        pt:3,
+                        pl: 3
+                    }}>
+                        Navigation
+                    </Box>
+                    
                     <List>
-                    {/* {['Inbox', 'Starred', 'Send email', 'Drafts'].map((text, index) => (
+                    { ['Dashboard', 'Practicals', 'Make Practical', 'Analytics'].map((text, index) => (
                         <ListItem key={text} disablePadding>
-                        <ListItemButton>
+                        <ListItemButton component={Link} to=
+                        {
+                            index === 0 ? "" : index === 1? "": index === 2? "":""
+                        }
+                         variant="contained" color="secondary">
                             <ListItemIcon>
-                            {index % 2 === 0 ? <InboxIcon /> : <MailIcon />}
+                            {index === 0 ? <SpaceDashboardOutlinedIcon /> : index === 1? <AssessmentOutlinedIcon />: index === 2? <AddchartIcon/>:<InsightsIcon/>}
+
                             </ListItemIcon>
                             <ListItemText primary={text} />
                         </ListItemButton>
                         </ListItem>
-                    ))} */}
+                    ))} 
                     </List>
-                    <Divider />
+                    <Box sx={{
+                        pt:3,
+                        pl: 3
+                    }}>
+                        Authentication
+                    </Box>
+                    { 
+                        <List>
+                        {['Account', 'Log out'].map((text, index) => (
+                        <ListItem key={text} disablePadding>
+                        <ListItemButton>
+                            <ListItemIcon>
+                            {index === 0 ? <AccountCircleOutlinedIcon /> : <LoginOutlinedIcon />}
+
+                            </ListItemIcon>
+                            <ListItemText primary={text} />
+                        </ListItemButton>
+                        </ListItem>
+                        ))}
+                        </List>
+                    }
         
             </Drawer>
     )
