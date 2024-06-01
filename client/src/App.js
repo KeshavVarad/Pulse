@@ -53,6 +53,8 @@ function App() {
           <Route exact path="/" element={<Dashboard />} />
           <Route exact path="/register" element={<Register />} />
           <Route exact path="/login" element={<Login />} />
+          <Route exact path="/practical/:id" element={<Practical />} />
+
         </Routes>
         </Box>
       </Router>
