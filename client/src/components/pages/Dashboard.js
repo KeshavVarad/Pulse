@@ -22,19 +22,14 @@ import Link from "react"
 
 export default function Dashboard() {
 
-    const [rows, setRows] = useState([{
-        name: "Test Practical",
-        participants: 6,
-        instructor: "John Doe",
-        date: Date.now()
-    }]);
+    const [rows, setRows] = useState([]);
 
     const [loading, setLoading] = useState(true);
 
+    const [practicalIds, setPracticalIds] = useState([]);
+
     useEffect(() => {
-
-        async function fetchDashboard() {
-
+        async function fetchPracticalIds() {
             try {
                 const user = auth.currentUser;
                 const token = user && (await user.getIdToken());
@@ -56,6 +51,37 @@ export default function Dashboard() {
 
 
                 const practicalIds = userData.inPracticals
+
+                setPracticalIds(practicalIds)
+            } catch (e) {
+                console.log(e);
+            }
+        }
+
+        fetchPracticalIds()
+    }, [])
+
+    useEffect(() => {
+
+        async function fetchDashboard() {
+
+            try {
+
+                const user = auth.currentUser;
+                const token = user && (await user.getIdToken());
+
+
+
+                const requestOptions = {
+                    method: "GET",
+                    mode: "cors",
+                    headers: {
+                        "Content-Type": "application/json",
+                        Authorization: `Bearer ${token}`,
+                    },
+
+                };
+
                 let newRows = []
 
                 practicalIds.map(async (practicalId) => {
@@ -92,19 +118,19 @@ export default function Dashboard() {
         }
 
         fetchDashboard()
-    }, [])
+    }, [practicalIds])
 
     // useEffect(() => { console.log(rows) }, [rows])
-    console.log(rows)
+    console.log(practicalIds)
 
 
-    if (loading) {
-        return (
-            <div>
-                Loading...
-            </div>
-        )
-    }
+    // if (rows.length == 0) {
+    //     return (
+    //         <div>
+    //             Loading...
+    //         </div>
+    //     )
+    // }
 
     console.log(rows)
 

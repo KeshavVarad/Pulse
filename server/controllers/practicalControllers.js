@@ -66,6 +66,42 @@ export const getPractical = async (req, res, next) => {
     }
 };
 
+export const getUserPracticals = async (req, res, next) => {
+    try {
+        const userId = req.params.id;
+        console.log(userId)
+
+        const practicalQuery = query(collection(db, 'practicals'), where("user_participants", "array-contains", userId))
+        const data = await getDocs(practicalQuery);
+
+        console.log(data)
+
+        const practicalArray = [];
+
+        if (data.empty) {
+            res.status(400).send('No Users found');
+        } else {
+            data.forEach((doc) => {
+                const practical = new Practical(
+                    doc.id,
+                    doc.data().name,
+                    doc.data().real_name,
+                    doc.data().email,
+                    doc.data().createdPracticals,
+                    doc.data().inPracticals,
+                );
+                practicalArray.push(practical);
+            });
+
+            console.log(practicalArray)
+
+            res.status(200).send(practicalArray);
+        }
+    } catch (error) {
+        res.status(400).send(error.message);
+    }
+};
+
 export const updatePractical = async (req, res, next) => {
     try {
         const id = req.params.id;
