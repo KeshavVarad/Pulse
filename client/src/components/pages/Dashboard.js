@@ -15,101 +15,186 @@ import Paper from '@mui/material/Paper';
 import { Divider, Icon, List, ListItem } from '@mui/material';
 import Button from '@mui/material/Button';
 import PersonIcon from '@mui/icons-material/Person';
+import { useState, useEffect } from 'react';
+import auth from "../../config/firebase.js";
+import Link from "react"
 
 
 export default function Dashboard() {
 
+    const [rows, setRows] = useState([{
+        name: "Test Practical",
+        participants: 6,
+        instructor: "John Doe",
+        date: Date.now()
+    }]);
 
-    
-    const rows = [
-        {name: 'duke cpr',
-            participants: 6,
-            instructor: 'John Doe',
-            date: Date.now()
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+
+        async function fetchDashboard() {
+
+            try {
+                const user = auth.currentUser;
+                const token = user && (await user.getIdToken());
+
+                const userId = user.uid;
+
+                const requestOptions = {
+                    method: "GET",
+                    mode: "cors",
+                    headers: {
+                        "Content-Type": "application/json",
+                        Authorization: `Bearer ${token}`,
+                    },
+
+                };
+
+                const user_res = await fetch(`http://localhost:3001/api/user/${userId}`, requestOptions);
+                const userData = await user_res.json()
+
+
+                const practicalIds = userData.inPracticals
+                let newRows = []
+
+                practicalIds.map(async (practicalId) => {
+                    const practical_res = await fetch(`http://localhost:3001/api/practical/${practicalId}`);
+                    const practicalData = await practical_res.json()
+
+
+                    const instructor_res = await fetch(`http://localhost:3001/api/user/${practicalData.user_instructor}`, requestOptions);
+                    const instructorData = await instructor_res.json()
+
+                    let newRow = {
+                        path: `/practicals/` + practicalId,
+                        name: practicalData.practical_name,
+                        instructor: instructorData.real_name,
+                        date: practicalData.creation_date
+                    }
+
+
+                    newRows.push(newRow)
+
+
+                })
+
+
+
+
+                setRows(newRows)
+
+                setLoading(false)
+            } catch (e) {
+                console.log(e)
+            }
+
         }
-    ];
+
+        fetchDashboard()
+    }, [])
+
+    // useEffect(() => { console.log(rows) }, [rows])
+    console.log(rows)
+
+
+    if (loading) {
+        return (
+            <div>
+                Loading...
+            </div>
+        )
+    }
+
+    console.log(rows)
+
 
     return (
-        
+
 
 
 
         <Box sx={{
-            minHeight:"100%",
-            minWidth:"100%"
+            minHeight: "100%",
+            minWidth: "100%"
         }}>
 
             <Grid container spacing={0}>
-            <Grid xs={2}>
-                <SideBar/>
-            </Grid>
-            <Grid xs={10}>
-                <Box sx={{
-                    Height:"100%",
-                    Width:"100%",
-                    justifyContent: "center",
-                    alignItems: "center",
-                }}>
-                    <Header/>
+                <Grid xs={2}>
+                    <SideBar />
+                </Grid>
+                <Grid xs={10}>
                     <Box sx={{
-                    Height:"100%",
-                    Width:"100%",
-                    justifyContent: "center",
-                    alignItems: "center",
-                    mt:5,
-                    mb:5
+                        Height: "100%",
+                        Width: "100%",
+                        justifyContent: "center",
+                        alignItems: "center",
                     }}>
-
-                        <center><h1>Dashboard</h1></center>
-                    </Box>
-
-                    <Grid container spacing={0}>
-                    <Grid xs={6}>
-                        <Container maxWidth="sm" sx={{
-                            alignContent: "center",
+                        <Header />
+                        <Box sx={{
+                            Height: "100%",
+                            Width: "100%",
                             justifyContent: "center",
                             alignItems: "center",
-                            }}>
-                        <Box>
-                            <center><h2>Joined Practicals</h2></center>
+                            mt: 5,
+                            mb: 5
+                        }}>
+
+                            <center><h1>Dashboard</h1></center>
                         </Box>
-                        <List>
-                        {rows.map((row) => (
-                            <ListItem sx={{
-                                justifyContent: "center",
-                                alignItems: "center",
-                                height:120
+
+                        <Grid container spacing={0}>
+                            <Grid xs={6}>
+                                <Container maxWidth="sm" sx={{
+                                    alignContent: "center",
+                                    justifyContent: "center",
+                                    alignItems: "center",
                                 }}>
-
-                                    <Box height={120} width={400} borderRadius={2} bgcolor={'#1976d2'}>
-                                        <Box height={120} width={200} bgcolor={'white'}>
-
-                                        </Box>
+                                    <Box>
+                                        <center><h2>Joined Practicals</h2></center>
                                     </Box>
 
+                                    <TableContainer component={Paper}>
+                                        <Table aria-label="simple table">
+                                            <TableHead>
+                                                <TableRow>
+                                                    <TableCell>Practical Name</TableCell>
+                                                    <TableCell align="right">Instructor</TableCell>
+                                                    <TableCell align="right">Creation Date</TableCell>
+                                                </TableRow>
+                                            </TableHead>
+                                            <TableBody>
+                                                {rows.map((row, idx) => (
+                                                    <TableRow
+                                                        key={idx}
+                                                        sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
+                                                    >
+                                                        <TableCell component="th" scope="row">
+                                                            {/* <Link to={row.path}> */}
+                                                            {row.name}
+                                                            {/* </Link> */}
 
-     
+                                                        </TableCell>
+                                                        <TableCell align="right">{row.instructor}</TableCell>
+                                                        <TableCell align="right">{row.date}</TableCell>
+                                                    </TableRow>
+                                                ))}
+                                            </TableBody>
+                                        </Table>
+                                    </TableContainer>
 
 
+                                </Container>
 
-
-
-                            </ListItem>
-                                ))}
-                        </List>
-                        
-
-                        </Container>
-                        
-                    </Grid>
-                    <Grid xs={6}>
-                        <Container maxWidth= "sm%">
-                        hi
-                        </Container>
-                    </Grid>
-                    </Grid>
-                </Box>
-            </Grid>
+                            </Grid>
+                            <Grid xs={6}>
+                                <Container maxWidth="sm%">
+                                    hi
+                                </Container>
+                            </Grid>
+                        </Grid>
+                    </Box>
+                </Grid>
             </Grid>
 
 
