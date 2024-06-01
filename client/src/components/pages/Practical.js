@@ -21,6 +21,7 @@ import Grid from '@mui/material/Unstable_Grid2';
 import EditIcon from '@mui/icons-material/Edit';
 import Edit from "@mui/icons-material/Edit";
 import DoneIcon from '@mui/icons-material/Done';
+import DeleteIcon from '@mui/icons-material/Delete';
 
 
 export default function Practical() {
@@ -192,6 +193,47 @@ export default function Practical() {
 
     }
 
+    const handleDeleteComment = async (idx) => {
+        const practical_res = await fetch(`http://localhost:3001/api/practical/${practicalId}`);
+        const practical = await practical_res.json()
+
+        let oldCommentIds = practical.comments
+        try {
+            const user = auth.currentUser;
+            const token = user && (await user.getIdToken());
+
+            const commentId = comments[idx].id
+
+            var index = oldCommentIds.indexOf(commentId);
+            if (index !== -1) {
+                oldCommentIds.splice(index, 1);
+            }
+
+            const deleteCommentRequestOptions = {
+                method: "DELETE",
+                mode: "cors",
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${token}`,
+                },
+            };
+            const deleteRes = await fetch(`http://localhost:3001/api/deleteComment/${commentId}`, deleteCommentRequestOptions);
+
+            const updatePracticalRequestOptions = {
+                method: "PUT",
+                mode: "cors",
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${token}`,
+                },
+                body: JSON.stringify({ comments: oldCommentIds })
+            };
+            const updateRes = await fetch(`http://localhost:3001/api/updatePractical/${practicalId}`, updatePracticalRequestOptions);
+        } catch (e) {
+            console.log(e);
+        }
+    }
+
     useEffect(() => {
         async function fetchPractical() {
 
@@ -344,6 +386,7 @@ export default function Practical() {
                                                 <TableCell align="right">Time Stamp</TableCell>
                                                 <TableCell align="right">Additional Feedback</TableCell>
                                                 <TableCell align="right">Edit Feedback</TableCell>
+                                                <TableCell align="right">Delete Feedback</TableCell>
                                             </TableRow>
                                         </TableHead>
                                         <TableBody>
@@ -356,7 +399,7 @@ export default function Practical() {
                                                         {comment.task}
                                                     </TableCell>
                                                     <TableCell align="right">{comment.rating}</TableCell>
-                                                    <TableCell align="right">{comment.timestamp}</TableCell>
+                                                    <TableCell align="right">{new Date(comment.timestamp * 1000).toISOString().substring(14, 19)}</TableCell>
                                                     {
                                                         !commentEditable[idx] ?
                                                             (<TableCell align="right">
@@ -383,6 +426,11 @@ export default function Practical() {
                                                                 </Button>)
                                                         }
 
+                                                    </TableCell>
+                                                    <TableCell align="right">
+                                                        <Button onClick={() => handleDeleteComment(idx)}>
+                                                            <DeleteIcon />
+                                                        </Button>
                                                     </TableCell>
                                                 </TableRow>
                                             ))}
