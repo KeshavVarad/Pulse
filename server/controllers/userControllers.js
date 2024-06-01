@@ -6,6 +6,7 @@ import {
     collection,
     doc,
     addDoc,
+    getDoc,
     getDocs,
     updateDoc,
     deleteDoc,
@@ -57,8 +58,11 @@ export const getUsers = async (req, res, next) => {
 export const getUser = async (req, res, next) => {
     try {
         const id = req.params.id;
+
         const user = doc(db, 'users', id);
         const data = await getDoc(user);
+
+
         if (data.exists()) {
             res.status(200).send(data.data());
         } else {
