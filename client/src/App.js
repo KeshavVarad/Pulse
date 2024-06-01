@@ -14,8 +14,6 @@ import NavBar from './components/elements/NavBar';
 
 
 
-
-
 function App() {
   return (
     <AuthProvider>
@@ -29,7 +27,6 @@ function App() {
             <Route exact path="/register" element={<Register />} />
             <Route exact path="/login" element={<Login />} />
             <Route exact path="/practical/:id" element={<Practical />} />
-
           </Routes>
         </Box>
       </Router>
