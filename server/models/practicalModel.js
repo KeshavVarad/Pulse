@@ -6,7 +6,7 @@ class Practical {
             (this.video_link = video_link),
             (this.user_creator = user_creator),
             (this.user_participants = user_participants),
-            (this.user_instructors = user_instructors),
+            (this.user_instructor = user_instructor),
             (this.tasks = tasks),
             (this.comments = comments),
             (this.chats = chats);

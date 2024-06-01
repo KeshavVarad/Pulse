@@ -9,6 +9,7 @@ import { AuthProvider } from './contexts/AuthContext';
 import ErrorMessage from './components/layouts/ErrorMessage';
 import WithPrivateRoute from './utils/WithPrivateRoute';
 import Box from '@mui/material/Box';
+import MakePractical from './components/pages/MakePractical';
 
 
 
@@ -23,7 +24,16 @@ function App() {
             <Route exact path="/home" element={<Home />} />
             <Route exact path="/register" element={<Register />} />
             <Route exact path="/login" element={<Login />} />
-            <Route exact path="/practical/:id" element={<Practical />} />
+            <Route exact path="/practical/:id" element={
+              <WithPrivateRoute>
+                <Practical />
+              </WithPrivateRoute>
+            } />
+            <Route exact path="/makepractical" element={
+              <WithPrivateRoute>
+                <MakePractical />
+              </WithPrivateRoute>
+            } />
           </Routes>
         </Box>
       </Router>

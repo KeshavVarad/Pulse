@@ -73,6 +73,36 @@ export const getUser = async (req, res, next) => {
     }
 };
 
+export const getUserByEmail = async (req, res, next) => {
+    try {
+        const email = req.params.email;
+
+        const userQuery = query(collection(db, 'users'), where("email", "==", email))
+        const data = await getDocs(userQuery, limit(1));
+        const userArray = [];
+
+        if (data.empty) {
+            res.status(400).send('No Users found');
+        } else {
+            data.forEach((doc) => {
+                const user = new User(
+                    doc.id,
+                    doc.data().name,
+                    doc.data().real_name,
+                    doc.data().email,
+                    doc.data().createdPracticals,
+                    doc.data().inPracticals,
+                );
+                userArray.push(user);
+            });
+
+            res.status(200).send(userArray);
+        }
+    } catch (error) {
+        res.status(400).send(error.message);
+    }
+};
+
 export const updateUser = async (req, res, next) => {
     try {
         const id = req.params.id;

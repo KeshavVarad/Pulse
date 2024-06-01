@@ -6,14 +6,16 @@ import {
     getUsers,
     updateUser,
     deleteUser,
+    getUserByEmail,
 } from '../controllers/userControllers.js';
 
 const router = express.Router();
 
 router.get('/', getUsers);
-router.post('/new', createUser);
+router.post('/newUser', createUser);
 router.get('/user/:id', getUser);
-router.put('/update/:id', updateUser);
-router.delete('/delete/:id', deleteUser);
+router.get('/user/email/:email', getUserByEmail);
+router.put('/updateUser/:id', updateUser);
+router.delete('/deleteUser/:id', deleteUser);
 
 export default router;
