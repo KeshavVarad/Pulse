@@ -1,5 +1,5 @@
 class Practical {
-    constructor(id, practical_name, video_link, user_creator, user_participants, user_instructors, comments, chats) {
+    constructor(id, practical_name, video_link, user_creator, user_participants, user_instructors, tasks, comments, chats) {
         (this.id = id),
             (this.practical_name = practical_name),
             (this.creation_date = creation_date),
@@ -7,6 +7,7 @@ class Practical {
             (this.user_creator = user_creator),
             (this.user_participants = user_participants),
             (this.user_instructors = user_instructors),
+            (this.tasks = tasks),
             (this.comments = comments),
             (this.chats = chats);
     }
