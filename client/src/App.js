@@ -7,10 +7,8 @@ import Practical from './components/pages/Practical';
 import Dashboard from './components/pages/Dashboard';
 import { AuthProvider } from './contexts/AuthContext';
 import ErrorMessage from './components/layouts/ErrorMessage';
-import Header from './components/layouts/Header';
 import WithPrivateRoute from './utils/WithPrivateRoute';
 import Box from '@mui/material/Box';
-import NavBar from './components/elements/NavBar';
 
 
 
@@ -18,11 +16,11 @@ function App() {
   return (
     <AuthProvider>
       <Router>
-      <Header />
         <Box sx={{ display: 'flex' }}>
           <ErrorMessage />
           <Routes>
             <Route exact path="/dashboard" element={<Dashboard />} />
+            <Route exact path="/home" element={<Home />} />
             <Route exact path="/register" element={<Register />} />
             <Route exact path="/login" element={<Login />} />
             <Route exact path="/practical/:id" element={<Practical />} />

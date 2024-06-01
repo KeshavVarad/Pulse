@@ -39,19 +39,22 @@ export default function Login() {
     return (
         <Box sx={{
             minHeight: "100%",
+            minWidth: "100%",
             display: "flex",
             justifyContent: "center",
             alignItems: "center",
-            py: 12,
-            px: 4,
-
+            pt: 12,
         }}>
 
             <Box sx={{
-                maxWidth: "md",
-                my: 8
+
+            justifyContent: "center",
+            alignItems: "center",
+            my: 5,
             }}>
-                <Box>
+                <Box sx={{
+                    my:4
+                }}>
                     <Typography variant='h3'>
                         Login to your account
                     </Typography>
@@ -81,12 +84,14 @@ export default function Login() {
                     <Box sx={{
                         display: "flex",
                         flexDirection: "row",
+                        justifyContent: "center",
+                        alignItems: "center",
                     }}>
-                        <Button variant='contained' type='submit' disabled={loading}>
+                        <Button variant='contained' type='submit' disabled={loading} sx={{mx:1}}>
                             Login
                         </Button>
 
-                        <Button component={Link} to="/register">
+                        <Button component={Link} to="/register"sx={{mx:1}}>
                             Don't have an account? Register
                         </Button>
                     </Box>

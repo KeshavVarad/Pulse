@@ -17,7 +17,7 @@ export default function Register() {
 
     useEffect(() => {
         if (currentUser) {
-            navigate("/");
+            navigate("/dashboard");
         }
     }, [currentUser, navigate]);
 
@@ -43,19 +43,21 @@ export default function Register() {
     return (
         <Box sx={{
             minHeight: "100%",
+            minWidth: "100%",
             display: "flex",
             justifyContent: "center",
             alignItems: "center",
-            py: 12,
-            px: 4,
-
+            pt: 12,
         }}>
 
             <Box sx={{
-                maxWidth: "md",
-                my: 8
+            justifyContent: "center",
+            alignItems: "center",
+            my: 5,
             }}>
-                <Box>
+                <Box sx={{my:4,
+                    
+                }}>
                     <Typography variant='h3'>
                         Register Your Account
                     </Typography>
@@ -96,12 +98,14 @@ export default function Register() {
                     <Box sx={{
                         display: "flex",
                         flexDirection: "row",
+                        justifyContent: "center",
+                        alignItems: "center",
                     }}>
-                        <Button variant='contained' type='submit' disabled={loading}>
+                        <Button variant='contained' type='submit' disabled={loading} sx={{mx:1}}>
                             Register
                         </Button>
 
-                        <Button component={Link} to="/login">
+                        <Button component={Link} to="/login"sx={{mx:1}}>
                             Already have an account? Login
                         </Button>
                     </Box>

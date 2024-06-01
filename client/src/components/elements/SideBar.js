@@ -14,7 +14,7 @@ import ListItemText from '@mui/material/ListItemText';
 import SpaceDashboardOutlinedIcon from '@mui/icons-material/SpaceDashboardOutlined';
 import AssessmentOutlinedIcon from '@mui/icons-material/AssessmentOutlined';
 import AddchartIcon from '@mui/icons-material/Addchart';
-import { Box } from '@mui/material';
+import { Box, Icon } from '@mui/material';
 import InsightsIcon from '@mui/icons-material/Insights';
 import { useAuth } from '../../contexts/AuthContext';
 import AccountCircleOutlinedIcon from '@mui/icons-material/AccountCircleOutlined';
@@ -24,7 +24,7 @@ import { Link, useNavigate } from 'react-router-dom'
 
 
 const drawerWidth = 240;
-export default function NavBar() {
+export default function SideBar() {
     const { currentUser, logout, setError } = useAuth();
 
     const navigate = useNavigate();
@@ -32,23 +32,27 @@ export default function NavBar() {
         try {
             setError("");
             await logout();
-            navigate("/login");
+            navigate("/home");
         } catch {
             setError("Failed to logout");
         }
     }
     return (
             <Drawer sx={{
-                width: drawerWidth,
+                width: 120,
                 flexShrink: 0,
                 '& .MuiDrawer-paper': {
-                    width: drawerWidth,
+                    width: 2/12,
                     boxSizing: 'border-box',
                 },
                 }}
                 variant="permanent"
                 anchor="left">
-                    <Toolbar />
+                    <Toolbar>
+                        <Icon>
+                            <SpaceDashboardOutlinedIcon />
+                        </Icon>
+                    </Toolbar>
                     <Divider />
                     
                     <Box sx={{
@@ -59,15 +63,15 @@ export default function NavBar() {
                     </Box>
                     
                     <List>
-                    { ['Dashboard', 'Practicals', 'Make Practical', 'Analytics'].map((text, index) => (
+                    { ['Dashboard', 'Make Practical', 'Analytics'].map((text, index) => (
                         <ListItem key={text} disablePadding>
                         <ListItemButton component={Link} to=
                         {
-                            index === 0 ? "/dashboard" : index === 1? "": index === 2? "":""
+                            index === 0 ? "/dashboard" : index === 1? "":""
                         }
                          variant="contained" color="secondary">
                             <ListItemIcon>
-                            {index === 0 ? <SpaceDashboardOutlinedIcon /> : index === 1? <AssessmentOutlinedIcon />: index === 2? <AddchartIcon/>:<InsightsIcon/>}
+                            {index === 0 ? <SpaceDashboardOutlinedIcon /> : index === 1? <AddchartIcon />:<InsightsIcon/>}
 
                             </ListItemIcon>
                             <ListItemText primary={text} />
@@ -79,7 +83,7 @@ export default function NavBar() {
                         pt:3,
                         pl: 3
                     }}>
-                        Authentication
+                        Account
                     </Box>
                     { 
                         <List>

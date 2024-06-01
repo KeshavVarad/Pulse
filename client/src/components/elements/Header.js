@@ -11,7 +11,7 @@ export default function Header() {
         try {
             setError("");
             await logout();
-            navigate("/login");
+            navigate("/home");
         } catch {
             setError("Failed to logout");
         }
@@ -29,10 +29,6 @@ export default function Header() {
                         p: 1,
                         m: 1
                     }}>
-
-                        <Typography variant='h5'>
-                            Pulse
-                        </Typography>
 
 
                         {
@@ -52,21 +48,8 @@ export default function Header() {
                                     </Button>
                                 </Box>
 
-
-
-                            ) : (<Box sx={{
-                                width: "15%",
-                                display: 'flex',
-                                flexDirection: 'row',
-                                justifyContent: 'space-between',
-                            }}>
-                                <Button onClick={handleLogout} variant="contained" color="secondary">
-                                    Logout
-                                </Button>
-                            </Box>)
+                            ) : (<Box/>)
                         }
-
-
 
                     </Box>
                 </Toolbar>
