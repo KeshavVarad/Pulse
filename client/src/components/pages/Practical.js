@@ -238,7 +238,12 @@ export default function Practical() {
         async function fetchPractical() {
 
             const practical_res = await fetch(`http://localhost:3001/api/practical/${practicalId}`);
+
+            console.log(practical_res)
+
             const practical = await practical_res.json()
+
+            console.log(practical)
 
             const videoParams = practical.video_link.split("/")
             setVideoId(videoParams[videoParams.length - 1])

@@ -17,7 +17,8 @@ import Button from '@mui/material/Button';
 import PersonIcon from '@mui/icons-material/Person';
 import { useState, useEffect } from 'react';
 import auth from "../../config/firebase.js";
-import Link from "react"
+import { Link } from 'react-router-dom';
+import { format } from 'date-fns';
 
 
 export default function Dashboard() {
@@ -25,11 +26,10 @@ export default function Dashboard() {
     const [rows, setRows] = useState([]);
 
     const [loading, setLoading] = useState(true);
-
-    const [practicalIds, setPracticalIds] = useState([]);
+    const [joinedPracticals, setJoinedPracticals] = useState([]);
 
     useEffect(() => {
-        async function fetchPracticalIds() {
+        async function fetchPracticals() {
             try {
                 const user = auth.currentUser;
                 const token = user && (await user.getIdToken());
@@ -49,90 +49,30 @@ export default function Dashboard() {
                 const user_res = await fetch(`http://localhost:3001/api/user/${userId}`, requestOptions);
                 const userData = await user_res.json()
 
+                const practical_res = await fetch(`http://localhost:3001/api/practical/user/${userData.id}`, requestOptions);
+                const practicalData = await practical_res.json()
 
-                const practicalIds = userData.inPracticals
+                const displayData = []
 
-                setPracticalIds(practicalIds)
+                practicalData.map((practical) => {
+
+                    displayData.push({
+                        id: practical.id,
+                        practical_name: practical.practical_name,
+                        user_instructor_name: practical.user_instructor_name,
+                        creation_date: format(practical.creation_date, 'MMMM do yyyy, h:mm:ss a'),
+                        path: "/practical/" + practical.id
+                    })
+                })
+
+                setJoinedPracticals(displayData)
             } catch (e) {
                 console.log(e);
             }
         }
 
-        fetchPracticalIds()
+        fetchPracticals()
     }, [])
-
-    useEffect(() => {
-
-        async function fetchDashboard() {
-
-            try {
-
-                const user = auth.currentUser;
-                const token = user && (await user.getIdToken());
-
-
-
-                const requestOptions = {
-                    method: "GET",
-                    mode: "cors",
-                    headers: {
-                        "Content-Type": "application/json",
-                        Authorization: `Bearer ${token}`,
-                    },
-
-                };
-
-                let newRows = []
-
-                practicalIds.map(async (practicalId) => {
-                    const practical_res = await fetch(`http://localhost:3001/api/practical/${practicalId}`);
-                    const practicalData = await practical_res.json()
-
-
-                    const instructor_res = await fetch(`http://localhost:3001/api/user/${practicalData.user_instructor}`, requestOptions);
-                    const instructorData = await instructor_res.json()
-
-                    let newRow = {
-                        path: `/practicals/` + practicalId,
-                        name: practicalData.practical_name,
-                        instructor: instructorData.real_name,
-                        date: practicalData.creation_date
-                    }
-
-
-                    newRows.push(newRow)
-
-
-                })
-
-
-
-
-                setRows(newRows)
-
-                setLoading(false)
-            } catch (e) {
-                console.log(e)
-            }
-
-        }
-
-        fetchDashboard()
-    }, [practicalIds])
-
-    // useEffect(() => { console.log(rows) }, [rows])
-    console.log(practicalIds)
-
-
-    // if (rows.length == 0) {
-    //     return (
-    //         <div>
-    //             Loading...
-    //         </div>
-    //     )
-    // }
-
-    console.log(rows)
 
 
     return (
@@ -190,19 +130,19 @@ export default function Dashboard() {
                                                 </TableRow>
                                             </TableHead>
                                             <TableBody>
-                                                {rows.map((row, idx) => (
+                                                {joinedPracticals.map((practical, idx) => (
                                                     <TableRow
                                                         key={idx}
                                                         sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
                                                     >
                                                         <TableCell component="th" scope="row">
-                                                            {/* <Link to={row.path}> */}
-                                                            {row.name}
-                                                            {/* </Link> */}
+                                                            <Link to={practical.path}>
+                                                                {practical.practical_name}
+                                                            </Link>
 
                                                         </TableCell>
-                                                        <TableCell align="right">{row.instructor}</TableCell>
-                                                        <TableCell align="right">{row.date}</TableCell>
+                                                        <TableCell align="right">{practical.user_instructor_name}</TableCell>
+                                                        <TableCell align="right">{practical.creation_date}</TableCell>
                                                     </TableRow>
                                                 ))}
                                             </TableBody>

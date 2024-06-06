@@ -62,7 +62,9 @@ export default function MakePractical() {
             const instructor_res = await fetch(`http://localhost:3001/api/user/email/${instructor}`);
             const instructorData = await instructor_res.json()
 
-            let user_instructor = instructorData[0].id
+            let user_instructor_id = instructorData[0].id
+            let user_instructor_name = instructorData[0].real_name
+
 
             let newPracticalData = {
                 practical_name: practicalName,
@@ -70,7 +72,8 @@ export default function MakePractical() {
                 video_link: videoLink,
                 user_creator: user_creator,
                 user_participants: user_participants,
-                user_instructor: user_instructor,
+                user_instructor_id: user_instructor_id,
+                user_instructor_name: user_instructor_name,
                 tasks: [],
                 comments: [],
                 chats: []
@@ -99,22 +102,22 @@ export default function MakePractical() {
     return (
 
         <Box sx={{
-            minHeight:"100%",
-            minWidth:"100%"
+            minHeight: "100%",
+            minWidth: "100%"
         }}>
-                
+
             <Grid container spacing={0}>
                 <Grid xs={2}>
-                    <SideBar/>
+                    <SideBar />
                 </Grid>
                 <Grid xs={10}>
                     <Box sx={{
-                        Height:"100%",
-                        Width:"83.33%",
+                        Height: "100%",
+                        Width: "83.33%",
                         justifyContent: "center",
                         alignItems: "center",
                     }}>
-                        <Header/>
+                        <Header />
                         <Box sx={{
                             minHeight: "100%",
                             minWidth: "83.33%",
@@ -124,7 +127,7 @@ export default function MakePractical() {
                             pt: 3,
                         }}>
 
-                            
+
                             <Box sx={{
 
                                 justifyContent: "center",
@@ -223,6 +226,6 @@ export default function MakePractical() {
 
 
 
-        
+
     )
 }

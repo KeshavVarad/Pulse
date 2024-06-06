@@ -10,6 +10,8 @@ import {
     getDocs,
     updateDoc,
     deleteDoc,
+    where,
+    query
 } from 'firebase/firestore';
 
 const db = getFirestore(firebase);
@@ -69,12 +71,11 @@ export const getPractical = async (req, res, next) => {
 export const getUserPracticals = async (req, res, next) => {
     try {
         const userId = req.params.id;
-        console.log(userId)
 
         const practicalQuery = query(collection(db, 'practicals'), where("user_participants", "array-contains", userId))
-        const data = await getDocs(practicalQuery);
 
-        console.log(data)
+
+        const data = await getDocs(practicalQuery);
 
         const practicalArray = [];
 
@@ -84,16 +85,18 @@ export const getUserPracticals = async (req, res, next) => {
             data.forEach((doc) => {
                 const practical = new Practical(
                     doc.id,
-                    doc.data().name,
-                    doc.data().real_name,
-                    doc.data().email,
-                    doc.data().createdPracticals,
-                    doc.data().inPracticals,
+                    doc.data().practical_name,
+                    doc.data().video_link,
+                    doc.data().user_creator,
+                    doc.data().user_participants,
+                    doc.data().user_instructor_id,
+                    doc.data().user_instructor_name,
+                    doc.data().tasks,
+                    doc.data().comments,
+                    doc.data().chats
                 );
                 practicalArray.push(practical);
             });
-
-            console.log(practicalArray)
 
             res.status(200).send(practicalArray);
         }
