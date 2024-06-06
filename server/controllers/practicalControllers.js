@@ -68,7 +68,7 @@ export const getPractical = async (req, res, next) => {
     }
 };
 
-export const getUserPracticals = async (req, res, next) => {
+export const getStudentPracticals = async (req, res, next) => {
     try {
         const userId = req.params.id;
 
@@ -86,6 +86,47 @@ export const getUserPracticals = async (req, res, next) => {
                 const practical = new Practical(
                     doc.id,
                     doc.data().practical_name,
+                    doc.data().creation_date,
+                    doc.data().video_link,
+                    doc.data().user_creator,
+                    doc.data().user_participants,
+                    doc.data().user_instructor_id,
+                    doc.data().user_instructor_name,
+                    doc.data().tasks,
+                    doc.data().comments,
+                    doc.data().chats
+                );
+                practicalArray.push(practical);
+            });
+
+            res.status(200).send(practicalArray);
+        }
+    } catch (error) {
+        res.status(400).send(error.message);
+    }
+};
+
+
+export const getInstructorPracticals = async (req, res, next) => {
+    try {
+        const userId = req.params.id;
+
+
+        const practicalQuery = query(collection(db, 'practicals'), where("user_instructor_id", "==", userId))
+
+
+        const data = await getDocs(practicalQuery);
+
+        const practicalArray = [];
+
+        if (data.empty) {
+            res.status(400).send('No Users found');
+        } else {
+            data.forEach((doc) => {
+                const practical = new Practical(
+                    doc.id,
+                    doc.data().practical_name,
+                    doc.data().creation_date,
                     doc.data().video_link,
                     doc.data().user_creator,
                     doc.data().user_participants,

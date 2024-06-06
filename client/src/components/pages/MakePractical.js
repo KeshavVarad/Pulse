@@ -14,6 +14,8 @@ export default function MakePractical() {
     const [practicalName, setPracticalName] = useState("");
     const [videoLink, setVideoLink] = useState("");
     const [participants, setParticipants] = useState([]);
+    const [participantIds, setParticipantIds] = useState([]);
+
     const [curParticipant, setCurParticipant] = useState("");
 
     const [instructor, setInstructor] = useState("");
@@ -29,6 +31,10 @@ export default function MakePractical() {
             const participant_res = await fetch(`http://localhost:3001/api/user/email/${curParticipant}`);
             const participant = await participant_res.json()
 
+            let curParticipantIds = participantIds.slice()
+            curParticipantIds.push(participant.id)
+            setParticipantIds(curParticipantIds)
+
         } catch (e) {
             return setError("Invalid participant entered.")
         }
@@ -39,8 +45,9 @@ export default function MakePractical() {
 
         setCurParticipant("")
         setParticipants(curParticipants)
-    }
 
+        console.log(participantIds)
+    }
 
     async function handleFormSubmit(e) {
         e.preventDefault();

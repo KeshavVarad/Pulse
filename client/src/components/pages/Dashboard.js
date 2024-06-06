@@ -27,6 +27,8 @@ export default function Dashboard() {
 
     const [loading, setLoading] = useState(true);
     const [joinedPracticals, setJoinedPracticals] = useState([]);
+    const [ownedPracticals, setOwnedPracticals] = useState([]);
+
 
     useEffect(() => {
         async function fetchPracticals() {
@@ -49,7 +51,7 @@ export default function Dashboard() {
                 const user_res = await fetch(`http://localhost:3001/api/user/${userId}`, requestOptions);
                 const userData = await user_res.json()
 
-                const practical_res = await fetch(`http://localhost:3001/api/practical/user/${userData.id}`, requestOptions);
+                const practical_res = await fetch(`http://localhost:3001/api/practical/student/${userData.id}`, requestOptions);
                 const practicalData = await practical_res.json()
 
                 const displayData = []
@@ -66,6 +68,55 @@ export default function Dashboard() {
                 })
 
                 setJoinedPracticals(displayData)
+            } catch (e) {
+                console.log(e);
+            }
+        }
+
+        fetchPracticals()
+    }, [])
+
+    useEffect(() => {
+        async function fetchPracticals() {
+            try {
+                const user = auth.currentUser;
+                const token = user && (await user.getIdToken());
+
+                const userId = user.uid;
+
+                const requestOptions = {
+                    method: "GET",
+                    mode: "cors",
+                    headers: {
+                        "Content-Type": "application/json",
+                        Authorization: `Bearer ${token}`,
+                    },
+
+                };
+
+                const user_res = await fetch(`http://localhost:3001/api/user/${userId}`, requestOptions);
+                const userData = await user_res.json()
+
+                const practical_res = await fetch(`http://localhost:3001/api/practical/instructor/${userData.id}`, requestOptions);
+                const practicalData = await practical_res.json()
+
+                const displayData = []
+
+
+                console.log(practicalData)
+
+                practicalData.map((practical) => {
+
+                    displayData.push({
+                        id: practical.id,
+                        practical_name: practical.practical_name,
+                        user_instructor_name: practical.user_instructor_name,
+                        creation_date: format(practical.creation_date, 'MMMM do yyyy, h:mm:ss a'),
+                        path: "/practical/" + practical.id
+                    })
+                })
+                console.log(displayData)
+                setOwnedPracticals(displayData)
             } catch (e) {
                 console.log(e);
             }
@@ -155,7 +206,38 @@ export default function Dashboard() {
                             </Grid>
                             <Grid xs={6}>
                                 <Container maxWidth="sm%">
-                                    hi
+                                    <Box>
+                                        <center><h2>Owned Practicals</h2></center>
+                                    </Box>
+
+                                    <TableContainer component={Paper}>
+                                        <Table aria-label="simple table">
+                                            <TableHead>
+                                                <TableRow>
+                                                    <TableCell>Practical Name</TableCell>
+                                                    <TableCell align="right">Instructor</TableCell>
+                                                    <TableCell align="right">Creation Date</TableCell>
+                                                </TableRow>
+                                            </TableHead>
+                                            <TableBody>
+                                                {ownedPracticals.map((practical, idx) => (
+                                                    <TableRow
+                                                        key={idx}
+                                                        sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
+                                                    >
+                                                        <TableCell component="th" scope="row">
+                                                            <Link to={practical.path}>
+                                                                {practical.practical_name}
+                                                            </Link>
+
+                                                        </TableCell>
+                                                        <TableCell align="right">{practical.user_instructor_name}</TableCell>
+                                                        <TableCell align="right">{practical.creation_date}</TableCell>
+                                                    </TableRow>
+                                                ))}
+                                            </TableBody>
+                                        </Table>
+                                    </TableContainer>
                                 </Container>
                             </Grid>
                         </Grid>
