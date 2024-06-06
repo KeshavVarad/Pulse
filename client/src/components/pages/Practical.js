@@ -22,6 +22,7 @@ import EditIcon from '@mui/icons-material/Edit';
 import Edit from "@mui/icons-material/Edit";
 import DoneIcon from '@mui/icons-material/Done';
 import DeleteIcon from '@mui/icons-material/Delete';
+import ButtonGroup from "@mui/material/ButtonGroup";
 
 
 export default function Practical() {
@@ -294,7 +295,6 @@ export default function Practical() {
                         <Header />
                         <Box sx={{
                             minHeight: "100%",
-                            width: 10 / 12,
                             display: "flex",
                             justifyContent: "space-between",
                             alignItems: "center",
@@ -312,32 +312,46 @@ export default function Practical() {
                                 display: "flex",
                                 width: "100%"
                             }}>
+                                <Box sx={{
+                                
+                                py: 5
+                            }}>
                                 <YouTube videoId={videoId} onStateChange={handleVideoChange} />
+                                </Box>
+                                
                                 <Box sx={{
                                     display: "flex",
                                     flexDirection: "column",
                                     width: "100%",
                                     justifyContent: "space-between",
                                     alignItems: "center",
+                                    
                                 }}>
-                                    <Typography variant="h5">
+                                    <Typography variant="h4">
                                         Make Ratings
                                     </Typography>
 
                                     {tasks.map(task => (
                                         <Box sx={{
+                                            width: "80%",
                                             display: "flex",
+                                            flexDirection: "row",
                                             justifyContent: "space-between",
-                                            width: "75%"
+                                            alignItems: "center",
+                                            pt:1,
+                                            
                                         }}>
-                                            <Typography variant="text">{task}</Typography>
-
-                                            <Box>
-
-                                                <Button onClick={() => { handleRating(task, -1) }} variant="contained" color="primary">RED</Button>
+                                            <Box sx={{px:2}}>
+                                            <Typography variant="h7">{task}</Typography>
+                                            </Box>
+                                            <Box sx = {{px:2}}>
+                                            <ButtonGroup variant="contained" aria-label="Basic button group" >
+                                                <Button onClick={() => { handleRating(task, -1) }} variant="contained" color="primary" size="large">RED</Button>
                                                 <Button onClick={() => { handleRating(task, 0) }} variant="contained" color="secondary">YELLOW</Button>
                                                 <Button onClick={() => { handleRating(task, 1) }} variant="contained">GREEN</Button>
+                                            </ButtonGroup>
                                             </Box>
+                                            
 
                                         </Box>
                                     ))}
