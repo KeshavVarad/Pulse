@@ -60,9 +60,8 @@ export default function Practical() {
             return
         }
 
-        var newTasks = tasks
+        var newTasks = tasks.slice()
         newTasks.push(newTask)
-
         try {
             const user = auth.currentUser;
             const token = user && (await user.getIdToken());
@@ -77,7 +76,10 @@ export default function Practical() {
                 body: JSON.stringify({ tasks: newTasks })
 
             };
-            const res = await fetch(`http://localhost:3001/api/updatePractical/${practicalId}`, requestOptions);
+            await fetch(`http://localhost:3001/api/updatePractical/${practicalId}`, requestOptions);
+
+            setTasks(newTasks)
+
         } catch (e) {
             console.log(e);
         }
@@ -105,7 +107,7 @@ export default function Practical() {
             const user = auth.currentUser;
             const token = user && (await user.getIdToken());
 
-            const createNewCommenOptions = {
+            const createNewCommentOptions = {
                 method: "POST",
                 mode: "cors",
                 headers: {
@@ -116,7 +118,7 @@ export default function Practical() {
 
             };
 
-            const res = await fetch(`http://localhost:3001/api/newComment`, createNewCommenOptions);
+            const res = await fetch(`http://localhost:3001/api/newComment`, createNewCommentOptions);
 
             let newComments = practical.comments
             newComments.push(commentId)
@@ -131,7 +133,15 @@ export default function Practical() {
                 body: JSON.stringify({ comments: newComments })
 
             };
-            const updateRes = await fetch(`http://localhost:3001/api/updatePractical/${practicalId}`, requestOptions);
+            await fetch(`http://localhost:3001/api/updatePractical/${practicalId}`, requestOptions);
+
+            let newCommentsData = comments.slice()
+
+            newCommentsData.push(newComment)
+
+            setComments(newCommentsData)
+
+
         } catch (e) {
             console.log(e);
         }
@@ -187,7 +197,26 @@ export default function Practical() {
                 body: JSON.stringify({ feedback: commentFeedbacks[idx] })
 
             };
-            const updateRes = await fetch(`http://localhost:3001/api/updateComment/${commentId}`, requestOptions);
+            await fetch(`http://localhost:3001/api/updateComment/${commentId}`, requestOptions);
+
+            const getCommentRequestOptions = {
+                method: "GET",
+                mode: "cors",
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${token}`,
+                },
+
+            };
+            const updatedCommentRes = await fetch(`http://localhost:3001/api/comment/${commentId}`, getCommentRequestOptions);
+            const updatedCommentData = await updatedCommentRes.json()
+
+            let newComments = comments.slice()
+
+            newComments[idx] = updatedCommentData
+
+            setComments(newComments)
+
         } catch (e) {
             console.log(e);
         }
@@ -218,7 +247,7 @@ export default function Practical() {
                     Authorization: `Bearer ${token}`,
                 },
             };
-            const deleteRes = await fetch(`http://localhost:3001/api/deleteComment/${commentId}`, deleteCommentRequestOptions);
+            await fetch(`http://localhost:3001/api/deleteComment/${commentId}`, deleteCommentRequestOptions);
 
             const updatePracticalRequestOptions = {
                 method: "PUT",
@@ -229,7 +258,14 @@ export default function Practical() {
                 },
                 body: JSON.stringify({ comments: oldCommentIds })
             };
-            const updateRes = await fetch(`http://localhost:3001/api/updatePractical/${practicalId}`, updatePracticalRequestOptions);
+            await fetch(`http://localhost:3001/api/updatePractical/${practicalId}`, updatePracticalRequestOptions);
+
+            let newComments = comments.slice()
+
+            newComments.splice(idx, 1)
+
+            setComments(newComments)
+
         } catch (e) {
             console.log(e);
         }
@@ -240,11 +276,7 @@ export default function Practical() {
 
             const practical_res = await fetch(`http://localhost:3001/api/practical/${practicalId}`);
 
-            console.log(practical_res)
-
             const practical = await practical_res.json()
-
-            console.log(practical)
 
             const videoParams = practical.video_link.split("/")
             setVideoId(videoParams[videoParams.length - 1])
@@ -318,19 +350,19 @@ export default function Practical() {
                                 width: "100%"
                             }}>
                                 <Box sx={{
-                                
-                                py: 5
-                            }}>
-                                <YouTube videoId={videoId} onStateChange={handleVideoChange} />
+
+                                    py: 5
+                                }}>
+                                    <YouTube videoId={videoId} onStateChange={handleVideoChange} />
                                 </Box>
-                                
+
                                 <Box sx={{
                                     display: "flex",
                                     flexDirection: "column",
                                     width: "100%",
                                     justifyContent: "space-between",
                                     alignItems: "center",
-                                    
+
                                 }}>
                                     <Typography variant="h4">
                                         Make Ratings
@@ -343,20 +375,20 @@ export default function Practical() {
                                             flexDirection: "row",
                                             justifyContent: "space-between",
                                             alignItems: "center",
-                                            pt:1,
-                                            
+                                            pt: 1,
+
                                         }}>
-                                            <Box sx={{px:2}}>
-                                            <Typography variant="h7">{task}</Typography>
+                                            <Box sx={{ px: 2 }}>
+                                                <Typography variant="h7">{task}</Typography>
                                             </Box>
-                                            <Box sx = {{px:2}}>
-                                            <ButtonGroup variant="contained" aria-label="Basic button group" >
-                                                <Button onClick={() => { handleRating(task, -1) }} variant="contained" color="primary" size="large">RED</Button>
-                                                <Button onClick={() => { handleRating(task, 0) }} variant="contained" color="secondary">YELLOW</Button>
-                                                <Button onClick={() => { handleRating(task, 1) }} variant="contained">GREEN</Button>
-                                            </ButtonGroup>
+                                            <Box sx={{ px: 2 }}>
+                                                <ButtonGroup variant="contained" aria-label="Basic button group" >
+                                                    <Button onClick={() => { handleRating(task, -1) }} variant="contained" color="primary" size="large">RED</Button>
+                                                    <Button onClick={() => { handleRating(task, 0) }} variant="contained" color="secondary">YELLOW</Button>
+                                                    <Button onClick={() => { handleRating(task, 1) }} variant="contained">GREEN</Button>
+                                                </ButtonGroup>
                                             </Box>
-                                            
+
 
                                         </Box>
                                     ))}
