@@ -97,7 +97,9 @@ export default function MakePractical() {
 
             };
 
-            const practical_creation_res = await fetch(`http://localhost:3001/api/newPractical`, createNewPracticalOptions);
+            await fetch(`http://localhost:3001/api/newPractical`, createNewPracticalOptions);
+
+            navigate("/dashboard");
 
 
             setLoading(false);
