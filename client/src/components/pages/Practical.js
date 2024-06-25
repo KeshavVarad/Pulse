@@ -297,7 +297,54 @@ export default function Practical() {
         setCommentChatOpen(false)
     }
 
-    const handleMessageInput = () => {
+    const handleMessageInput = async () => {
+        if (curMessage == "") {
+            return
+        }
+
+
+        let newCommentToDisplay = commentToDisplay
+
+
+        try {
+            const user = auth.currentUser;
+            const token = user && (await user.getIdToken());
+
+            const cur_user_res = await fetch(`http://localhost:3001/api/user/${user.uid}`);
+            const cur_user_data = await cur_user_res.json()
+
+
+
+            const newReply = {
+                message: curMessage,
+                createdAt: Date.now(),
+                createdBy: cur_user_data.real_name,
+                creatorId: user.uid
+            }
+
+            newCommentToDisplay.replies.push(newReply)
+
+            const requestOptions = {
+                method: "PUT",
+                mode: "cors",
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${token}`,
+                },
+                body: JSON.stringify({ replies: newCommentToDisplay.replies })
+
+            };
+            await fetch(`http://localhost:3001/api/updateComment/${newCommentToDisplay.id}`, requestOptions);
+
+            setCommentToDisplay(newCommentToDisplay)
+            setMessage("")
+
+
+
+        } catch (e) {
+            console.log(e);
+        }
+
 
     }
 
@@ -476,6 +523,7 @@ export default function Practical() {
                                                     <TableCell align="right">Time Stamp</TableCell>
                                                     <TableCell align="right">Additional Feedback</TableCell>
                                                     <TableCell align="right">Edit Feedback</TableCell>
+                                                    <TableCell align="right">Discussion</TableCell>
                                                     <TableCell align="right">Delete Feedback</TableCell>
                                                 </TableRow>
                                             </TableHead>
@@ -518,6 +566,11 @@ export default function Practical() {
 
                                                         </TableCell>
                                                         <TableCell align="right">
+                                                            <Button onClick={() => handleCommentChatButton(comment)}>
+                                                                <InsertCommentIcon />
+                                                            </Button>
+                                                        </TableCell>
+                                                        <TableCell align="right">
                                                             <Button onClick={() => handleDeleteComment(idx)}>
                                                                 <DeleteIcon />
                                                             </Button>
@@ -537,7 +590,7 @@ export default function Practical() {
                                                     <TableCell align="right">Rating</TableCell>
                                                     <TableCell align="right">Time Stamp</TableCell>
                                                     <TableCell align="right">Additional Feedback</TableCell>
-                                                    <TableCell align="right">Comment</TableCell>
+                                                    <TableCell align="right">Discussion</TableCell>
                                                 </TableRow>
                                             </TableHead>
                                             <TableBody>
@@ -617,43 +670,53 @@ export default function Practical() {
                                 height: '70vh',
                                 overflowY: 'auto',
                             }}>
-                                <ListItem key="1">
-                                    <Grid container sx={{ width: "100%" }}>
-                                        <Grid item xs={12} >
-                                            <ListItemText align="right" primary="Hey man, What's up ?"></ListItemText>
-                                        </Grid>
-                                        <Grid item xs={12}>
-                                            <ListItemText align="right" secondary="09:30"></ListItemText>
-                                        </Grid>
-                                    </Grid>
-                                </ListItem>
-                                <ListItem key="2">
-                                    <Grid container sx={{ width: "100%" }}>
-                                        <Grid item xs={12}>
-                                            <ListItemText align="left" primary="Hey, Iam Good! What about you ?"></ListItemText>
-                                        </Grid>
-                                        <Grid item xs={12}>
-                                            <ListItemText align="left" secondary="09:31"></ListItemText>
-                                        </Grid>
-                                    </Grid>
-                                </ListItem>
+                                {commentToDisplay ? commentToDisplay.replies.map((reply, idx) => {
+                                    return (<ListItem key={idx}>
+                                        {(reply.creatorId == userId) ? (
+                                            <Grid container sx={{ width: "100%" }}>
+                                                <Grid item xs={12} >
+                                                    <ListItemText align="right" primary={reply.message}></ListItemText>
+                                                </Grid>
+                                                <Grid item xs={12}>
+                                                    <ListItemText align="right" secondary={reply.createdBy + " " + new Date(reply.createdAt * 1000).toISOString().substring(14, 19)}></ListItemText>
+                                                </Grid>
+                                            </Grid>
+                                        ) : (
+                                            <Grid container sx={{ width: "100%" }}>
+                                                <Grid item xs={12} >
+                                                    <ListItemText align="left" primary={reply.message}></ListItemText>
+                                                </Grid>
+                                                <Grid item xs={12}>
+                                                    <ListItemText align="left" secondary={new Date(reply.createdAt * 1000).toISOString().substring(14, 19)}></ListItemText>
+                                                </Grid>
+                                            </Grid>
+                                        )}
+
+                                    </ListItem>)
+                                }) : (<Typography>No Messages</Typography>)}
                             </List>
                         </Grid>
 
-                        <TextField label="New Message"
-                            variant="outlined"
-                            color="secondary"
-                            sx={{
-                                mx: 2
-                            }}
-                            onChange={e => setMessage(e.target.value)}
-                            fullWidth
-                            value={newTask} />
+                        <Box sx={{
+                            display: "flex",
+                        }}>
+                            <TextField label="New Message"
+                                variant="outlined"
+                                color="secondary"
+                                sx={{
+                                    mx: 2
+                                }}
+                                onChange={e => setMessage(e.target.value)}
+                                fullWidth
+                                value={curMessage} />
 
 
-                        <Button variant="contained" onClick={handleMessageInput}>
-                            <SendIcon />
-                        </Button>
+                            <Button variant="contained" onClick={handleMessageInput}>
+                                <SendIcon />
+                            </Button>
+                        </Box>
+
+
                     </Box>
 
                 </Box>
