@@ -687,7 +687,7 @@ export default function Practical() {
                                                     <ListItemText align="left" primary={reply.message}></ListItemText>
                                                 </Grid>
                                                 <Grid item xs={12}>
-                                                    <ListItemText align="left" secondary={new Date(reply.createdAt * 1000).toISOString().substring(14, 19)}></ListItemText>
+                                                    <ListItemText align="left" secondary={reply.createdBy + " " + new Date(reply.createdAt * 1000).toISOString().substring(14, 19)}></ListItemText>
                                                 </Grid>
                                             </Grid>
                                         )}
