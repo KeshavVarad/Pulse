@@ -13,7 +13,7 @@ export default function Header() {
         try {
             setError("");
             await logout();
-            navigate("/home");
+            navigate("/");
         } catch {
             setError("Failed to logout");
         }
@@ -24,19 +24,15 @@ export default function Header() {
             <AppBar position='static'>
                 <Toolbar>
                     {
-                    !currentUser ? ( 
-                        <MonitorHeartIcon fontSize='large'/>
-                        ):(<Box></Box>)
+                        !currentUser ? (
+                            <MonitorHeartIcon fontSize='large' />
+                        ) : (<Box></Box>)
                     }
                     {
-                    !currentUser ? ( 
-                        <h1> Pulse</h1>
-                        ):(<Box></Box>)
+                        !currentUser ? (
+                            <h1> Pulse</h1>
+                        ) : (<Box></Box>)
                     }
-
-
-
-
 
                     <Box sx={{
                         width: "100%",
@@ -55,16 +51,20 @@ export default function Header() {
                                     display: 'flex',
                                     flexDirection: 'row',
                                     justifyContent: 'space-between',
-                                    
+
                                 }}>
-                                    { <Button component={Link} to="/login" variant="contained" color="primary">
+                                    {<Button component={Link} to="/login" variant="contained" color="primary">
                                         Login
-                                    </Button> }
+                                    </Button>}
 
                                     <Button component={Link} to="/register" variant="contained">
                                         Sign Up
                                     </Button>
-                                </Box>) : (<Box/>)}
+                                </Box>) : (<Box>
+                                    <Button onClick={handleLogout} variant="contained" color="primary">
+                                        Logout
+                                    </Button>
+                                </Box>)}
 
                     </Box>
                 </Toolbar>

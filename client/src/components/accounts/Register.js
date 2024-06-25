@@ -10,6 +10,8 @@ export default function Register() {
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [confirmPassword, setConfirmPassword] = useState("");
+    const [username, setUsername] = useState("");
+    const [real_name, setRealName] = useState("");
 
     const navigate = useNavigate();
     const { currentUser, register, setError } = useAuth();
@@ -30,8 +32,8 @@ export default function Register() {
 
         try {
             setLoading(true);
-            await register(email, password);
-            navigate("/");
+            await register(email, password, username, real_name);
+            navigate("/dashboard");
         } catch (e) {
             setError("Failed to register");
         }
@@ -51,12 +53,13 @@ export default function Register() {
         }}>
 
             <Box sx={{
-            justifyContent: "center",
-            alignItems: "center",
-            my: 5,
+                justifyContent: "center",
+                alignItems: "center",
+                my: 5,
             }}>
-                <Box sx={{my:4,
-                    
+                <Box sx={{
+                    my: 4,
+
                 }}>
                     <Typography variant='h3'>
                         Register Your Account
@@ -64,6 +67,22 @@ export default function Register() {
                 </Box>
 
                 <form onSubmit={handleFormSubmit}>
+                    <TextField label="Username"
+                        onChange={e => setUsername(e.target.value)}
+                        required
+                        variant="outlined"
+                        color="secondary"
+                        sx={{ mb: 3 }}
+                        fullWidth
+                        value={username} />
+                    <TextField label="Full Name"
+                        onChange={e => setRealName(e.target.value)}
+                        required
+                        variant="outlined"
+                        color="secondary"
+                        sx={{ mb: 3 }}
+                        fullWidth
+                        value={real_name} />
                     <TextField label="Email"
                         onChange={e => setEmail(e.target.value)}
                         required
@@ -101,11 +120,11 @@ export default function Register() {
                         justifyContent: "center",
                         alignItems: "center",
                     }}>
-                        <Button variant='contained' type='submit' disabled={loading} sx={{mx:1}}>
+                        <Button variant='contained' type='submit' disabled={loading} sx={{ mx: 1 }}>
                             Register
                         </Button>
 
-                        <Button component={Link} to="/login"sx={{mx:1}}>
+                        <Button component={Link} to="/login" sx={{ mx: 1 }}>
                             Already have an account? Login
                         </Button>
                     </Box>

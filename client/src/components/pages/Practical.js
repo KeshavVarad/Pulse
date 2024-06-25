@@ -1,6 +1,7 @@
 
 import { useParams } from "react-router-dom"
 import { useEffect, useState } from "react";
+import { useAuth } from "../../contexts/AuthContext.js";
 
 import YouTube from "react-youtube"
 import { Typography, Box, Button, TextField } from "@mui/material"
@@ -23,13 +24,22 @@ import Edit from "@mui/icons-material/Edit";
 import DoneIcon from '@mui/icons-material/Done';
 import DeleteIcon from '@mui/icons-material/Delete';
 import ButtonGroup from "@mui/material/ButtonGroup";
+import InsertCommentIcon from '@mui/icons-material/InsertComment';
+import Modal from "@mui/material/Modal";
+import List from "@mui/material/List";
+import ListItem from "@mui/material/ListItem";
+import ListItemText from "@mui/material/ListItemText";
+import SendIcon from '@mui/icons-material/Send';
 
 
 export default function Practical() {
 
+    const { currentUser } = useAuth();
+
+    const userId = currentUser.uid;
 
     const params = useParams();
-    const practicalId = params.id
+    const practicalId = params.id;
 
     /*
 
@@ -45,7 +55,7 @@ export default function Practical() {
     const [videoId, setVideoId] = useState("")
     const [userCreator, setUserCreator] = useState(null)
     const [userParticipants, setUserParticipants] = useState([])
-    const [userInstructors, setUserInstructors] = useState([])
+    const [userInstructorId, setUserInstructorId] = useState()
     const [tasks, setTasks] = useState([])
     const [comments, setComments] = useState([])
     const [commentFeedbacks, setCommentFeedbacks] = useState([])
@@ -53,6 +63,11 @@ export default function Practical() {
     const [videoTimeStamp, setVideoTimeStamp] = useState(0)
 
     const [newTask, setNewTask] = useState("")
+
+    const [commentChatOpen, setCommentChatOpen] = useState(false)
+    const [commentToDisplay, setCommentToDisplay] = useState()
+
+    const [curMessage, setMessage] = useState("")
 
     const handleNewTaskChange = async () => {
 
@@ -79,6 +94,7 @@ export default function Practical() {
             await fetch(`http://localhost:3001/api/updatePractical/${practicalId}`, requestOptions);
 
             setTasks(newTasks)
+            setNewTask("")
 
         } catch (e) {
             console.log(e);
@@ -271,6 +287,20 @@ export default function Practical() {
         }
     }
 
+    const handleCommentChatButton = (comment) => {
+        setCommentToDisplay(comment)
+        setCommentChatOpen(true)
+    }
+
+    const handleCommentChatClose = () => {
+        setCommentToDisplay(null)
+        setCommentChatOpen(false)
+    }
+
+    const handleMessageInput = () => {
+
+    }
+
     useEffect(() => {
         async function fetchPractical() {
 
@@ -307,6 +337,11 @@ export default function Practical() {
             const creator_res = await fetch(`http://localhost:3001/api/user/${user_creator_id}`);
             const userCreator = await creator_res.json()
             setUserCreator(userCreator)
+
+            const user_instructor_id = practical.user_instructor_id
+
+            setUserInstructorId(user_instructor_id)
+
         }
 
         fetchPractical()
@@ -356,65 +391,68 @@ export default function Practical() {
                                     <YouTube videoId={videoId} onStateChange={handleVideoChange} />
                                 </Box>
 
-                                <Box sx={{
-                                    display: "flex",
-                                    flexDirection: "column",
-                                    width: "100%",
-                                    justifyContent: "space-between",
-                                    alignItems: "center",
-
-                                }}>
-                                    <Typography variant="h4">
-                                        Make Ratings
-                                    </Typography>
-
-                                    {tasks.map(task => (
-                                        <Box sx={{
-                                            width: "80%",
-                                            display: "flex",
-                                            flexDirection: "row",
-                                            justifyContent: "space-between",
-                                            alignItems: "center",
-                                            pt: 1,
-
-                                        }}>
-                                            <Box sx={{ px: 2 }}>
-                                                <Typography variant="h7">{task}</Typography>
-                                            </Box>
-                                            <Box sx={{ px: 2 }}>
-                                                <ButtonGroup variant="contained" aria-label="Basic button group" >
-                                                    <Button onClick={() => { handleRating(task, -1) }} variant="contained" color="primary" size="large">RED</Button>
-                                                    <Button onClick={() => { handleRating(task, 0) }} variant="contained" color="secondary">YELLOW</Button>
-                                                    <Button onClick={() => { handleRating(task, 1) }} variant="contained">GREEN</Button>
-                                                </ButtonGroup>
-                                            </Box>
-
-
-                                        </Box>
-                                    ))}
-
-
-                                    <Box sx={{
+                                {(userId == userInstructorId) ?
+                                    (<Box sx={{
                                         display: "flex",
-                                        justifyContent: "center",
+                                        flexDirection: "column",
+                                        width: "100%",
+                                        justifyContent: "space-between",
                                         alignItems: "center",
-                                        width: "60%",
+
                                     }}>
-                                        <TextField label="New Task"
-                                            variant="outlined"
-                                            color="secondary"
-                                            sx={{
-                                                mx: 2
-                                            }}
-                                            onChange={e => setNewTask(e.target.value)}
-                                            fullWidth
-                                            value={newTask} />
+                                        <Typography variant="h4">
+                                            Make Ratings
+                                        </Typography>
+
+                                        {tasks.map(task => (
+                                            <Box sx={{
+                                                width: "80%",
+                                                display: "flex",
+                                                flexDirection: "row",
+                                                justifyContent: "space-between",
+                                                alignItems: "center",
+                                                pt: 1,
+
+                                            }}>
+                                                <Box sx={{ px: 2 }}>
+                                                    <Typography variant="h7">{task}</Typography>
+                                                </Box>
+                                                <Box sx={{ px: 2 }}>
+                                                    <ButtonGroup variant="contained" aria-label="Basic button group" >
+                                                        <Button onClick={() => { handleRating(task, -1) }} variant="contained" color="primary" size="large">RED</Button>
+                                                        <Button onClick={() => { handleRating(task, 0) }} variant="contained" color="secondary">YELLOW</Button>
+                                                        <Button onClick={() => { handleRating(task, 1) }} variant="contained">GREEN</Button>
+                                                    </ButtonGroup>
+                                                </Box>
 
 
-                                        <Button variant="contained" onClick={handleNewTaskChange}>Add Task</Button>
-                                    </Box>
+                                            </Box>
+                                        ))}
 
-                                </Box>
+
+                                        <Box sx={{
+                                            display: "flex",
+                                            justifyContent: "center",
+                                            alignItems: "center",
+                                            width: "60%",
+                                        }}>
+                                            <TextField label="New Task"
+                                                variant="outlined"
+                                                color="secondary"
+                                                sx={{
+                                                    mx: 2
+                                                }}
+                                                onChange={e => setNewTask(e.target.value)}
+                                                fullWidth
+                                                value={newTask} />
+
+
+                                            <Button variant="contained" onClick={handleNewTaskChange}>Add Task</Button>
+                                        </Box>
+
+                                    </Box>) : null}
+
+
                             </Box>
 
 
@@ -428,66 +466,107 @@ export default function Practical() {
                             }}>
                                 <Typography variant="h3">Comments</Typography>
 
-                                <TableContainer component={Paper}>
-                                    <Table sx={{ minWidth: 650 }} aria-label="simple table">
-                                        <TableHead>
-                                            <TableRow>
-                                                <TableCell>Task</TableCell>
-                                                <TableCell align="right">Rating</TableCell>
-                                                <TableCell align="right">Time Stamp</TableCell>
-                                                <TableCell align="right">Additional Feedback</TableCell>
-                                                <TableCell align="right">Edit Feedback</TableCell>
-                                                <TableCell align="right">Delete Feedback</TableCell>
-                                            </TableRow>
-                                        </TableHead>
-                                        <TableBody>
-                                            {comments.map((comment, idx) => (
-                                                <TableRow
-                                                    key={comment.id}
-                                                    sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
-                                                >
-                                                    <TableCell component="th" scope="row">
-                                                        {comment.task}
-                                                    </TableCell>
-                                                    <TableCell align="right">{comment.rating}</TableCell>
-                                                    <TableCell align="right">{new Date(comment.timestamp * 1000).toISOString().substring(14, 19)}</TableCell>
-                                                    {
-                                                        !commentEditable[idx] ?
-                                                            (<TableCell align="right">
-                                                                {comment.feedback}
-                                                            </TableCell>) :
-                                                            (<TableCell align="right">
-                                                                <TextField label="Feedback"
-                                                                    onChange={e => handleCommentFeedbackChange(e, idx)}
-                                                                    variant="outlined"
-                                                                    color="secondary"
-                                                                    sx={{ mb: 3 }}
-                                                                    fullWidth
-                                                                    value={commentFeedbacks[idx]} />
-                                                            </TableCell>)
-                                                    }
-                                                    <TableCell align="right">
+                                {(userId == userInstructorId) ? (
+                                    <TableContainer component={Paper}>
+                                        <Table sx={{ minWidth: 650 }} aria-label="simple table">
+                                            <TableHead>
+                                                <TableRow>
+                                                    <TableCell>Task</TableCell>
+                                                    <TableCell align="right">Rating</TableCell>
+                                                    <TableCell align="right">Time Stamp</TableCell>
+                                                    <TableCell align="right">Additional Feedback</TableCell>
+                                                    <TableCell align="right">Edit Feedback</TableCell>
+                                                    <TableCell align="right">Delete Feedback</TableCell>
+                                                </TableRow>
+                                            </TableHead>
+                                            <TableBody>
+                                                {comments.map((comment, idx) => (
+                                                    <TableRow
+                                                        key={comment.id}
+                                                        sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
+                                                    >
+                                                        <TableCell component="th" scope="row">
+                                                            {comment.task}
+                                                        </TableCell>
+                                                        <TableCell align="right">{comment.rating}</TableCell>
+                                                        <TableCell align="right">{new Date(comment.timestamp * 1000).toISOString().substring(14, 19)}</TableCell>
                                                         {
                                                             !commentEditable[idx] ?
-                                                                (<Button onClick={() => handleEditButton(idx)}>
-                                                                    <EditIcon />
-                                                                </Button>) :
-                                                                (<Button onClick={() => handleSubmitButton(idx)}>
-                                                                    <DoneIcon />
-                                                                </Button>)
+                                                                (<TableCell align="right">
+                                                                    {comment.feedback}
+                                                                </TableCell>) :
+                                                                (<TableCell align="right">
+                                                                    <TextField label="Feedback"
+                                                                        onChange={e => handleCommentFeedbackChange(e, idx)}
+                                                                        variant="outlined"
+                                                                        color="secondary"
+                                                                        sx={{ mb: 3 }}
+                                                                        fullWidth
+                                                                        value={commentFeedbacks[idx]} />
+                                                                </TableCell>)
                                                         }
+                                                        <TableCell align="right">
+                                                            {
+                                                                !commentEditable[idx] ?
+                                                                    (<Button onClick={() => handleEditButton(idx)}>
+                                                                        <EditIcon />
+                                                                    </Button>) :
+                                                                    (<Button onClick={() => handleSubmitButton(idx)}>
+                                                                        <DoneIcon />
+                                                                    </Button>)
+                                                            }
 
-                                                    </TableCell>
-                                                    <TableCell align="right">
-                                                        <Button onClick={() => handleDeleteComment(idx)}>
-                                                            <DeleteIcon />
-                                                        </Button>
-                                                    </TableCell>
+                                                        </TableCell>
+                                                        <TableCell align="right">
+                                                            <Button onClick={() => handleDeleteComment(idx)}>
+                                                                <DeleteIcon />
+                                                            </Button>
+                                                        </TableCell>
+                                                    </TableRow>
+                                                ))}
+                                            </TableBody>
+                                        </Table>
+                                    </TableContainer>
+
+                                ) : (
+                                    <TableContainer component={Paper}>
+                                        <Table sx={{ minWidth: 650 }} aria-label="simple table">
+                                            <TableHead>
+                                                <TableRow>
+                                                    <TableCell>Task</TableCell>
+                                                    <TableCell align="right">Rating</TableCell>
+                                                    <TableCell align="right">Time Stamp</TableCell>
+                                                    <TableCell align="right">Additional Feedback</TableCell>
+                                                    <TableCell align="right">Comment</TableCell>
                                                 </TableRow>
-                                            ))}
-                                        </TableBody>
-                                    </Table>
-                                </TableContainer>
+                                            </TableHead>
+                                            <TableBody>
+                                                {comments.map((comment, idx) => (
+                                                    <TableRow
+                                                        key={comment.id}
+                                                        sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
+                                                    >
+                                                        <TableCell component="th" scope="row">
+                                                            {comment.task}
+                                                        </TableCell>
+                                                        <TableCell align="right">{comment.rating}</TableCell>
+                                                        <TableCell align="right">{new Date(comment.timestamp * 1000).toISOString().substring(14, 19)}</TableCell>
+                                                        <TableCell align="right">
+                                                            {comment.feedback}
+                                                        </TableCell>
+                                                        <TableCell align="right">
+                                                            <Button onClick={() => handleCommentChatButton(comment)}>
+                                                                <InsertCommentIcon />
+                                                            </Button>
+                                                        </TableCell>
+
+                                                    </TableRow>
+                                                ))}
+                                            </TableBody>
+                                        </Table>
+                                    </TableContainer>
+                                )}
+
 
 
 
@@ -496,8 +575,93 @@ export default function Practical() {
                         </Box>
                     </Box>
                 </Grid>
+
+
             </Grid>
-        </Box>
+
+
+            <Modal
+                open={commentChatOpen}
+                onClose={handleCommentChatClose}
+                aria-labelledby="modal-modal-title"
+                aria-describedby="modal-modal-description"
+            >
+                <Box sx={{
+                    position: "absolute",
+                    top: "50%",
+                    left: "50%",
+                    transform: "translate(-50%, -50%)",
+                    width: 800,
+                    bgcolor: "background.paper",
+                    border: "2px solid #000",
+                    boxShadow: 24,
+                    p: 4,
+                }}>
+                    <Box sx={{
+                        display: "flex",
+                        flexDirection: "column",
+                        width: "100%",
+                        alignItems: "center",
+                        justifyContent: "center"
+                    }}>
+                        <Typography id="modal-modal-title" variant="h6" component="h2">
+                            {commentToDisplay ? commentToDisplay.task : "No Comment"}
+                        </Typography>
+                        <Typography id="modal-modal-description" sx={{ mt: 2 }}>
+                            Instructor Feedback: {commentToDisplay ? commentToDisplay.feedback : "No Feedback"}
+                        </Typography>
+                        <Grid item sx={{
+                            width: "100%",
+                        }}>
+                            <List sx={{
+                                height: '70vh',
+                                overflowY: 'auto',
+                            }}>
+                                <ListItem key="1">
+                                    <Grid container sx={{ width: "100%" }}>
+                                        <Grid item xs={12} >
+                                            <ListItemText align="right" primary="Hey man, What's up ?"></ListItemText>
+                                        </Grid>
+                                        <Grid item xs={12}>
+                                            <ListItemText align="right" secondary="09:30"></ListItemText>
+                                        </Grid>
+                                    </Grid>
+                                </ListItem>
+                                <ListItem key="2">
+                                    <Grid container sx={{ width: "100%" }}>
+                                        <Grid item xs={12}>
+                                            <ListItemText align="left" primary="Hey, Iam Good! What about you ?"></ListItemText>
+                                        </Grid>
+                                        <Grid item xs={12}>
+                                            <ListItemText align="left" secondary="09:31"></ListItemText>
+                                        </Grid>
+                                    </Grid>
+                                </ListItem>
+                            </List>
+                        </Grid>
+
+                        <TextField label="New Message"
+                            variant="outlined"
+                            color="secondary"
+                            sx={{
+                                mx: 2
+                            }}
+                            onChange={e => setMessage(e.target.value)}
+                            fullWidth
+                            value={newTask} />
+
+
+                        <Button variant="contained" onClick={handleMessageInput}>
+                            <SendIcon />
+                        </Button>
+                    </Box>
+
+                </Box>
+            </Modal >
+
+
+
+        </Box >
 
 
 

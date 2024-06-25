@@ -19,8 +19,38 @@ export function AuthProvider({ children }) {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState("");
 
-    function register(email, password) {
-        return createUserWithEmailAndPassword(auth, email, password);
+    function register(email, password, username, real_name) {
+        return createUserWithEmailAndPassword(auth, email, password)
+            .then(async function (data) {
+                const user = data.user;
+                const token = user && (await user.getIdToken());
+
+                const newUserData = {
+                    id: user.uid,
+                    username: username,
+                    real_name: real_name,
+                    email: email,
+                    createdPracticals: [],
+                    inPracticals: []
+                }
+
+                const createNewUserOptions = {
+                    method: "POST",
+                    mode: "cors",
+                    headers: {
+                        "Content-Type": "application/json",
+                        Authorization: `Bearer ${token}`,
+                    },
+                    body: JSON.stringify(newUserData)
+
+                };
+
+                await fetch(`http://localhost:3001/api/newUser`, createNewUserOptions);
+
+                //Here if you want you can sign in the user
+            }).catch(function (error) {
+                //Handle error
+            });;
     }
 
     function login(email, password) {
