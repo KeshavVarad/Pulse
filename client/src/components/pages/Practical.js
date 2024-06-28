@@ -8,7 +8,7 @@ import { Box } from "@mui/material";
 
 export default function Practical() {
 
-    
+
     const { currentUser } = useAuth();
     const userId = currentUser.uid;
     const params = useParams();
@@ -75,12 +75,13 @@ export default function Practical() {
     return (
         <Box sx={{
             minHeight: "100%",
-            minWidth: "100%"}}>
-        {(userId == userInstructorId)?(
-            <InstructorPractical/>
-        ):(<StudentPractical/>)}
+            minWidth: "100%"
+        }}>
+            {(userId == userInstructorId) ? (
+                <InstructorPractical />
+            ) : (<StudentPractical />)}
         </Box>
-        
+
 
     )
 }
