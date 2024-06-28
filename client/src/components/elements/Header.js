@@ -21,7 +21,7 @@ export default function Header() {
 
     return (
         <div>
-            <AppBar position='static'>
+            <AppBar position='fixed'>
                 <Toolbar>
                     {
                         !currentUser ? (

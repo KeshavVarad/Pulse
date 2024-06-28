@@ -68,6 +68,7 @@ export default function InstructorPractical() {
     const [commentToDisplay, setCommentToDisplay] = useState()
 
     const [curMessage, setMessage] = useState("")
+    
 
     const handleNewTaskChange = async () => {
 
@@ -394,6 +395,18 @@ export default function InstructorPractical() {
         fetchPractical()
     }, [])
 
+    const video_opts = {
+        height: '468',
+        width: '768',
+        playerVars: {
+          autoplay: 1,
+          control:0,
+          disablekb:0,
+          fs:0,
+          color:"white"
+        }
+    };
+
     return (
         <Box sx={{
             minHeight: "100%",
@@ -417,14 +430,14 @@ export default function InstructorPractical() {
                             display: "flex",
                             justifyContent: "space-between",
                             alignItems: "center",
-                            py: 12,
+                            py: 8,
                             px: 4,
                             flexDirection: "column",
                         }}>
                             <Box sx={{
-                                pb: 5
+                                py: 5
                             }}>
-                                <Typography variant="h3"> Practical </Typography>
+                                <Typography variant="h4"> Practical </Typography>
                             </Box>
 
                             <Box sx={{
@@ -433,7 +446,6 @@ export default function InstructorPractical() {
                             }}>
                                 <Box sx={{
 
-                                    py: 5
                                 }}>
                                     <YouTube videoId={videoId} onStateChange={handleVideoChange} />
                                 </Box>
@@ -446,7 +458,7 @@ export default function InstructorPractical() {
                                         alignItems: "center",
 
                                     }}>
-                                        <Typography variant="h4">
+                                        <Typography variant="h5">
                                             Make Ratings
                                         </Typography>
 
@@ -510,7 +522,7 @@ export default function InstructorPractical() {
                                 justifyContent: 'center',
                                 alignItems: "center"
                             }}>
-                                <Typography variant="h3">Comments</Typography>
+                                <Typography variant="h5">Comments</Typography>
 
                                 <TableContainer component={Paper}>
                                         <Table sx={{ minWidth: 650 }} aria-label="simple table">

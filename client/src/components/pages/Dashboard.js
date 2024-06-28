@@ -153,8 +153,8 @@ export default function Dashboard() {
                             Width: "100%",
                             justifyContent: "center",
                             alignItems: "center",
-                            mt: 5,
-                            mb: 5
+                            py: 13,
+                            px: 4,
                         }}>
 
                             <center><h1>Dashboard</h1></center>
