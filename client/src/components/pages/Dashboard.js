@@ -48,10 +48,10 @@ export default function Dashboard() {
 
                 };
 
-                const user_res = await fetch(`http://localhost:3001/api/user/${userId}`, requestOptions);
+                const user_res = await fetch(`/api/user/${userId}`, requestOptions);
                 const userData = await user_res.json()
 
-                const practical_res = await fetch(`http://localhost:3001/api/practical/student/${userData.id}`, requestOptions);
+                const practical_res = await fetch(`/api/practical/student/${userData.id}`, requestOptions);
                 const practicalData = await practical_res.json()
 
                 const displayData = []
@@ -94,10 +94,10 @@ export default function Dashboard() {
 
                 };
 
-                const user_res = await fetch(`http://localhost:3001/api/user/${userId}`, requestOptions);
+                const user_res = await fetch(`/api/user/${userId}`, requestOptions);
                 const userData = await user_res.json()
 
-                const practical_res = await fetch(`http://localhost:3001/api/practical/instructor/${userData.id}`, requestOptions);
+                const practical_res = await fetch(`/api/practical/instructor/${userData.id}`, requestOptions);
                 const practicalData = await practical_res.json()
 
                 const displayData = []

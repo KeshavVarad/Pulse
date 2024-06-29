@@ -45,7 +45,7 @@ export function AuthProvider({ children }) {
 
                 };
 
-                await fetch(`http://localhost:3001/api/newUser`, createNewUserOptions);
+                await fetch(`/api/newUser`, createNewUserOptions);
 
                 //Here if you want you can sign in the user
             }).catch(function (error) {

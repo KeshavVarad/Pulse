@@ -79,7 +79,7 @@ export default function StudentPractical() {
             const user = auth.currentUser;
             const token = user && (await user.getIdToken());
 
-            const cur_user_res = await fetch(`http://localhost:3001/api/user/${user.uid}`);
+            const cur_user_res = await fetch(`/api/user/${user.uid}`);
             const cur_user_data = await cur_user_res.json()
 
 
@@ -103,7 +103,7 @@ export default function StudentPractical() {
                 body: JSON.stringify({ replies: newCommentToDisplay.replies })
 
             };
-            await fetch(`http://localhost:3001/api/updateComment/${newCommentToDisplay.id}`, requestOptions);
+            await fetch(`/api/updateComment/${newCommentToDisplay.id}`, requestOptions);
 
             setCommentToDisplay(newCommentToDisplay)
             setMessage("")
@@ -166,7 +166,7 @@ export default function StudentPractical() {
     useEffect(() => {
         async function fetchPractical() {
 
-            const practical_res = await fetch(`http://localhost:3001/api/practical/${practicalId}`);
+            const practical_res = await fetch(`/api/practical/${practicalId}`);
 
             const practical = await practical_res.json()
 
@@ -178,7 +178,7 @@ export default function StudentPractical() {
             const commentsData = []
 
             commentIds.map(async (commentId, idx) => {
-                const commentRes = await fetch(`http://localhost:3001/api/comment/${commentId}`);
+                const commentRes = await fetch(`/api/comment/${commentId}`);
                 const commentData = await commentRes.json()
                 commentsData.push(commentData)
 

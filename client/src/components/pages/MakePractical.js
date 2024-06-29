@@ -28,7 +28,7 @@ export default function MakePractical() {
     const handleAddParticipant = async () => {
 
         try {
-            const participant_res = await fetch(`http://localhost:3001/api/user/email/${curParticipant}`);
+            const participant_res = await fetch(`/api/user/email/${curParticipant}`);
             const participant = await participant_res.json()
 
             let curParticipantIds = participantIds.slice()
@@ -61,12 +61,12 @@ export default function MakePractical() {
             let user_participants = []
 
             participants.map(async (participantEmail) => {
-                const participant_res = await fetch(`http://localhost:3001/api/user/email/${participantEmail}`);
+                const participant_res = await fetch(`/api/user/email/${participantEmail}`);
                 const participant = await participant_res.json()
                 user_participants.push(participant[0].id)
             })
 
-            const instructor_res = await fetch(`http://localhost:3001/api/user/email/${instructor}`);
+            const instructor_res = await fetch(`/api/user/email/${instructor}`);
             const instructorData = await instructor_res.json()
 
             let user_instructor_id = instructorData[0].id
@@ -97,7 +97,7 @@ export default function MakePractical() {
 
             };
 
-            await fetch(`http://localhost:3001/api/newPractical`, createNewPracticalOptions);
+            await fetch(`/api/newPractical`, createNewPracticalOptions);
 
             navigate("/dashboard");
 

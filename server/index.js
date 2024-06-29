@@ -1,6 +1,13 @@
 import express from "express"
 import cors from "cors"
 import dotenv from "dotenv"
+import { fileURLToPath } from 'url';
+import { dirname } from 'path';
+import path from "path"
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+
 
 import { VerifyToken } from "./middleware/VerifyToken.js";
 
@@ -14,14 +21,28 @@ const PORT = process.env.PORT || 8000;
 
 const app = express();
 
+
+
+
 app.use(cors());
 app.use(express.json());
+
+
 app.use(express.urlencoded({ extended: false }));
 // app.use(VerifyToken);
+
+app.use(express.static(path.join(__dirname, "./build")));
 
 app.use('/api', userRoute);
 app.use('/api', practicalRoute);
 app.use('/api', commentRoute);
+
+app.get("*", (req, res, next) => {
+    res.sendFile(path.join(__dirname, "./build/index.html"))
+})
+
+
+
 
 
 app.listen(PORT, () => {

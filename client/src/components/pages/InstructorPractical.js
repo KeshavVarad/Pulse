@@ -72,7 +72,7 @@ export default function InstructorPractical() {
                 body: JSON.stringify({ tasks: newTasks })
 
             };
-            await fetch(`http://localhost:3001/api/updatePractical/${practicalId}`, requestOptions);
+            await fetch(`/api/updatePractical/${practicalId}`, requestOptions);
 
             setTasks(newTasks)
             setNewTask("")
@@ -106,7 +106,7 @@ export default function InstructorPractical() {
 
     const handleRating = async (task, rating) => {
 
-        const practical_res = await fetch(`http://localhost:3001/api/practical/${practicalId}`);
+        const practical_res = await fetch(`/api/practical/${practicalId}`);
         const practical = await practical_res.json()
 
         const commentId = uuidv4()
@@ -135,7 +135,7 @@ export default function InstructorPractical() {
 
             };
 
-            const res = await fetch(`http://localhost:3001/api/newComment`, createNewCommentOptions);
+            const res = await fetch(`/api/newComment`, createNewCommentOptions);
 
             let newComments = practical.comments
             newComments.push(commentId)
@@ -150,7 +150,7 @@ export default function InstructorPractical() {
                 body: JSON.stringify({ comments: newComments })
 
             };
-            await fetch(`http://localhost:3001/api/updatePractical/${practicalId}`, requestOptions);
+            await fetch(`/api/updatePractical/${practicalId}`, requestOptions);
 
             let newCommentsData = comments.slice()
 
@@ -207,7 +207,7 @@ export default function InstructorPractical() {
                 body: JSON.stringify({ feedback: commentFeedbacks[idx] })
 
             };
-            await fetch(`http://localhost:3001/api/updateComment/${commentId}`, requestOptions);
+            await fetch(`/api/updateComment/${commentId}`, requestOptions);
 
             const getCommentRequestOptions = {
                 method: "GET",
@@ -218,7 +218,7 @@ export default function InstructorPractical() {
                 },
 
             };
-            const updatedCommentRes = await fetch(`http://localhost:3001/api/comment/${commentId}`, getCommentRequestOptions);
+            const updatedCommentRes = await fetch(`/api/comment/${commentId}`, getCommentRequestOptions);
             const updatedCommentData = await updatedCommentRes.json()
 
             let newComments = comments.slice()
@@ -234,7 +234,7 @@ export default function InstructorPractical() {
     }
 
     const handleDeleteComment = async (idx) => {
-        const practical_res = await fetch(`http://localhost:3001/api/practical/${practicalId}`);
+        const practical_res = await fetch(`/api/practical/${practicalId}`);
         const practical = await practical_res.json()
 
         let oldCommentIds = practical.comments
@@ -257,7 +257,7 @@ export default function InstructorPractical() {
                     Authorization: `Bearer ${token}`,
                 },
             };
-            await fetch(`http://localhost:3001/api/deleteComment/${commentId}`, deleteCommentRequestOptions);
+            await fetch(`/api/deleteComment/${commentId}`, deleteCommentRequestOptions);
 
             const updatePracticalRequestOptions = {
                 method: "PUT",
@@ -268,7 +268,7 @@ export default function InstructorPractical() {
                 },
                 body: JSON.stringify({ comments: oldCommentIds })
             };
-            await fetch(`http://localhost:3001/api/updatePractical/${practicalId}`, updatePracticalRequestOptions);
+            await fetch(`/api/updatePractical/${practicalId}`, updatePracticalRequestOptions);
 
             let newComments = comments.slice()
 
@@ -306,7 +306,7 @@ export default function InstructorPractical() {
             const user = auth.currentUser;
             const token = user && (await user.getIdToken());
 
-            const cur_user_res = await fetch(`http://localhost:3001/api/user/${user.uid}`);
+            const cur_user_res = await fetch(`/api/user/${user.uid}`);
             const cur_user_data = await cur_user_res.json()
 
 
@@ -330,7 +330,7 @@ export default function InstructorPractical() {
                 body: JSON.stringify({ replies: newCommentToDisplay.replies })
 
             };
-            await fetch(`http://localhost:3001/api/updateComment/${newCommentToDisplay.id}`, requestOptions);
+            await fetch(`/api/updateComment/${newCommentToDisplay.id}`, requestOptions);
 
             setCommentToDisplay(newCommentToDisplay)
             setMessage("")
@@ -349,7 +349,7 @@ export default function InstructorPractical() {
     useEffect(() => {
         async function fetchPractical() {
 
-            const practical_res = await fetch(`http://localhost:3001/api/practical/${practicalId}`);
+            const practical_res = await fetch(`/api/practical/${practicalId}`);
 
             const practical = await practical_res.json()
 
@@ -365,7 +365,7 @@ export default function InstructorPractical() {
             let newCommentEditable = commentEditable
 
             commentIds.map(async (commentId, idx) => {
-                const commentRes = await fetch(`http://localhost:3001/api/comment/${commentId}`);
+                const commentRes = await fetch(`/api/comment/${commentId}`);
                 const commentData = await commentRes.json()
                 commentsData.push(commentData)
 
