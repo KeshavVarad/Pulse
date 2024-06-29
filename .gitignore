@@ -3,3 +3,6 @@ client/.env
 .env
 server/config/serviceAccountKey.json
 pulse/
+server/build/
+server/node_modules/
+server/app.yaml
