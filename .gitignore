@@ -2,3 +2,4 @@
 client/.env
 .env
 server/config/serviceAccountKey.json
+pulse/
