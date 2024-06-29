@@ -29,10 +29,13 @@ export default function MakePractical() {
 
         try {
             const participant_res = await fetch(`/api/user/email/${curParticipant}`);
-            const participant = await participant_res.json()
+            const participants = await participant_res.json()
+            const participant = participants[0]
+
 
             let curParticipantIds = participantIds.slice()
             curParticipantIds.push(participant.id)
+
             setParticipantIds(curParticipantIds)
 
         } catch (e) {

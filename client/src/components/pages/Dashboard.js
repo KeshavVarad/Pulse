@@ -102,9 +102,6 @@ export default function Dashboard() {
 
                 const displayData = []
 
-
-                console.log(practicalData)
-
                 practicalData.map((practical) => {
 
                     displayData.push({
@@ -115,7 +112,6 @@ export default function Dashboard() {
                         path: "/practical/" + practical.id
                     })
                 })
-                console.log(displayData)
                 setOwnedPracticals(displayData)
             } catch (e) {
                 console.log(e);
