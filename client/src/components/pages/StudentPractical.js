@@ -9,6 +9,7 @@ import auth from "../../config/firebase.js";
 import Header from '../elements/Header';
 import SideBar from '../elements/SideBar';
 import SendIcon from '@mui/icons-material/Send';
+import InsertCommentIcon from "@mui/icons-material/InsertComment"
 
 import { Typography, Box, Button, TextField, Grid, Modal, List, ListItem, ListItemText } from "@mui/material";
 
@@ -59,6 +60,12 @@ export default function StudentPractical() {
 
 
         updateCurrentComment(curTime);
+    }
+
+
+    const handleCommentChatButton = (comment) => {
+        setCommentToDisplay(comment)
+        setCommentChatOpen(true)
     }
 
     const handleCommentChatClose = () => {
@@ -132,10 +139,19 @@ export default function StudentPractical() {
                 <Typography><strong>Rating:</strong> {comment.rating}</Typography>
                 <Typography><strong>Feedback:</strong> {comment.feedback}</Typography>
                 <Typography><strong>Timestamp:</strong> {new Date(comment.timestamp * 1000).toISOString().substring(14, 19)}</Typography>
+                <Box sx={{ display: "flex", pt: 2 }}>
+                    <Typography>
+                        <strong>Discussion:</strong>
+                    </Typography>
+                    <Button onClick={() => handleCommentChatButton(comment)}>
+                        <InsertCommentIcon />
+                    </Button>
+                </Box>
                 <Box sx={{ mt: 2, display: 'flex', justifyContent: 'space-between' }}>
                     <Button onClick={onPrevious} disabled={currentIndex === 0}>Previous</Button>
                     <Button onClick={onNext} disabled={currentIndex === comments.length - 1}>Next</Button>
                 </Box>
+
                 {/* <Box sx={{ mt: 2 }}>
                     <Button onClick={onToggleAutoMove}>{autoMove ? 'Disable' : 'Enable'} Auto Video Move</Button>
                 </Box> */}
