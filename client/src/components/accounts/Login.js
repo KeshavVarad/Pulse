@@ -31,7 +31,7 @@ export default function Login() {
             await login(email, password);
             navigate("/dashboard");
         } catch (e) {
-            setError("Failed to register");
+            setError("Failed to login");
         }
 
         setLoading(false);
@@ -49,12 +49,12 @@ export default function Login() {
 
             <Box sx={{
 
-            justifyContent: "center",
-            alignItems: "center",
-            my: 5,
+                justifyContent: "center",
+                alignItems: "center",
+                my: 5,
             }}>
                 <Box sx={{
-                    my:4
+                    my: 4
                 }}>
                     <Typography variant='h3'>
                         Login to your account
@@ -88,11 +88,11 @@ export default function Login() {
                         justifyContent: "center",
                         alignItems: "center",
                     }}>
-                        <Button variant='contained' type='submit' disabled={loading} sx={{mx:1}}>
+                        <Button variant='contained' type='submit' disabled={loading} sx={{ mx: 1 }}>
                             Login
                         </Button>
 
-                        <Button component={Link} to="/register"sx={{mx:1}}>
+                        <Button component={Link} to="/register" sx={{ mx: 1 }}>
                             Don't have an account? Register
                         </Button>
                     </Box>

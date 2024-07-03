@@ -17,8 +17,8 @@ function App() {
   return (
     <AuthProvider>
       <Router>
+        <ErrorMessage />
         <Box sx={{ display: 'flex' }}>
-          <ErrorMessage />
           <Routes>
             <Route exact path="/dashboard" element={<Dashboard />} />
             <Route exact path="/" element={<Home />} />
