@@ -44,6 +44,7 @@ export const getUsers = async (req, res, next) => {
                     doc.data().email,
                     doc.data().createdPracticals,
                     doc.data().inPracticals,
+                    doc.data().teachPracticals
                 );
                 userArray.push(user);
             });
@@ -92,6 +93,7 @@ export const getUserByEmail = async (req, res, next) => {
                     doc.data().email,
                     doc.data().createdPracticals,
                     doc.data().inPracticals,
+                    doc.data().teachPracticals
                 );
                 userArray.push(user);
             });

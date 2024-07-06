@@ -29,7 +29,7 @@ export default function Practical() {
     useEffect(() => {
         async function fetchPractical() {
 
-            const practical_res = await fetch(`/api/practical/${practicalId}`);
+            const practical_res = await fetch(`${process.env.REACT_APP_API_HOST}/api/practical/${practicalId}`);
 
             const practical = await practical_res.json()
 
@@ -45,7 +45,7 @@ export default function Practical() {
             let newCommentEditable = commentEditable
 
             commentIds.map(async (commentId, idx) => {
-                const commentRes = await fetch(`/api/comment/${commentId}`);
+                const commentRes = await fetch(`${process.env.REACT_APP_API_HOST}/api/comment/${commentId}`);
                 const commentData = await commentRes.json()
                 commentsData.push(commentData)
 
@@ -59,7 +59,7 @@ export default function Practical() {
             setComments(commentsData)
 
             const user_creator_id = practical.user_creator
-            const creator_res = await fetch(`/api/user/${user_creator_id}`);
+            const creator_res = await fetch(`${process.env.REACT_APP_API_HOST}/api/user/${user_creator_id}`);
             const userCreator = await creator_res.json()
             setUserCreator(userCreator)
 

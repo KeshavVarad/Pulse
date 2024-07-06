@@ -31,7 +31,8 @@ export function AuthProvider({ children }) {
                     real_name: real_name,
                     email: email,
                     createdPracticals: [],
-                    inPracticals: []
+                    inPracticals: [],
+                    teachPracticals: []
                 }
 
                 const createNewUserOptions = {
@@ -45,7 +46,7 @@ export function AuthProvider({ children }) {
 
                 };
 
-                await fetch(`/api/newUser`, createNewUserOptions);
+                await fetch(`${process.env.REACT_APP_API_HOST}/api/newUser`, createNewUserOptions);
 
                 //Here if you want you can sign in the user
             }).catch(function (error) {

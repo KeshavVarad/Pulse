@@ -6,6 +6,7 @@ import {
     collection,
     doc,
     addDoc,
+    setDoc,
     getDoc,
     getDocs,
     updateDoc,
@@ -17,9 +18,10 @@ import {
 const db = getFirestore(firebase);
 
 export const createPractical = async (req, res, next) => {
+
     try {
         const data = req.body;
-        await addDoc(collection(db, 'practicals'), data);
+        await setDoc(doc(db, 'practicals', data.id), data);
         res.status(200).send('Practical created successfully');
     } catch (error) {
         res.status(400).send(error.message);

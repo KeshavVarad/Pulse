@@ -8,17 +8,23 @@ import Dashboard from './components/pages/Dashboard';
 import { AuthProvider } from './contexts/AuthContext';
 import ErrorMessage from './components/layouts/ErrorMessage';
 import WithPrivateRoute from './utils/WithPrivateRoute';
-import Box from '@mui/material/Box';
+import Grid from '@mui/material/Box';
 import MakePractical from './components/pages/MakePractical';
-
-
+import SideBar from './components/elements/SideBar';
+import Layout from './components/layouts/Layout';
 
 function App() {
+
+
+
   return (
     <AuthProvider>
+
       <Router>
-        <ErrorMessage />
-        <Box sx={{ display: 'flex' }}>
+        <Layout>
+          <ErrorMessage />
+
+
           <Routes>
             <Route exact path="/dashboard" element={<Dashboard />} />
             <Route exact path="/" element={<Home />} />
@@ -35,7 +41,9 @@ function App() {
               </WithPrivateRoute>
             } />
           </Routes>
-        </Box>
+
+
+        </Layout>
       </Router>
     </AuthProvider>
   );

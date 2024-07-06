@@ -21,9 +21,6 @@ const PORT = process.env.PORT || 8080;
 
 const app = express();
 
-
-
-
 app.use(cors());
 app.use(express.json());
 
@@ -31,10 +28,13 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 // app.use(VerifyToken);
 
-app.use(express.static(path.join(__dirname, "./build")));
+if (process.env.MODE != "dev") {
+    app.use(express.static(path.join(__dirname, "./build")));
+}
+
 
 app.use(function (req, res, next) {
-    res.header("Access-Control-Allow-Origin", "https://pulse-427901.uc.r.appspot.com");
+    res.header("Access-Control-Allow-Origin", process.env.HOST_NAME);
     res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
     next();
 });
@@ -44,9 +44,13 @@ app.use('/api', userRoute);
 app.use('/api', practicalRoute);
 app.use('/api', commentRoute);
 
-app.get("*", (req, res, next) => {
-    res.sendFile(path.join(__dirname, "./build/index.html"))
-})
+if (process.env.MODE != "dev") {
+    app.get("*", (req, res, next) => {
+        res.sendFile(path.join(__dirname, "./build/index.html"))
+    })
+}
+
+
 
 app.listen(PORT, () => {
     console.log(`Server listening on ${PORT}`);

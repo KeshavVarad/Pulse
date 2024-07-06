@@ -39,70 +39,70 @@ export default function SideBar() {
         }
     }
     return (
-            <Drawer sx={{
-                width: 120,
-                flexShrink: 0,
-                '& .MuiDrawer-paper': {
-                    width: 2/12,
-                    boxSizing: 'border-box',
-                },
-                }}
-                variant="permanent"
-                anchor="left">
-                    <Toolbar>
-                    <MonitorHeartIcon fontSize='large'/>
-                        <h3> Pulse</h3>
-                    </Toolbar>
-                    <Divider />
-                    
-                    <Box sx={{
-                        pt:3,
-                        pl: 3
-                    }}>
-                        Navigation
-                    </Box>
-                    
-                    <List>
-                    { ['Dashboard', 'Make Practical', 'Analytics'].map((text, index) => (
-                        <ListItem key={text} disablePadding>
+        <Drawer sx={{
+            width: 120,
+            flexShrink: 0,
+            '& .MuiDrawer-paper': {
+                width: 2 / 12,
+                boxSizing: 'border-box',
+            },
+        }}
+            variant="permanent"
+            anchor="left">
+            <Toolbar>
+                <MonitorHeartIcon fontSize='large' />
+                <h3> Pulse</h3>
+            </Toolbar>
+            <Divider />
+
+            <Box sx={{
+                pt: 3,
+                pl: 3
+            }}>
+                Navigation
+            </Box>
+
+            <List>
+                {['Dashboard', 'Make Practical', 'Analytics'].map((text, index) => (
+                    <ListItem key={text} disablePadding>
                         <ListItemButton component={Link} to=
-                        {
-                            index === 0 ? "/dashboard" : index === 1? "/makepractical":""
-                        }
-                         variant="contained" color="secondary">
+                            {
+                                index === 0 ? "/dashboard" : index === 1 ? "/makepractical" : ""
+                            }
+                            variant="contained" color="secondary">
                             <ListItemIcon>
-                            {index === 0 ? <SpaceDashboardOutlinedIcon /> : index === 1? <AddchartIcon />:<InsightsIcon/>}
+                                {index === 0 ? <SpaceDashboardOutlinedIcon /> : index === 1 ? <AddchartIcon /> : <InsightsIcon />}
 
                             </ListItemIcon>
                             <ListItemText primary={text} />
                         </ListItemButton>
-                        </ListItem>
-                    ))} 
-                    </List>
-                    <Box sx={{
-                        pt:3,
-                        pl: 3
-                    }}>
-                        Account
-                    </Box>
-                    { 
-                        <List>
-                            <ListItem key={"Account"} disablePadding>
-                            <ListItemButton component={Link} to={""}
+                    </ListItem>
+                ))}
+            </List>
+            <Box sx={{
+                pt: 3,
+                pl: 3
+            }}>
+                Account
+            </Box>
+            {
+                <List>
+                    <ListItem key={"Account"} disablePadding>
+                        <ListItemButton component={Link} to={""}
                             variant="contained" color="secondary">
-                                <ListItemIcon><AccountCircleOutlinedIcon /></ListItemIcon>
-                                <ListItemText primary={"Account"} />
-                            </ListItemButton>
-                            </ListItem>
+                            <ListItemIcon><AccountCircleOutlinedIcon /></ListItemIcon>
+                            <ListItemText primary={"Account"} />
+                        </ListItemButton>
+                    </ListItem>
 
-                            <ListItem key={"Log Out"} disablePadding>
-                            <ListItemButton onClick={handleLogout} variant="contained" color="secondary">
-                                <ListItemIcon><LogoutOutlinedIcon /></ListItemIcon>
-                                <ListItemText primary={"Log Out"} />
-                            </ListItemButton>
-                            </ListItem>
-                        </List>
-                    }
-            </Drawer>
+                    <ListItem key={"Log Out"} disablePadding>
+                        <ListItemButton onClick={handleLogout} variant="contained" color="secondary">
+                            <ListItemIcon><LogoutOutlinedIcon /></ListItemIcon>
+                            <ListItemText primary={"Log Out"} />
+                        </ListItemButton>
+                    </ListItem>
+                </List>
+            }
+        </Drawer>
     )
 }

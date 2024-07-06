@@ -10,14 +10,15 @@ export default function ErrorMessage() {
         error && (
             <Box sx={{
                 display: "flex",
-                justifyContent: "center"
+                justifyContent: "center",
             }}>
                 <Box sx={{
                     maxWidth: "md",
                     width: "100%",
                     background: "red",
                     p: 4,
-                    mt: 4
+                    mt: 4,
+                    zIndex: 1100
                 }}>
 
                     <Box sx={{

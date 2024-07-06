@@ -6,8 +6,6 @@ import { useRef, useCallback } from "react";
 
 import YouTube from "react-youtube"
 import auth from "../../config/firebase.js";
-import Header from '../elements/Header';
-import SideBar from '../elements/SideBar';
 import SendIcon from '@mui/icons-material/Send';
 import InsertCommentIcon from "@mui/icons-material/InsertComment"
 
@@ -86,7 +84,7 @@ export default function StudentPractical() {
             const user = auth.currentUser;
             const token = user && (await user.getIdToken());
 
-            const cur_user_res = await fetch(`/api/user/${user.uid}`);
+            const cur_user_res = await fetch(`${process.env.REACT_APP_API_HOST}/api/user/${user.uid}`);
             const cur_user_data = await cur_user_res.json()
 
 
@@ -110,7 +108,7 @@ export default function StudentPractical() {
                 body: JSON.stringify({ replies: newCommentToDisplay.replies })
 
             };
-            await fetch(`/api/updateComment/${newCommentToDisplay.id}`, requestOptions);
+            await fetch(`${process.env.REACT_APP_API_HOST}/api/updateComment/${newCommentToDisplay.id}`, requestOptions);
 
             setCommentToDisplay(newCommentToDisplay)
             setMessage("")
@@ -182,7 +180,7 @@ export default function StudentPractical() {
     useEffect(() => {
         async function fetchPractical() {
 
-            const practical_res = await fetch(`/api/practical/${practicalId}`);
+            const practical_res = await fetch(`${process.env.REACT_APP_API_HOST}/api/practical/${practicalId}`);
 
             const practical = await practical_res.json()
 
@@ -194,7 +192,7 @@ export default function StudentPractical() {
             const commentsData = []
 
             commentIds.map(async (commentId, idx) => {
-                const commentRes = await fetch(`/api/comment/${commentId}`);
+                const commentRes = await fetch(`${process.env.REACT_APP_API_HOST}/api/comment/${commentId}`);
                 const commentData = await commentRes.json()
                 commentsData.push(commentData)
 
@@ -243,82 +241,71 @@ export default function StudentPractical() {
             minWidth: "100%"
         }}>
 
-            <Grid container spacing={0}>
-                <Grid xs={2}>
-                    <SideBar />
-                </Grid>
-                <Grid xs={10}>
+
+            <Box sx={{
+                minHeight: "100%",
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+                py: 8,
+                px: 4,
+                flexDirection: "column",
+            }}>
+                <Box sx={{
+                    py: 5
+                }}>
+                    <Typography variant="h4"> Practical </Typography>
+                </Box>
+
+                <Box sx={{
+                    display: "flex",
+                    width: "100%",
+                    alignContent: "center",
+                    alignSelf: "center",
+                    justifyContent: "center"
+                }}>
                     <Box sx={{
-                        Height: "100%",
-                        Width: "100%",
-                        justifyContent: "center",
-                        alignItems: "center",
+                        display: "flex",
+                        width: "90%",
+                        justifyContent: "space-between"
+
                     }}>
-                        <Header />
+                        <YouTube videoId={videoId} onStateChange={handleVideoChange} opts={video_opts} ref={videoRef} onReady={(event) => { setPlayer(event.target); }} />
+
+
+
                         <Box sx={{
-                            minHeight: "100%",
-                            display: "flex",
-                            justifyContent: "space-between",
-                            alignItems: "center",
-                            py: 8,
-                            px: 4,
-                            flexDirection: "column",
+                            width: "100%",
+                            //bgcolor: 'primary.main',
+                            alignContent: "center",
+                            justifyContent: "center"
                         }}>
-                            <Box sx={{
-                                py: 5
-                            }}>
-                                <Typography variant="h4"> Practical </Typography>
-                            </Box>
+                            <CurrentCommentDisplay
+                                comments={comments}
+                                currentIndex={currentCommentIndex}
+                                onNext={moveToNextComment}
+                                onPrevious={moveToPreviousComment}
+                            // autoMove={autoMoveVideo}
+                            // onToggleAutoMove={toggleAutoMoveVideo}
+                            />
 
-                            <Box sx={{
-                                display: "flex",
-                                width: "100%",
-                                alignContent: "center",
-                                alignSelf: "center",
-                                justifyContent: "center"
-                            }}>
-                                <Box sx={{
-                                    display: "flex",
-                                    width: "90%",
-                                    justifyContent: "space-between"
-
-                                }}>
-                                    <YouTube videoId={videoId} onStateChange={handleVideoChange} opts={video_opts} ref={videoRef} onReady={(event) => { setPlayer(event.target); }} />
+                        </Box>
+                    </Box>
 
 
-
-                                    <Box sx={{
-                                        width: "100%",
-                                        //bgcolor: 'primary.main',
-                                        alignContent: "center",
-                                        justifyContent: "center"
-                                    }}>
-                                        <CurrentCommentDisplay
-                                            comments={comments}
-                                            currentIndex={currentCommentIndex}
-                                            onNext={moveToNextComment}
-                                            onPrevious={moveToPreviousComment}
-                                        // autoMove={autoMoveVideo}
-                                        // onToggleAutoMove={toggleAutoMoveVideo}
-                                        />
-
-                                    </Box>
-                                </Box>
+                </Box>
 
 
-                            </Box>
+                <Box sx={{
+                    display: "flex",
+                    flexDirection: "column",
+                    pt: 5,
+                    width: "100%",
+                    justifyContent: 'center',
+                    alignItems: "center"
+                }}>
 
-
-                            <Box sx={{
-                                display: "flex",
-                                flexDirection: "column",
-                                pt: 5,
-                                width: "100%",
-                                justifyContent: 'center',
-                                alignItems: "center"
-                            }}>
-
-                                {/*                                 
+                    {/*                                 
                                 <Typography variant="h5">Comments</Typography>
 
                                 <TableContainer component={Paper}>
@@ -392,14 +379,9 @@ export default function StudentPractical() {
 
 
 
-                            </Box>
+                </Box>
 
-                        </Box>
-                    </Box>
-                </Grid>
-
-
-            </Grid>
+            </Box>
 
 
             <Modal
