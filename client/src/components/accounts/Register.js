@@ -56,9 +56,13 @@ export default function Register() {
                 justifyContent: "center",
                 alignItems: "center",
                 my: 5,
+                width:'32%',
+                
             }}>
                 <Box sx={{
                     my: 4,
+                    justifyItems:"center",
+
 
                 }}>
                     <Typography variant='h3'>

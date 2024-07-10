@@ -52,6 +52,7 @@ export default function Login() {
                 justifyContent: "center",
                 alignItems: "center",
                 my: 5,
+                width:'32%',
             }}>
                 <Box sx={{
                     my: 4
