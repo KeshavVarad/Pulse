@@ -11,7 +11,7 @@ import InsertCommentIcon from "@mui/icons-material/InsertComment"
 
 import { FormControl, InputLabel, Select, MenuItem, Typography, Box, Button, TextField, Grid, Modal, List, ListItem, ListItemText, Tooltip } from "@mui/material";
 import { BarChart } from '@mui/x-charts/BarChart';
-import { yellow } from "@mui/material/colors";
+import StudentDisplayComments from "../elements/StudentDisplayComments.js"
 
 export default function StudentPractical() {
 
@@ -43,6 +43,8 @@ export default function StudentPractical() {
     const [redCount, setRedCount] = useState(0)
     const [yellowCount, setYellowCount] = useState(0)
     const [greenCount, setGreenCount] = useState(0)
+
+    const [currentTime, setCurrentTime] = useState(0)
 
 
     const handleChangeDisplayTask = (e) => {
@@ -129,6 +131,7 @@ export default function StudentPractical() {
     }
 
     const CurrentCommentDisplay = ({ comments, currentIndex, onNext, onPrevious }) => {
+
         if (comments.length === 0) return <center><Typography variant="h5">No comments available</Typography></center>;
 
         const comment = comments[currentIndex];
@@ -275,14 +278,17 @@ export default function StudentPractical() {
                 const commentData = await commentRes.json()
                 commentsData.push(commentData)
                 commentsData.sort((a, b) => a.timestamp - b.timestamp);
+
                 setComments(commentsData)
             })
 
+            if (comments.length > 0) {
+                setCurrentCommentIndex(0)
+            }
 
-            commentsData.sort((a, b) => a.timestamp - b.timestamp);
 
             //console.log(commentsData)
-            setComments(commentsData)
+            // setComments(commentsData)
         }
 
         fetchPractical()
@@ -357,13 +363,21 @@ export default function StudentPractical() {
                             alignContent: "center",
                             justifyContent: "center"
                         }}>
-                            <CurrentCommentDisplay
+
+                            <StudentDisplayComments
+                                comments={comments}
+                                currentIndex={currentCommentIndex}
+                                onNext={moveToNextComment}
+                                onPrevious={moveToPreviousComment}
+                                onCommentChat={handleCommentChatButton}
+                            />
+                            {/* <CurrentCommentDisplay
                                 comments={comments}
                                 currentIndex={currentCommentIndex}
                                 onNext={moveToNextComment}
                                 onPrevious={moveToPreviousComment}
 
-                            />
+                            /> */}
 
                         </Box>
                     </Box>
