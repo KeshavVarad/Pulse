@@ -57,7 +57,8 @@ export default function InstructorPractical() {
         }
 
         var newTasks = tasks.slice()
-        newTasks.push(newTask)
+        newTasks.push({ name: newTask, red_count: 0, yellow_count: 0, green_count: 0 })
+
         try {
             const user = auth.currentUser;
             const token = user && (await user.getIdToken());
@@ -113,7 +114,7 @@ export default function InstructorPractical() {
 
         const newComment = {
             id: commentId,
-            task: task,
+            task: task.name,
             rating: rating,
             timestamp: videoTimeStamp,
             feedback: "NA",
@@ -140,19 +141,28 @@ export default function InstructorPractical() {
             let newComments = practical.comments
             newComments.push(commentId)
 
+            let newTasks = practical.tasks
+            let taskIndex = newTasks.findIndex(t => t.name == task.name)
+
             let practicalUpdateData = { comments: newComments }
 
             if (rating == -1) {
                 practicalUpdateData.red_count = practical.red_count + 1
+                newTasks[taskIndex].red_count += 1
+
             }
 
             if (rating == 0) {
                 practicalUpdateData.yellow_count = practical.yellow_count + 1
+                newTasks[taskIndex].yellow_count += 1
             }
 
             if (rating == 1) {
                 practicalUpdateData.green_count = practical.green_count + 1
+                newTasks[taskIndex].green_count += 1
             }
+
+            practicalUpdateData.tasks = newTasks
 
             const requestOptions = {
                 method: "PUT",
@@ -257,6 +267,7 @@ export default function InstructorPractical() {
             const token = user && (await user.getIdToken());
 
             const commentId = comments[idx].id
+            const comment_rating = comments[idx].rating
 
             var index = oldCommentIds.indexOf(commentId);
             if (index !== -1) {
@@ -273,6 +284,28 @@ export default function InstructorPractical() {
             };
             await fetch(`${process.env.REACT_APP_API_HOST}/api/deleteComment/${commentId}`, deleteCommentRequestOptions);
 
+            let practicalUpdateData = { comments: oldCommentIds }
+            let newTasks = practical.tasks
+            let taskIndex = newTasks.findIndex(t => t.name == comments[idx].task)
+
+
+            if (comment_rating == -1) {
+                practicalUpdateData.red_count = practical.red_count - 1
+                newTasks[taskIndex].red_count -= 1
+            }
+
+            if (comment_rating == 0) {
+                practicalUpdateData.yellow_count = practical.yellow_count - 1
+                newTasks[taskIndex].yellow_count -= 1
+            }
+
+            if (comment_rating == 1) {
+                practicalUpdateData.green_count = practical.green_count - 1
+                newTasks[taskIndex].green_count -= 1
+            }
+
+            practicalUpdateData.tasks = newTasks
+
             const updatePracticalRequestOptions = {
                 method: "PUT",
                 mode: "cors",
@@ -280,7 +313,7 @@ export default function InstructorPractical() {
                     "Content-Type": "application/json",
                     Authorization: `Bearer ${token}`,
                 },
-                body: JSON.stringify({ comments: oldCommentIds })
+                body: JSON.stringify(practicalUpdateData)
             };
             await fetch(`${process.env.REACT_APP_API_HOST}/api/updatePractical/${practicalId}`, updatePracticalRequestOptions);
 
@@ -472,7 +505,7 @@ export default function InstructorPractical() {
 
                             }}>
                                 <Box sx={{ px: 2 }}>
-                                    <Typography variant="h7">{task}</Typography>
+                                    <Typography variant="h7">{task.name}</Typography>
                                 </Box>
                                 <Box sx={{ px: 2 }}>
                                     <ButtonGroup variant="contained" aria-label="Basic button group" >

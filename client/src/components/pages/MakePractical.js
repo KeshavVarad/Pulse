@@ -121,7 +121,10 @@ export default function MakePractical() {
                 user_instructor_name: user_instructor_name,
                 tasks: [],
                 comments: [],
-                chats: []
+                chats: [],
+                red_count: 0,
+                yellow_count: 0,
+                green_count: 0,
             }
 
             const createNewPracticalOptions = {

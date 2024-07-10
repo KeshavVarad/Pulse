@@ -9,8 +9,9 @@ import auth from "../../config/firebase.js";
 import SendIcon from '@mui/icons-material/Send';
 import InsertCommentIcon from "@mui/icons-material/InsertComment"
 
-import { Typography, Box, Button, TextField, Grid, Modal, List, ListItem, ListItemText } from "@mui/material";
-
+import { FormControl, InputLabel, Select, MenuItem, Typography, Box, Button, TextField, Grid, Modal, List, ListItem, ListItemText } from "@mui/material";
+import { BarChart } from '@mui/x-charts/BarChart';
+import { yellow } from "@mui/material/colors";
 
 export default function StudentPractical() {
 
@@ -35,6 +36,22 @@ export default function StudentPractical() {
     const [autoMoveVideo, setAutoMoveVideo] = useState(false);
 
     const videoRef = useRef(null);
+
+    const [tasks, setTasks] = useState([])
+    const [taskNames, setTaskNames] = useState([])
+    const [displayTask, setDisplayTask] = useState({ name: "", red_count: 0, yellow_count: 0, green_count: 0 })
+    const [redCount, setRedCount] = useState(0)
+    const [yellowCount, setYellowCount] = useState(0)
+    const [greenCount, setGreenCount] = useState(0)
+
+
+    const handleChangeDisplayTask = (e) => {
+        setDisplayTask(e.target.value)
+        setRedCount(e.target.value.red_count)
+        setYellowCount(e.target.value.yellow_count)
+        setGreenCount(e.target.value.green_count)
+    }
+
 
 
     const updateCurrentComment = (currentTime) => {
@@ -184,6 +201,25 @@ export default function StudentPractical() {
 
             const practical = await practical_res.json()
 
+            setTasks(practical.tasks)
+
+            // if (tasks.length > 0) {
+            //     setDisplayTask(tasks[0])
+            //     setRedCount(tasks[0].red_count)
+            //     setYellowCount(tasks[0].yellow_count)
+            //     setGreenCount(tasks[0].green_count)
+            // }
+
+            let newTaskNames = []
+
+            practical.tasks.map((t) => {
+                newTaskNames.push(t.name)
+            })
+
+            setTaskNames(newTaskNames)
+
+
+
             const videoParams = practical.video_link.split("/")
             setVideoId(videoParams[videoParams.length - 1])
 
@@ -304,79 +340,27 @@ export default function StudentPractical() {
                     justifyContent: 'center',
                     alignItems: "center"
                 }}>
+                    <FormControl fullWidth>
+                        <InputLabel id="demo-simple-select-label">Task</InputLabel>
+                        <Select
+                            labelId="demo-simple-select-label"
+                            id="demo-simple-select"
+                            value={displayTask}
+                            label="Task"
+                            onChange={handleChangeDisplayTask}
+                        >
+                            {tasks.map((t, idx) => {
+                                return (<MenuItem key={idx} value={t}>{t.name}</MenuItem>)
+                            })}
+                        </Select>
+                    </FormControl>
 
-                    {/*                                 
-                                <Typography variant="h5">Comments</Typography>
-
-                                <TableContainer component={Paper}>
-                                        <Table sx={{ minWidth: 650 }} aria-label="simple table">
-                                            <TableHead>
-                                                <TableRow>
-                                                    <TableCell>Task</TableCell>
-                                                    <TableCell align="right">Rating</TableCell>
-                                                    <TableCell align="right">Time Stamp</TableCell>
-                                                    <TableCell align="right">Additional Feedback</TableCell>
-                                                    <TableCell align="right">Edit Feedback</TableCell>
-                                                    <TableCell align="right">Discussion</TableCell>
-                                                    <TableCell align="right">Delete Feedback</TableCell>
-                                                </TableRow>
-                                            </TableHead>
-                                            <TableBody>
-                                                {comments.map((comment, idx) => (
-                                                    <TableRow
-                                                        key={comment.id}
-                                                        sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
-                                                    >
-                                                        <TableCell component="th" scope="row">
-                                                            {comment.task}
-                                                        </TableCell>
-                                                        <TableCell align="right">{comment.rating}</TableCell>
-                                                        <TableCell align="right">{new Date(comment.timestamp * 1000).toISOString().substring(14, 19)}</TableCell>
-                                                        {
-                                                            !commentEditable[idx] ?
-                                                                (<TableCell align="right">
-                                                                    {comment.feedback}
-                                                                </TableCell>) :
-                                                                (<TableCell align="right">
-                                                                    <TextField label="Feedback"
-                                                                        onChange={e => handleCommentFeedbackChange(e, idx)}
-                                                                        variant="outlined"
-                                                                        color="secondary"
-                                                                        sx={{ mb: 3 }}
-                                                                        fullWidth
-                                                                        value={commentFeedbacks[idx]} />
-                                                                </TableCell>)
-                                                        }
-                                                        <TableCell align="right">
-                                                            {
-                                                                !commentEditable[idx] ?
-                                                                    (<Button onClick={() => handleEditButton(idx)}>
-                                                                        <EditIcon />
-                                                                    </Button>) :
-                                                                    (<Button onClick={() => handleSubmitButton(idx)}>
-                                                                        <DoneIcon />
-                                                                    </Button>)
-                                                            }
-
-                                                        </TableCell>
-                                                        <TableCell align="right">
-                                                            <Button onClick={() => handleCommentChatButton(comment)}>
-                                                                <InsertCommentIcon />
-                                                            </Button>
-                                                        </TableCell>
-                                                        <TableCell align="right">
-                                                            <Button onClick={() => handleDeleteComment(idx)}>
-                                                                <DeleteIcon />
-                                                            </Button>
-                                                        </TableCell>
-                                                    </TableRow>
-                                                ))}
-                                            </TableBody>
-                                        </Table>
-                                    </TableContainer> */}
-
-
-
+                    <BarChart
+                        xAxis={[{ scaleType: 'band', data: ["Red", "Yellow", "Green"], colorMap: { type: "ordinal", colors: ["red", "yellow", "green"] } }]}
+                        series={[{ data: [redCount, yellowCount, greenCount] }]}
+                        width={500}
+                        height={300}
+                    />
 
 
                 </Box>
