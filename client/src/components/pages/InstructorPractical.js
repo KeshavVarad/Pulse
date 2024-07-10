@@ -140,6 +140,20 @@ export default function InstructorPractical() {
             let newComments = practical.comments
             newComments.push(commentId)
 
+            let practicalUpdateData = { comments: newComments }
+
+            if (rating == -1) {
+                practicalUpdateData.red_count = practical.red_count + 1
+            }
+
+            if (rating == 0) {
+                practicalUpdateData.yellow_count = practical.yellow_count + 1
+            }
+
+            if (rating == 1) {
+                practicalUpdateData.green_count = practical.green_count + 1
+            }
+
             const requestOptions = {
                 method: "PUT",
                 mode: "cors",
@@ -147,7 +161,7 @@ export default function InstructorPractical() {
                     "Content-Type": "application/json",
                     Authorization: `Bearer ${token}`,
                 },
-                body: JSON.stringify({ comments: newComments })
+                body: JSON.stringify(practicalUpdateData)
 
             };
             await fetch(`${process.env.REACT_APP_API_HOST}/api/updatePractical/${practicalId}`, requestOptions);

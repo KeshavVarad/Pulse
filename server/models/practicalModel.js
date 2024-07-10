@@ -10,7 +10,10 @@ class Practical {
             (this.user_instructor_name = user_instructor_name),
             (this.tasks = tasks),
             (this.comments = comments),
-            (this.chats = chats);
+            (this.chats = chats),
+            (this.red_count = 0),
+            (this.yellow_count = 0),
+            (this.green_count = 0);
     }
 }
 
