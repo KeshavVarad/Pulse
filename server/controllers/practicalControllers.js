@@ -44,6 +44,14 @@ export const getPracticals = async (req, res, next) => {
                     doc.data().email,
                     doc.data().createdPracticals,
                     doc.data().inPracticals,
+                    doc.data().user_instructor_id,
+                    doc.data().user_instructor_name,
+                    doc.data().tasks,
+                    doc.data().comments,
+                    doc.data().chats,
+                    doc.data().red_count,
+                    doc.data().yellow_count,
+                    doc.data().green_count,
                 );
                 practicalArray.push(practical);
             });
@@ -96,7 +104,10 @@ export const getStudentPracticals = async (req, res, next) => {
                     doc.data().user_instructor_name,
                     doc.data().tasks,
                     doc.data().comments,
-                    doc.data().chats
+                    doc.data().chats,
+                    doc.data().red_count,
+                    doc.data().yellow_count,
+                    doc.data().green_count,
                 );
                 practicalArray.push(practical);
             });
@@ -136,7 +147,10 @@ export const getInstructorPracticals = async (req, res, next) => {
                     doc.data().user_instructor_name,
                     doc.data().tasks,
                     doc.data().comments,
-                    doc.data().chats
+                    doc.data().chats,
+                    doc.data().red_count,
+                    doc.data().yellow_count,
+                    doc.data().green_count,
                 );
                 practicalArray.push(practical);
             });

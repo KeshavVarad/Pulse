@@ -1,5 +1,5 @@
 class Practical {
-    constructor(id, practical_name, creation_date, video_link, user_creator, user_participants, user_instructor_id, user_instructor_name, tasks, comments, chats) {
+    constructor(id, practical_name, creation_date, video_link, user_creator, user_participants, user_instructor_id, user_instructor_name, tasks, comments, chats, red_count, yellow_count, green_count) {
         (this.id = id),
             (this.practical_name = practical_name),
             (this.creation_date = creation_date),
@@ -11,9 +11,9 @@ class Practical {
             (this.tasks = tasks),
             (this.comments = comments),
             (this.chats = chats),
-            (this.red_count = 0),
-            (this.yellow_count = 0),
-            (this.green_count = 0);
+            (this.red_count = red_count),
+            (this.yellow_count = yellow_count),
+            (this.green_count = green_count);
     }
 }
 
