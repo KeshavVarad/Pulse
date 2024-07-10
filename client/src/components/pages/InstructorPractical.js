@@ -428,7 +428,9 @@ export default function InstructorPractical() {
         }
 
         fetchPractical()
+    }, [])
 
+    useEffect(() => {
         let interval;
         if (player) {
             interval = setInterval(checkVideoTime, 250); // Check every second
@@ -438,7 +440,7 @@ export default function InstructorPractical() {
                 clearInterval(interval);
             }
         };
-    }, [])
+    }, [player])
 
     const video_opts = {
         height: '468',
