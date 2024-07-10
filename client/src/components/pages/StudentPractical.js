@@ -36,6 +36,7 @@ export default function StudentPractical() {
     const [practical_name, setPracticalName] = useState("");
 
     const videoRef = useRef(null);
+    const [currentTime, setCurrentTime] = useState(0);
 
     const [tasks, setTasks] = useState([])
     const [taskNames, setTaskNames] = useState([])
@@ -180,8 +181,8 @@ export default function StudentPractical() {
                         position: 'absolute',
                         left: `${(comment.timestamp / videoLength) * 100}%`,
                         top: '50%',
-                        width: '12px',
-                        height: '12px',
+                        width: '20px',
+                        height: '20px',
                         backgroundColor: getColorForRating(comment.rating),
                         borderRadius: '50%',
                         transform: 'translate(-50%, -50%)',
@@ -201,7 +202,7 @@ export default function StudentPractical() {
         const memoizedComments = useMemo(() => comments, [comments]);
 
         return (
-            <Box sx={{ position: 'relative', width: '100%', height: '30px', backgroundColor: '#e0e0e0', borderRadius: '15px', overflow: 'hidden' }}>
+            <Box sx={{ position: 'relative', width: '100%', height: '40px', backgroundColor: '#e0e0e0', borderRadius: '20px', overflow: 'hidden' }}>
                 {memoizedComments.map((comment, index) => (
                     <CommentMarker
                         key={index}
@@ -217,6 +218,7 @@ export default function StudentPractical() {
                         top: '0',
                         width: '20px',
                         height: '100%',
+                        borderRadius: '10px',
                         backgroundColor: '#2196f3',
                         transform: 'translateX(-50%)',
                     }}
@@ -389,18 +391,71 @@ export default function StudentPractical() {
                 <Box sx={{
                     display: "flex",
                     flexDirection: "column",
-                    pt: 5,
                     width: "100%",
                     justifyContent: 'center',
                     alignItems: "center"
                 }}>
 
+                    <Box sx={{
+                    display: "flex",
+                    flexDirection: "column",
+                    py:3,
+                    width: "100%",
+                    justifyContent: 'center',
+                    alignItems: "center"
+                    }}>
+                        <Typography variant="h5"  >Timeline</Typography>
+                    </Box>
                     <CommentTimeline
                         comments={comments}
                         videoLength={player ? player.getDuration() : 0}
                         currentTime={currentTime}
                         onSeek={(timestamp) => player && player.seekTo(timestamp)}
                     />
+
+
+
+                    <Box sx={{
+                        display:"flex",
+                        width :"100%",
+                        justifyContent:"center",
+                        justifyItems:"center",
+                        pt:8
+                    }}>
+                    <Typography variant="h5">Statistics</Typography>
+                    </Box>
+
+                    <Box sx={{
+                        display:"flex",
+                        width : "100%",
+                        py:3,
+                        justifyContent:"center",
+                        justifyItems:"space-between",
+                        alignItems:"space-between",
+                        height:300
+                    
+                    }}>
+
+
+
+
+                    <Box width="50%" pr="10">
+                    <BarChart
+                        xAxis={[{ scaleType: 'band', data: ["Red", "Yellow", "Green"], colorMap: { type: "ordinal", colors: ["red", "yellow", "green"] } }]}
+                        series={[{ data: [redCount, yellowCount, greenCount] }]}
+                        width={600}
+                        height={300}
+                    />
+                    </Box>
+
+                    <Box sx={{
+                        display:"flex",
+                        width:"20%",
+                        height:"100%",
+                        alignContent:"center",
+                        alignItems:"center",
+                    }}>
+                        
                     <FormControl fullWidth>
                         <InputLabel id="demo-simple-select-label">Task</InputLabel>
                         <Select
@@ -415,13 +470,9 @@ export default function StudentPractical() {
                             })}
                         </Select>
                     </FormControl>
+                    </Box>
 
-                    <BarChart
-                        xAxis={[{ scaleType: 'band', data: ["Red", "Yellow", "Green"], colorMap: { type: "ordinal", colors: ["red", "yellow", "green"] } }]}
-                        series={[{ data: [redCount, yellowCount, greenCount] }]}
-                        width={500}
-                        height={300}
-                    />
+                    </Box>
 
 
                 </Box>
