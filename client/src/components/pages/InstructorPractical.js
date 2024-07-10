@@ -424,8 +424,6 @@ export default function InstructorPractical() {
             minHeight: "100%",
             minWidth: "100%"
         }}>
-
-
             <Box sx={{
                 minHeight: "100%",
                 display: "flex",
