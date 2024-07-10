@@ -45,8 +45,6 @@ export default function StudentPractical() {
     const [yellowCount, setYellowCount] = useState(0)
     const [greenCount, setGreenCount] = useState(0)
 
-    const [currentTime, setCurrentTime] = useState(0)
-
 
     const handleChangeDisplayTask = (e) => {
         setDisplayTask(e.target.value)
@@ -397,12 +395,12 @@ export default function StudentPractical() {
                 }}>
 
                     <Box sx={{
-                    display: "flex",
-                    flexDirection: "column",
-                    py:3,
-                    width: "100%",
-                    justifyContent: 'center',
-                    alignItems: "center"
+                        display: "flex",
+                        flexDirection: "column",
+                        py: 3,
+                        width: "100%",
+                        justifyContent: 'center',
+                        alignItems: "center"
                     }}>
                         <Typography variant="h5"  >Timeline</Typography>
                     </Box>
@@ -416,61 +414,61 @@ export default function StudentPractical() {
 
 
                     <Box sx={{
-                        display:"flex",
-                        width :"100%",
-                        justifyContent:"center",
-                        justifyItems:"center",
-                        pt:8
+                        display: "flex",
+                        width: "100%",
+                        justifyContent: "center",
+                        justifyItems: "center",
+                        pt: 8
                     }}>
-                    <Typography variant="h5">Statistics</Typography>
+                        <Typography variant="h5">Statistics</Typography>
                     </Box>
 
                     <Box sx={{
-                        display:"flex",
-                        width : "100%",
-                        py:3,
-                        justifyContent:"center",
-                        justifyItems:"space-between",
-                        alignItems:"space-between",
-                        height:300
-                    
+                        display: "flex",
+                        width: "100%",
+                        py: 3,
+                        justifyContent: "center",
+                        justifyItems: "space-between",
+                        alignItems: "space-between",
+                        height: 300
+
                     }}>
 
 
 
 
-                    <Box width="50%" pr="10">
-                    <BarChart
-                        xAxis={[{ scaleType: 'band', data: ["Red", "Yellow", "Green"], colorMap: { type: "ordinal", colors: ["red", "yellow", "green"] } }]}
-                        series={[{ data: [redCount, yellowCount, greenCount] }]}
-                        width={600}
-                        height={300}
-                    />
-                    </Box>
+                        <Box width="50%" pr="10">
+                            <BarChart
+                                xAxis={[{ scaleType: 'band', data: ["Red", "Yellow", "Green"], colorMap: { type: "ordinal", colors: ["red", "yellow", "green"] } }]}
+                                series={[{ data: [redCount, yellowCount, greenCount] }]}
+                                width={600}
+                                height={300}
+                            />
+                        </Box>
 
-                    <Box sx={{
-                        display:"flex",
-                        width:"20%",
-                        height:"100%",
-                        alignContent:"center",
-                        alignItems:"center",
-                    }}>
-                        
-                    <FormControl fullWidth>
-                        <InputLabel id="demo-simple-select-label">Task</InputLabel>
-                        <Select
-                            labelId="demo-simple-select-label"
-                            id="demo-simple-select"
-                            value={displayTask}
-                            label="Task"
-                            onChange={handleChangeDisplayTask}
-                        >
-                            {tasks.map((t, idx) => {
-                                return (<MenuItem key={idx} value={t}>{t.name}</MenuItem>)
-                            })}
-                        </Select>
-                    </FormControl>
-                    </Box>
+                        <Box sx={{
+                            display: "flex",
+                            width: "20%",
+                            height: "100%",
+                            alignContent: "center",
+                            alignItems: "center",
+                        }}>
+
+                            <FormControl fullWidth>
+                                <InputLabel id="demo-simple-select-label">Task</InputLabel>
+                                <Select
+                                    labelId="demo-simple-select-label"
+                                    id="demo-simple-select"
+                                    value={displayTask}
+                                    label="Task"
+                                    onChange={handleChangeDisplayTask}
+                                >
+                                    {tasks.map((t, idx) => {
+                                        return (<MenuItem key={idx} value={t}>{t.name}</MenuItem>)
+                                    })}
+                                </Select>
+                            </FormControl>
+                        </Box>
 
                     </Box>
 
