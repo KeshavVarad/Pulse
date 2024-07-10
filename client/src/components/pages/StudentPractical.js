@@ -162,7 +162,7 @@ export default function StudentPractical() {
         );
     };
 
-    const CommentMarker = React.memo(({ comment, videoLength, onSeek }) => {
+    const CommentMarker = React.memo(({ comment, videoLength, onSeek, index }) => {
         const getColorForRating = (rating) => {
             switch (rating) {
                 case -1: return '#ff4d4d';
@@ -171,6 +171,11 @@ export default function StudentPractical() {
                 default: return '#888888';
             }
         };
+
+        const handleClick = () => {
+            onSeek(comment.timestamp);
+            setCurrentCommentIndex(index);
+        }
 
         return (
             <Tooltip title={`${comment.task} (Rating: ${comment.rating})`} arrow>
@@ -190,7 +195,7 @@ export default function StudentPractical() {
                             height: '16px',
                         },
                     }}
-                    onClick={() => onSeek(comment.timestamp)}
+                    onClick={handleClick}
                 />
             </Tooltip>
         );
@@ -207,6 +212,7 @@ export default function StudentPractical() {
                         comment={comment}
                         videoLength={videoLength}
                         onSeek={onSeek}
+                        index={index}
                     />
                 ))}
                 <Box
