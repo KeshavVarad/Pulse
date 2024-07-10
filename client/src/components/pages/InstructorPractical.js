@@ -14,10 +14,6 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import InsertCommentIcon from '@mui/icons-material/InsertComment';
 import SendIcon from '@mui/icons-material/Send';
 
-
-import Header from '../elements/Header';
-import SideBar from '../elements/SideBar';
-
 export default function InstructorPractical() {
 
     const { currentUser } = useAuth();
