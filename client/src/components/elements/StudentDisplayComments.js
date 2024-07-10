@@ -13,14 +13,24 @@ export default function StudentDisplayComments({ comments, currentIndex, onNext,
     if (!comment) return <center><Typography variant="h5">No comments available</Typography></center>;
 
     return (
-        <Box sx={{ p: 4, height: "85%", border: '1px solid #ccc', borderRadius: 1 }}>
-            <Typography variant="h6">Current Feedback ({currentIndex + 1}/{comments.length})</Typography>
-            <Typography><strong>Task:</strong> {comment.task}</Typography>
-            <Typography><strong>Rating:</strong> {comment.rating}</Typography>
-            <Typography><strong>Feedback:</strong> {comment.feedback}</Typography>
-            <Typography><strong>Timestamp:</strong> {new Date(comment.timestamp * 1000).toISOString().substring(14, 19)}</Typography>
+        <Box sx={{
+            display:"flex",
+            flexDirection:"column",
+             p: 4, 
+             height: "84%", 
+             border: '5px solid #ccc', 
+             borderRadius: 2, 
+             alignContent:"space-evenly",
+             justifyContent:"space-evenly",
+             }}>
+            
+            <Typography variant="h6" >Current Feedback ({currentIndex + 1}/{comments.length})</Typography>
+            <Typography variant="h7"><strong>Task:</strong> {comment.task}</Typography>
+            <Typography variant="h7"><strong>Rating:</strong> {comment.rating}</Typography>
+            <Typography variant="h7"><strong>Feedback:</strong> {comment.feedback}</Typography>
+            <Typography variant="h7"><strong>Timestamp:</strong> {new Date(comment.timestamp * 1000).toISOString().substring(14, 19)}</Typography>
             <Box sx={{ display: "flex", pt: 2 }}>
-                <Typography>
+                <Typography variant="h6">
                     <strong>Discussion:</strong>
                 </Typography>
                 <Button onClick={() => onCommentChat(comment)}>
