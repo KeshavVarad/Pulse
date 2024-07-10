@@ -2,14 +2,14 @@
 import { useParams } from "react-router-dom"
 import { useEffect, useState } from "react";
 import { useAuth } from "../../contexts/AuthContext.js";
-import { useRef, useCallback } from "react";
-
+import { useRef, useCallback, useMemo } from "react";
+import React from "react";
 import YouTube from "react-youtube"
 import auth from "../../config/firebase.js";
 import SendIcon from '@mui/icons-material/Send';
 import InsertCommentIcon from "@mui/icons-material/InsertComment"
 
-import { FormControl, InputLabel, Select, MenuItem, Typography, Box, Button, TextField, Grid, Modal, List, ListItem, ListItemText } from "@mui/material";
+import { FormControl, InputLabel, Select, MenuItem, Typography, Box, Button, TextField, Grid, Modal, List, ListItem, ListItemText, Tooltip } from "@mui/material";
 import { BarChart } from '@mui/x-charts/BarChart';
 import { yellow } from "@mui/material/colors";
 
@@ -23,17 +23,17 @@ export default function StudentPractical() {
     const practicalId = params.id;
 
     const [player, setPlayer] = useState(null);
-    const [videoId, setVideoId] = useState("")
-    const [comments, setComments] = useState([])
+    const [videoId, setVideoId] = useState("");
+    const [comments, setComments] = useState([]);
 
-    const [commentChatOpen, setCommentChatOpen] = useState(false)
-    const [commentToDisplay, setCommentToDisplay] = useState()
+    const [commentChatOpen, setCommentChatOpen] = useState(false);
+    const [commentToDisplay, setCommentToDisplay] = useState();
 
-    const [curMessage, setMessage] = useState("")
+    const [curMessage, setMessage] = useState("");
 
     const [currentCommentIndex, setCurrentCommentIndex] = useState(comments.length > 0 ? 0 : -1);
 
-    const [autoMoveVideo, setAutoMoveVideo] = useState(false);
+    const [practical_name, setPracticalName] = useState("");
 
     const videoRef = useRef(null);
 
@@ -64,18 +64,10 @@ export default function StudentPractical() {
 
     const checkVideoTime = useCallback(() => {
         if (player && player.getCurrentTime) {
-            const currentTime = player.getCurrentTime();
-            updateCurrentComment(currentTime);
+            const time = player.getCurrentTime();
+            setCurrentTime(time);
         }
-    }, [player, updateCurrentComment]);
-
-
-    const handleVideoChange = async (e) => {
-        const curTime = await e.target.getCurrentTime();
-
-
-        updateCurrentComment(curTime);
-    }
+    }, [player]);
 
 
     const handleCommentChatButton = (comment) => {
@@ -130,22 +122,18 @@ export default function StudentPractical() {
             setCommentToDisplay(newCommentToDisplay)
             setMessage("")
 
-
-
         } catch (e) {
             console.log(e);
         }
 
-
     }
 
-
-    const CurrentCommentDisplay = ({ comments, currentIndex, onNext, onPrevious, autoMove, onToggleAutoMove }) => {
-        if (comments.length === 0) return <Typography>No comments available</Typography>;
+    const CurrentCommentDisplay = ({ comments, currentIndex, onNext, onPrevious }) => {
+        if (comments.length === 0) return <center><Typography variant="h5">No comments available</Typography></center>;
 
         const comment = comments[currentIndex];
 
-        if (!comment) return <Typography>Loading comments...</Typography>;
+        if (!comment) return <center><Typography variant="h5">No comments available</Typography></center>;
 
         return (
             <Box sx={{ p: 4, height: "85%", border: '1px solid #ccc', borderRadius: 1 }}>
@@ -167,32 +155,87 @@ export default function StudentPractical() {
                     <Button onClick={onNext} disabled={currentIndex === comments.length - 1}>Next</Button>
                 </Box>
 
-                {/* <Box sx={{ mt: 2 }}>
-                    <Button onClick={onToggleAutoMove}>{autoMove ? 'Disable' : 'Enable'} Auto Video Move</Button>
-                </Box> */}
+
             </Box>
         );
     };
 
+    const CommentMarker = React.memo(({ comment, videoLength, onSeek }) => {
+        const getColorForRating = (rating) => {
+            switch (rating) {
+                case -1: return '#ff4d4d';
+                case 0: return '#ffd700';
+                case 1: return '#66cc66';
+                default: return '#888888';
+            }
+        };
+
+        return (
+            <Tooltip title={`${comment.task} (Rating: ${comment.rating})`} arrow>
+                <Box
+                    sx={{
+                        position: 'absolute',
+                        left: `${(comment.timestamp / videoLength) * 100}%`,
+                        top: '50%',
+                        width: '12px',
+                        height: '12px',
+                        backgroundColor: getColorForRating(comment.rating),
+                        borderRadius: '50%',
+                        transform: 'translate(-50%, -50%)',
+                        cursor: 'pointer',
+                        '&:hover': {
+                            width: '16px',
+                            height: '16px',
+                        },
+                    }}
+                    onClick={() => onSeek(comment.timestamp)}
+                />
+            </Tooltip>
+        );
+    });
+
+    const CommentTimeline = ({ comments, videoLength, currentTime, onSeek }) => {
+        const memoizedComments = useMemo(() => comments, [comments]);
+
+        return (
+            <Box sx={{ position: 'relative', width: '100%', height: '30px', backgroundColor: '#e0e0e0', borderRadius: '15px', overflow: 'hidden' }}>
+                {memoizedComments.map((comment, index) => (
+                    <CommentMarker
+                        key={index}
+                        comment={comment}
+                        videoLength={videoLength}
+                        onSeek={onSeek}
+                    />
+                ))}
+                <Box
+                    sx={{
+                        position: 'absolute',
+                        left: `${(currentTime / videoLength) * 100}%`,
+                        top: '0',
+                        width: '20px',
+                        height: '100%',
+                        backgroundColor: '#2196f3',
+                        transform: 'translateX(-50%)',
+                    }}
+                />
+            </Box>
+        );
+    };
+
+
     const moveToNextComment = () => {
         const nextIndex = Math.min(currentCommentIndex + 1, comments.length - 1);
         setCurrentCommentIndex(nextIndex);
-        if (autoMoveVideo && player) {
-            player.seekTo(comments[nextIndex].timestamp);
-        }
+
     };
 
     const moveToPreviousComment = () => {
         const prevIndex = Math.max(currentCommentIndex - 1, 0);
         setCurrentCommentIndex(prevIndex);
-        // if (autoMoveVideo && player) {
-        //     player.seekTo(comments[prevIndex].timestamp);
-        // }
+
     };
 
-    const toggleAutoMoveVideo = () => {
-        setAutoMoveVideo(!autoMoveVideo);
-    };
+
 
     useEffect(() => {
         async function fetchPractical() {
@@ -223,7 +266,7 @@ export default function StudentPractical() {
             const videoParams = practical.video_link.split("/")
             setVideoId(videoParams[videoParams.length - 1])
 
-
+            setPracticalName(practical.practical_name)
             const commentIds = practical.comments
             const commentsData = []
 
@@ -231,30 +274,31 @@ export default function StudentPractical() {
                 const commentRes = await fetch(`${process.env.REACT_APP_API_HOST}/api/comment/${commentId}`);
                 const commentData = await commentRes.json()
                 commentsData.push(commentData)
-
+                commentsData.sort((a, b) => a.timestamp - b.timestamp);
+                setComments(commentsData)
             })
 
-            // let sortedComments = [...comments]
+
             commentsData.sort((a, b) => a.timestamp - b.timestamp);
 
+            //console.log(commentsData)
             setComments(commentsData)
-
-
-
         }
 
         fetchPractical()
 
+
         let interval;
         if (player) {
-            interval = setInterval(checkVideoTime, 250); // Check every second
+            interval = setInterval(checkVideoTime, 500); // Check every second
         }
         return () => {
             if (interval) {
                 clearInterval(interval);
             }
         };
-    }, [])
+
+    }, [player])
 
     const video_opts = {
         height: '468',
@@ -270,13 +314,10 @@ export default function StudentPractical() {
 
     return (
 
-
-
         <Box sx={{
             minHeight: "100%",
             minWidth: "100%"
         }}>
-
 
             <Box sx={{
                 minHeight: "100%",
@@ -290,7 +331,7 @@ export default function StudentPractical() {
                 <Box sx={{
                     py: 5
                 }}>
-                    <Typography variant="h4"> Practical </Typography>
+                    <Typography variant="h4"> {practical_name} </Typography>
                 </Box>
 
                 <Box sx={{
@@ -306,7 +347,7 @@ export default function StudentPractical() {
                         justifyContent: "space-between"
 
                     }}>
-                        <YouTube videoId={videoId} onStateChange={handleVideoChange} opts={video_opts} ref={videoRef} onReady={(event) => { setPlayer(event.target); }} />
+                        <YouTube videoId={videoId} opts={video_opts} ref={videoRef} onReady={(event) => { setPlayer(event.target); }} />
 
 
 
@@ -321,8 +362,7 @@ export default function StudentPractical() {
                                 currentIndex={currentCommentIndex}
                                 onNext={moveToNextComment}
                                 onPrevious={moveToPreviousComment}
-                            // autoMove={autoMoveVideo}
-                            // onToggleAutoMove={toggleAutoMoveVideo}
+
                             />
 
                         </Box>
@@ -340,6 +380,13 @@ export default function StudentPractical() {
                     justifyContent: 'center',
                     alignItems: "center"
                 }}>
+
+                    <CommentTimeline
+                        comments={comments}
+                        videoLength={player ? player.getDuration() : 0}
+                        currentTime={currentTime}
+                        onSeek={(timestamp) => player && player.seekTo(timestamp)}
+                    />
                     <FormControl fullWidth>
                         <InputLabel id="demo-simple-select-label">Task</InputLabel>
                         <Select
