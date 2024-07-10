@@ -14,8 +14,9 @@ import auth from "../../config/firebase.js";
 import { Link } from 'react-router-dom';
 import { format } from 'date-fns';
 import SettingsIcon from '@mui/icons-material/Settings';
-import { Button } from '@mui/material';
+import { Button, Typography } from '@mui/material';
 import PracticalSettingsModal from '../elements/PracticalSettingsModal.js';
+
 
 
 export default function Dashboard() {
@@ -137,16 +138,20 @@ export default function Dashboard() {
             minHeight: "100%",
             minWidth: "100%"
         }}>
-            <Box sx={{
-                Height: "100%",
-                Width: "100%",
-                justifyContent: "center",
-                alignItems: "center",
-                py: 13,
-                px: 4,
-            }}>
 
-                <center><h1>Dashboard</h1></center>
+            <Box sx={{
+                minHeight: "100%",
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+                py: 8,
+                px: 4,
+                flexDirection: "column",
+            }}>     
+            <Box sx={{
+                    py: 5
+                }}>
+                    <Typography variant="h4"> Practical </Typography>
             </Box>
 
             <Grid container spacing={0}>
@@ -239,7 +244,7 @@ export default function Dashboard() {
 
 
             <PracticalSettingsModal openState={practicalSettingsOpen} handleClose={handleSettingsClose} practicalId={practicalSettingsId} />
-
+            </Box>
         </Box>
     )
 }
