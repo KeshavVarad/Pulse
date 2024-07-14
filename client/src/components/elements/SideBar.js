@@ -21,8 +21,8 @@ import AccountCircleOutlinedIcon from '@mui/icons-material/AccountCircleOutlined
 import LogoutOutlinedIcon from '@mui/icons-material/LogoutOutlined';
 import { Link, useNavigate } from 'react-router-dom'
 import MonitorHeartIcon from '@mui/icons-material/MonitorHeart';
-
-
+import Joyride from 'react-joyride';
+import { useState, useEffect } from 'react';
 
 const drawerWidth = 240;
 export default function SideBar() {
@@ -38,6 +38,8 @@ export default function SideBar() {
             setError("Failed to logout");
         }
     }
+
+
     return (
         <Drawer sx={{
             width: 120,
@@ -49,6 +51,7 @@ export default function SideBar() {
         }}
             variant="permanent"
             anchor="left">
+
             <Toolbar>
                 <MonitorHeartIcon fontSize='large' />
                 <h3> Pulse</h3>
@@ -57,25 +60,29 @@ export default function SideBar() {
 
             <Box sx={{
                 pt: 3,
-                pl: 3
+                pl: 3,
             }}>
                 Navigation
             </Box>
 
-            <List>
+            <List className='navigation_options'>
                 {['Dashboard', 'Make Practical', 'Analytics'].map((text, index) => (
                     <ListItem key={text} disablePadding>
-                        <ListItemButton component={Link} to=
-                            {
-                                index === 0 ? "/dashboard" : index === 1 ? "/makepractical" : ""
-                            }
-                            variant="contained" color="secondary">
-                            <ListItemIcon>
-                                {index === 0 ? <SpaceDashboardOutlinedIcon /> : index === 1 ? <AddchartIcon /> : <InsightsIcon />}
+                        <div className={text.toLowerCase().replace(" ", "-")}>
 
-                            </ListItemIcon>
-                            <ListItemText primary={text} />
-                        </ListItemButton>
+                            <ListItemButton component={Link} to=
+                                {
+                                    index === 0 ? "/dashboard" : index === 1 ? "/makepractical" : ""
+                                }
+                                variant="contained" color="secondary">
+                                <ListItemIcon>
+                                    {index === 0 ? <SpaceDashboardOutlinedIcon /> : index === 1 ? <AddchartIcon /> : <InsightsIcon />}
+
+                                </ListItemIcon>
+                                <ListItemText primary={text} />
+                            </ListItemButton>
+                        </div>
+
                     </ListItem>
                 ))}
             </List>

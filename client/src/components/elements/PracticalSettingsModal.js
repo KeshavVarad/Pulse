@@ -1,10 +1,11 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useState, useCallback } from 'react'
 
 import { useAuth } from '../../contexts/AuthContext.js';
 import { Button, Modal, Box, Typography, TextField } from '@mui/material'
 import auth from "../../config/firebase.js";
 import AddIcon from '@mui/icons-material/Add';
-import RemoveIcon from '@mui/icons-material/Remove';
+import DeleteIcon from '@mui/icons-material/Delete';
+import RestoreIcon from '@mui/icons-material/Restore';
 
 export default function PracticalSettingsModal({ openState, handleClose, practicalId }) {
 
@@ -20,7 +21,52 @@ export default function PracticalSettingsModal({ openState, handleClose, practic
 
     const { setError } = useAuth()
 
-    const handleDeleteButton = () => {
+    const handleDeleteButton = async () => {
+        const user = auth.currentUser;
+        const token = user && (await user.getIdToken());
+
+        const deletePracticalOptions = {
+            method: "DELETE",
+            mode: "cors",
+            headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${token}`,
+            },
+        }
+        await fetch(`${process.env.REACT_APP_API_HOST}/api/deletePractical/${practicalId}`, deletePracticalOptions)
+
+        participantIds.map(async (participantId) => {
+
+            const getParticipantOptions = {
+                method: "GET",
+                mode: "cors",
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${token}`,
+                },
+            }
+
+            const deleted_participant_res = await fetch(`${process.env.REACT_APP_API_HOST}/api/user/${participantId}`, getParticipantOptions);
+            const deleted_participant_data = await deleted_participant_res.json()
+
+            let curInPracticals = deleted_participant_data.inPracticals
+            curInPracticals.splice(curInPracticals.indexOf(practicalId), 1)
+
+            const updateParticipantOptions = {
+                method: "PUT",
+                mode: "cors",
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${token}`,
+                },
+                body: JSON.stringify({ inPracticals: curInPracticals })
+            }
+
+            await fetch(`${process.env.REACT_APP_API_HOST}/api/updateUser/${participantId}`, updateParticipantOptions);
+
+        })
+
+        handleClose()
     }
 
     const handleRemoveParticipant = async (idx) => {
@@ -30,21 +76,22 @@ export default function PracticalSettingsModal({ openState, handleClose, practic
         cur_removed_participants.push(cur_participant_id)
 
         setRemovedParticipantIds(cur_removed_participants)
+    }
 
-        let cur_participant_emails = participantEmails.slice()
-        cur_participant_emails.splice(idx, 1)
-        setParticipantEmails(cur_participant_emails)
+    const handleRestoreParticipant = async (idx) => {
+        const cur_participant_id = participantIds[idx]
+        let cur_removed_participants = removedParticpantIds.slice()
 
-        let cur_participant_ids = participantIds.slice()
-        cur_participant_ids.splice(idx, 1)
+        cur_removed_participants.splice(cur_removed_participants.indexOf(cur_participant_id), 1)
 
-        setParticipantIds(cur_participant_ids)
+        setRemovedParticipantIds(cur_removed_participants)
     }
 
     const handleUpdatePracticalButton = async () => {
         const user = auth.currentUser;
         const token = user && (await user.getIdToken());
 
+        const new_participant_ids = participantIds.slice().filter((id) => !removedParticpantIds.includes(id))
         const updatePracticalOptions = {
             method: "PUT",
             mode: "cors",
@@ -52,7 +99,7 @@ export default function PracticalSettingsModal({ openState, handleClose, practic
                 "Content-Type": "application/json",
                 Authorization: `Bearer ${token}`,
             },
-            body: JSON.stringify({ user_participants: participantIds })
+            body: JSON.stringify({ user_participants: new_participant_ids })
         }
 
         await fetch(`${process.env.REACT_APP_API_HOST}/api/updatePractical/${practicalId}`, updatePracticalOptions);
@@ -121,7 +168,10 @@ export default function PracticalSettingsModal({ openState, handleClose, practic
 
         })
 
-
+        setParticipantEmails(participantEmails.slice().filter((email, idx) => !removedParticpantIds.includes(participantIds[idx])))
+        setParticipantIds(new_participant_ids)
+        setRemovedParticipantIds([])
+        setAddedParticipantIds([])
     }
 
     const handleAddParticipantButton = async () => {
@@ -163,6 +213,25 @@ export default function PracticalSettingsModal({ openState, handleClose, practic
             return setError("Invalid participant entered: " + e)
         }
     }
+
+    // handle what happens on key press
+    const handleKeyPress = useCallback((event) => {
+        if (event.key == "Enter") {
+            if (curParticipant.length > 0) {
+                handleAddParticipantButton()
+            }
+        }
+    }, [curParticipant]);
+
+    useEffect(() => {
+        // attach the event listener
+        document.addEventListener('keydown', handleKeyPress);
+
+        // remove the event listener
+        return () => {
+            document.removeEventListener('keydown', handleKeyPress);
+        };
+    }, [handleKeyPress]);
 
 
     useEffect(() => {
@@ -263,13 +332,28 @@ export default function PracticalSettingsModal({ openState, handleClose, practic
                             <Typography variant='text' key={idx}>
                                 {email}
                             </Typography>
-                            <Button
-                                variant="contained"
-                                sx={{ mx: 2 }}
-                                onClick={() => handleRemoveParticipant(idx)}
-                            >
-                                <RemoveIcon />
-                            </Button>
+                            {
+                                removedParticpantIds.includes(participantIds[idx]) ?
+                                    (
+                                        <Button
+                                            variant="contained"
+                                            sx={{ mx: 2 }}
+                                            onClick={() => handleRestoreParticipant(idx)}
+                                        >
+                                            <RestoreIcon />
+                                        </Button>
+                                    ) :
+                                    (
+                                        <Button
+                                            variant="contained"
+                                            color="error"
+                                            sx={{ mx: 2 }}
+                                            onClick={() => handleRemoveParticipant(idx)}
+                                        >
+                                            <DeleteIcon />
+                                        </Button>
+                                    )
+                            }
                         </Box>
                     ))}
 
@@ -289,14 +373,29 @@ export default function PracticalSettingsModal({ openState, handleClose, practic
                         </Button>
                     </Box>
 
-                    <Button
-                        variant="contained"
-                        onClick={handleUpdatePracticalButton}
-                        sx={{
-                            mt: 10
-                        }}>
-                        Update Practical
-                    </Button>
+                    <Box sx={{
+                        display: "flex"
+                    }}>
+                        <Button
+                            variant="contained"
+                            onClick={handleUpdatePracticalButton}
+                            sx={{
+                                mt: 10
+                            }}>
+                            Update Practical
+                        </Button>
+
+                        <Button
+                            variant="contained"
+                            color="error"
+                            onClick={handleDeleteButton}
+                            sx={{
+                                mt: 10
+                            }}>
+                            Delete Practical
+                        </Button>
+                    </Box>
+
 
 
                 </Box>

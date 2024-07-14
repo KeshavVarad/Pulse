@@ -98,7 +98,6 @@ export default function InstructorPractical() {
         setVideoTimeStamp(curTime)
     }
 
-
     // Comment functions
 
     const handleRating = async (task, rating) => {

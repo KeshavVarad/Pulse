@@ -90,7 +90,7 @@ export const getStudentPracticals = async (req, res, next) => {
         const practicalArray = [];
 
         if (data.empty) {
-            res.status(400).send('No Users found');
+            res.status(201).send([]);
         } else {
             data.forEach((doc) => {
                 const practical = new Practical(
@@ -133,7 +133,7 @@ export const getInstructorPracticals = async (req, res, next) => {
         const practicalArray = [];
 
         if (data.empty) {
-            res.status(400).send('No Users found');
+            res.status(201).send([]);
         } else {
             data.forEach((doc) => {
                 const practical = new Practical(

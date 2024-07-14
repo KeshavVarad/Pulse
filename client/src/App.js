@@ -8,10 +8,10 @@ import Dashboard from './components/pages/Dashboard';
 import { AuthProvider } from './contexts/AuthContext';
 import ErrorMessage from './components/layouts/ErrorMessage';
 import WithPrivateRoute from './utils/WithPrivateRoute';
-import Grid from '@mui/material/Box';
 import MakePractical from './components/pages/MakePractical';
-import SideBar from './components/elements/SideBar';
 import Layout from './components/layouts/Layout';
+import Joyride from 'react-joyride';
+
 
 function App() {
 
@@ -19,7 +19,6 @@ function App() {
 
   return (
     <AuthProvider>
-
       <Router>
         <Layout>
           <ErrorMessage />

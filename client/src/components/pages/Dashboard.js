@@ -128,12 +128,7 @@ export default function Dashboard() {
         fetchPracticals()
     }, [])
 
-
     return (
-
-
-
-
         <Box sx={{
             minHeight: "100%",
             minWidth: "100%"
@@ -147,103 +142,104 @@ export default function Dashboard() {
                 py: 8,
                 px: 4,
                 flexDirection: "column",
-            }}>     
-            <Box sx={{
+            }}>
+                <Box sx={{
                     py: 5
                 }}>
-                    <Typography variant="h4"> Practical </Typography>
-            </Box>
+                    <Typography variant="h4"> Dashboard </Typography>
+                </Box>
 
-            <Grid container spacing={0}>
-                <Grid xs={6}>
-                    <Container maxWidth="sm" sx={{
-                        alignContent: "center",
-                        justifyContent: "center",
-                        alignItems: "center",
-                    }}>
-                        <Box>
-                            <center><h2>Joined Practicals</h2></center>
-                        </Box>
+                <Grid container spacing={0}>
+                    <Grid xs={6}>
+                        <Container maxWidth="sm" sx={{
+                            alignContent: "center",
+                            justifyContent: "center",
+                            alignItems: "center",
+                            className: ".student_practicals"
+                        }}>
+                            <Box>
+                                <center><h2>Student Practicals</h2></center>
+                            </Box>
 
-                        <TableContainer component={Paper}>
-                            <Table aria-label="simple table">
-                                <TableHead>
-                                    <TableRow>
-                                        <TableCell>Practical Name</TableCell>
-                                        <TableCell align="right">Instructor</TableCell>
-                                        <TableCell align="right">Creation Date</TableCell>
-                                    </TableRow>
-                                </TableHead>
-                                <TableBody>
-                                    {joinedPracticals.map((practical, idx) => (
-                                        <TableRow
-                                            key={idx}
-                                            sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
-                                        >
-                                            <TableCell component="th" scope="row">
-                                                <Link to={practical.path}>
-                                                    {practical.practical_name}
-                                                </Link>
-
-                                            </TableCell>
-                                            <TableCell align="right">{practical.user_instructor_name}</TableCell>
-                                            <TableCell align="right">{practical.creation_date}</TableCell>
+                            <TableContainer component={Paper}>
+                                <Table aria-label="simple table">
+                                    <TableHead>
+                                        <TableRow>
+                                            <TableCell>Practical Name</TableCell>
+                                            <TableCell align="right">Instructor</TableCell>
+                                            <TableCell align="right">Creation Date</TableCell>
                                         </TableRow>
-                                    ))}
-                                </TableBody>
-                            </Table>
-                        </TableContainer>
+                                    </TableHead>
+                                    <TableBody>
+                                        {joinedPracticals.map((practical, idx) => (
+                                            <TableRow
+                                                key={idx}
+                                                sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
+                                            >
+                                                <TableCell component="th" scope="row">
+                                                    <Link to={practical.path}>
+                                                        {practical.practical_name}
+                                                    </Link>
+
+                                                </TableCell>
+                                                <TableCell align="right">{practical.user_instructor_name}</TableCell>
+                                                <TableCell align="right">{practical.creation_date}</TableCell>
+                                            </TableRow>
+                                        ))}
+                                    </TableBody>
+                                </Table>
+                            </TableContainer>
 
 
-                    </Container>
+                        </Container>
 
-                </Grid>
-                <Grid xs={6}>
-                    <Container maxWidth="sm%">
-                        <Box>
-                            <center><h2>Owned Practicals</h2></center>
-                        </Box>
+                    </Grid>
+                    <Grid xs={6}>
+                        <Container className=".instructor_practicals" maxWidth="sm%">
+                            <Box>
+                                <center><h2>Instructor Practicals</h2></center>
+                            </Box>
 
-                        <TableContainer component={Paper}>
-                            <Table aria-label="simple table">
-                                <TableHead>
-                                    <TableRow>
-                                        <TableCell>Practical Name</TableCell>
-                                        <TableCell align="right">Instructor</TableCell>
-                                        <TableCell align="right">Creation Date</TableCell>
-                                        <TableCell align="right">Settings</TableCell>
-                                    </TableRow>
-                                </TableHead>
-                                <TableBody>
-                                    {ownedPracticals.map((practical, idx) => (
-                                        <TableRow
-                                            key={idx}
-                                            sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
-                                        >
-                                            <TableCell component="th" scope="row">
-                                                <Link to={practical.path}>
-                                                    {practical.practical_name}
-                                                </Link>
-
-                                            </TableCell>
-                                            <TableCell align="right">{practical.user_instructor_name}</TableCell>
-                                            <TableCell align="right">{practical.creation_date}</TableCell>
-                                            <TableCell align="right">
-                                                <Button onClick={() => handleSettingsButton(idx)}>
-                                                    <SettingsIcon />
-                                                </Button>
-                                            </TableCell>
+                            <TableContainer component={Paper}>
+                                <Table aria-label="simple table">
+                                    <TableHead>
+                                        <TableRow>
+                                            <TableCell>Practical Name</TableCell>
+                                            <TableCell align="right">Instructor</TableCell>
+                                            <TableCell align="right">Creation Date</TableCell>
+                                            <TableCell align="right">Settings</TableCell>
                                         </TableRow>
-                                    ))}
-                                </TableBody>
-                            </Table>
-                        </TableContainer>
-                    </Container>
+                                    </TableHead>
+                                    <TableBody>
+                                        {ownedPracticals.map((practical, idx) => (
+                                            <TableRow
+                                                key={idx}
+                                                sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
+                                            >
+                                                <TableCell component="th" scope="row">
+                                                    <Link to={practical.path}>
+                                                        {practical.practical_name}
+                                                    </Link>
+
+                                                </TableCell>
+                                                <TableCell align="right">{practical.user_instructor_name}</TableCell>
+                                                <TableCell align="right">{practical.creation_date}</TableCell>
+                                                <TableCell align="right">
+                                                    <Button onClick={() => handleSettingsButton(idx)}>
+                                                        <SettingsIcon />
+                                                    </Button>
+                                                </TableCell>
+                                            </TableRow>
+                                        ))}
+                                    </TableBody>
+                                </Table>
+                            </TableContainer>
+                        </Container>
+                    </Grid>
                 </Grid>
-            </Grid>
 
 
-            <PracticalSettingsModal openState={practicalSettingsOpen} handleClose={handleSettingsClose} practicalId={practicalSettingsId} />
+                <PracticalSettingsModal openState={practicalSettingsOpen} handleClose={handleSettingsClose} practicalId={practicalSettingsId} />
             </Box>
         </Box>
     )
