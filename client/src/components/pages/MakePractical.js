@@ -6,6 +6,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import { useEffect } from "react";
 import auth from "../../config/firebase.js";
 import { v4 as uuidv4 } from 'uuid';
+import DeleteIcon from '@mui/icons-material/Delete';
 
 export default function MakePractical() {
 
@@ -149,6 +150,17 @@ export default function MakePractical() {
         }
     }
 
+    const handleRemoveParticipant = (idx) => {
+        let cur_participant_emails = participants.slice()
+        cur_participant_emails.splice(idx, 1)
+
+        let cur_participant_ids = participantIds.slice()
+        cur_participant_ids.splice(idx, 1)
+
+        setParticipants(cur_participant_emails)
+        setParticipantIds(cur_participant_ids)
+    }
+
     return (
 
         <Box sx={{
@@ -185,6 +197,7 @@ export default function MakePractical() {
                         <TextField label="Name"
                             onChange={e => setPracticalName(e.target.value)}
                             required
+                            className='new_practical_name'
                             variant="outlined"
                             color="secondary"
                             sx={{ mb: 3 }}
@@ -194,18 +207,21 @@ export default function MakePractical() {
                         <TextField label="Video Link"
                             onChange={e => setVideoLink(e.target.value)}
                             required
+                            className='new_practical_video_link'
                             variant="outlined"
                             color="secondary"
                             sx={{ mb: 3 }}
                             fullWidth
                             value={videoLink} />
 
-                        <Box sx={{
-                            display: "flex",
-                            flexDirection: "row",
-                            justifyContent: "center",
-                            alignItems: "center",
-                        }}>
+                        <Box
+                            className='new_practical_participants'
+                            sx={{
+                                display: "flex",
+                                flexDirection: "row",
+                                justifyContent: "center",
+                                alignItems: "center",
+                            }}>
                             <TextField label="Participant"
                                 onChange={e => setCurParticipant(e.target.value)}
                                 variant="outlined"
@@ -227,14 +243,26 @@ export default function MakePractical() {
                             mb: 3
                         }}>
 
-                            {participants.map((participant) => (
-                                <Typography variant='text'>
-                                    {participant}
-                                </Typography>
+                            {participants.map((participant, idx) => (
+                                <Box
+                                    sx={{
+                                        display: "flex",
+                                        p: 4,
+                                        alignItems: "center"
+                                    }}>
+                                    <Typography variant='text'>
+                                        {participant}
+                                    </Typography>
+                                    <Button onClick={() => handleRemoveParticipant(idx)}>
+                                        <DeleteIcon />
+                                    </Button>
+                                </Box>
                             ))}
                         </Box>
 
-                        <TextField label="Instructor"
+                        <TextField
+                            className='new_practical_instructor'
+                            label="Instructor"
                             onChange={e => setInstructor(e.target.value)}
                             required
                             variant="outlined"
@@ -243,12 +271,14 @@ export default function MakePractical() {
                             fullWidth
                             value={instructor} />
 
-                        <Box sx={{
-                            display: "flex",
-                            flexDirection: "row",
-                            justifyContent: "center",
-                            alignItems: "center",
-                        }}>
+                        <Box
+                            className='new_practical_submit'
+                            sx={{
+                                display: "flex",
+                                flexDirection: "row",
+                                justifyContent: "center",
+                                alignItems: "center",
+                            }}>
                             <Button variant='contained' type='submit' disabled={loading} sx={{ mx: 1 }}>
                                 Create Practical
                             </Button>

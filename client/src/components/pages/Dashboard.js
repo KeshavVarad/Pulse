@@ -151,11 +151,10 @@ export default function Dashboard() {
 
                 <Grid container spacing={0}>
                     <Grid xs={6}>
-                        <Container maxWidth="sm" sx={{
+                        <Container maxWidth="sm" className="student_practicals" sx={{
                             alignContent: "center",
                             justifyContent: "center",
                             alignItems: "center",
-                            className: ".student_practicals"
                         }}>
                             <Box>
                                 <center><h2>Student Practicals</h2></center>
@@ -195,7 +194,7 @@ export default function Dashboard() {
 
                     </Grid>
                     <Grid xs={6}>
-                        <Container className=".instructor_practicals" maxWidth="sm%">
+                        <Container className="instructor_practicals" maxWidth="sm%">
                             <Box>
                                 <center><h2>Instructor Practicals</h2></center>
                             </Box>

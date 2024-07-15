@@ -32,7 +32,10 @@ export function AuthProvider({ children }) {
                     email: email,
                     createdPracticals: [],
                     inPracticals: [],
-                    teachPracticals: []
+                    teachPracticals: [],
+                    navigation_tutorial: false,
+                    dashboard_tutorial: false,
+                    make_navigation_tutorial: false
                 }
 
                 const createNewUserOptions = {

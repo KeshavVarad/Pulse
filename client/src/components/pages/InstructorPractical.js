@@ -1,8 +1,8 @@
 
 import { useParams } from "react-router-dom"
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useAuth } from "../../contexts/AuthContext.js";
-import { useRef, useCallback } from "react";
+import { useRef } from "react";
 import auth from "../../config/firebase.js";
 import { v4 as uuidv4 } from 'uuid';
 
@@ -36,8 +36,9 @@ export default function InstructorPractical() {
 
     // Comment state
     const [comments, setComments] = useState([])
-    const [commentFeedbacks, setCommentFeedbacks] = useState([])
-    const [commentEditable, setCommentEditable] = useState([])
+    const [editableCommentIdx, setEditableCommentIdx] = useState(-1)
+    const [commentEdit, setCommentEdit] = useState("")
+
     const [commentChatOpen, setCommentChatOpen] = useState(false)
     const [commentToDisplay, setCommentToDisplay] = useState()
 
@@ -112,7 +113,7 @@ export default function InstructorPractical() {
             task: task.name,
             rating: rating,
             timestamp: videoTimeStamp,
-            feedback: "NA",
+            feedback: "",
             replies: []
         }
 
@@ -131,7 +132,7 @@ export default function InstructorPractical() {
 
             };
 
-            const res = await fetch(`${process.env.REACT_APP_API_HOST}/api/newComment`, createNewCommentOptions);
+            await fetch(`${process.env.REACT_APP_API_HOST}/api/newComment`, createNewCommentOptions);
 
             let newComments = practical.comments
             newComments.push(commentId)
@@ -173,7 +174,7 @@ export default function InstructorPractical() {
 
             let newCommentsData = comments.slice()
 
-            newCommentsData.push(newComment)
+            newCommentsData.unshift(newComment)
 
             setComments(newCommentsData)
 
@@ -183,32 +184,13 @@ export default function InstructorPractical() {
         }
     }
 
-    const handleCommentFeedbackChange = async (e, idx) => {
-        let newFeedbacks = commentFeedbacks.slice()
-
-        newFeedbacks[idx] = e.target.value
-
-        setCommentFeedbacks(newFeedbacks)
-    }
-
     const handleEditButton = async (idx) => {
-        let newCommentEditable = commentEditable.slice()
-        let newFeedbacks = commentFeedbacks.slice()
-
-        newCommentEditable[idx] = true
-        newFeedbacks[idx] = comments[idx].feedback
-
-        setCommentEditable(newCommentEditable)
-        setCommentFeedbacks(newFeedbacks)
+        setEditableCommentIdx(idx)
+        setCommentEdit(comments[idx].feedback)
 
     }
 
     const handleSubmitButton = async (idx) => {
-        let newCommentEditable = commentEditable.slice()
-
-        newCommentEditable[idx] = false
-
-        setCommentEditable(newCommentEditable)
 
         try {
             const user = auth.currentUser;
@@ -223,7 +205,7 @@ export default function InstructorPractical() {
                     "Content-Type": "application/json",
                     Authorization: `Bearer ${token}`,
                 },
-                body: JSON.stringify({ feedback: commentFeedbacks[idx] })
+                body: JSON.stringify({ feedback: commentEdit })
 
             };
             await fetch(`${process.env.REACT_APP_API_HOST}/api/updateComment/${commentId}`, requestOptions);
@@ -323,6 +305,32 @@ export default function InstructorPractical() {
         }
     }
 
+    // handle what happens on key press
+    const handleKeyPress = useCallback((event) => {
+        if (event.key == "Enter" & editableCommentIdx != -1) {
+            handleSubmitButton(editableCommentIdx)
+            setEditableCommentIdx(-1)
+            setCommentEdit("")
+        }
+
+
+        if (event.key == "Escape" & editableCommentIdx != -1) {
+            setEditableCommentIdx(-1)
+            setCommentEdit("")
+        }
+    }, [commentEdit, editableCommentIdx]);
+
+    useEffect(() => {
+        // attach the event listener
+        document.addEventListener('keydown', handleKeyPress);
+
+        // remove the event listener
+        return () => {
+            document.removeEventListener('keydown', handleKeyPress);
+        };
+    }, [handleKeyPress]);
+
+
     // Chat functions
 
     const handleCommentChatButton = (comment) => {
@@ -403,20 +411,15 @@ export default function InstructorPractical() {
 
             const commentIds = practical.comments
             const commentsData = []
-            let newCommentFeedbacks = commentFeedbacks
-            let newCommentEditable = commentEditable
 
             commentIds.map(async (commentId, idx) => {
                 const commentRes = await fetch(`${process.env.REACT_APP_API_HOST}/api/comment/${commentId}`);
                 const commentData = await commentRes.json()
                 commentsData.push(commentData)
 
-                if (idx > newCommentFeedbacks.length) {
-                    newCommentFeedbacks.push(commentData.feedback)
-                    newCommentEditable.push(false)
-                }
-
             })
+
+            commentsData.reverse()
 
             setComments(commentsData)
 
@@ -561,7 +564,6 @@ export default function InstructorPractical() {
                                     <TableCell align="right">Rating</TableCell>
                                     <TableCell align="right">Time Stamp</TableCell>
                                     <TableCell align="right">Additional Feedback</TableCell>
-                                    <TableCell align="right">Edit Feedback</TableCell>
                                     <TableCell align="right">Discussion</TableCell>
                                     <TableCell align="right">Delete Feedback</TableCell>
                                 </TableRow>
@@ -578,32 +580,22 @@ export default function InstructorPractical() {
                                         <TableCell align="right">{comment.rating}</TableCell>
                                         <TableCell align="right">{new Date(comment.timestamp * 1000).toISOString().substring(14, 19)}</TableCell>
                                         {
-                                            !commentEditable[idx] ?
+                                            (idx != editableCommentIdx) ?
                                                 (<TableCell align="right">
-                                                    {comment.feedback}
+                                                    <Typography onClick={() => handleEditButton(idx)} >
+                                                        {(comment.feedback == "") ? "NO COMMENT" : comment.feedback}
+                                                    </Typography>
                                                 </TableCell>) :
                                                 (<TableCell align="right">
                                                     <TextField label="Feedback"
-                                                        onChange={e => handleCommentFeedbackChange(e, idx)}
+                                                        onChange={e => setCommentEdit(e.target.value)}
                                                         variant="outlined"
                                                         color="secondary"
                                                         sx={{ mb: 3 }}
                                                         fullWidth
-                                                        value={commentFeedbacks[idx]} />
+                                                        value={commentEdit} />
                                                 </TableCell>)
                                         }
-                                        <TableCell align="right">
-                                            {
-                                                !commentEditable[idx] ?
-                                                    (<Button onClick={() => handleEditButton(idx)}>
-                                                        <EditIcon />
-                                                    </Button>) :
-                                                    (<Button onClick={() => handleSubmitButton(idx)}>
-                                                        <DoneIcon />
-                                                    </Button>)
-                                            }
-
-                                        </TableCell>
                                         <TableCell align="right">
                                             <Button onClick={() => handleCommentChatButton(comment)}>
                                                 <InsertCommentIcon />
