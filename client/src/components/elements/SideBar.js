@@ -66,25 +66,29 @@ export default function SideBar() {
             </Box>
 
             <List className='navigation_options'>
-                {['Dashboard', 'Make Practical', 'Analytics'].map((text, index) => (
-                    <ListItem key={text} disablePadding>
-                        <div className={text.toLowerCase().replace(" ", "-")}>
 
-                            <ListItemButton component={Link} to=
-                                {
-                                    index === 0 ? "/dashboard" : index === 1 ? "/makepractical" : ""
-                                }
-                                variant="contained" color="secondary">
-                                <ListItemIcon>
-                                    {index === 0 ? <SpaceDashboardOutlinedIcon /> : index === 1 ? <AddchartIcon /> : <InsightsIcon />}
-
-                                </ListItemIcon>
-                                <ListItemText primary={text} />
-                            </ListItemButton>
-                        </div>
-
+                <ListItem key={"Dashboard"} disablePadding>
+                        <ListItemButton component={Link} to={"/dashboard"}
+                            variant="contained" color="secondary">
+                            <ListItemIcon><SpaceDashboardOutlinedIcon /></ListItemIcon>
+                            <ListItemText primary={"Dashboard"} />
+                        </ListItemButton>
                     </ListItem>
-                ))}
+                    <ListItem key={"Make Practical"} disablePadding>
+                        <ListItemButton component={Link} to={"/makepractical"}
+                            variant="contained" color="secondary">
+                            <ListItemIcon><AddchartIcon /></ListItemIcon>
+                            <ListItemText primary={"Make Practical"} />
+                        </ListItemButton>
+                    </ListItem>
+                    <ListItem key={"Analytics"} disablePadding>
+                        <ListItemButton component={Link} to={""}
+                            variant="contained" color="secondary">
+                            <ListItemIcon><InsightsIcon /></ListItemIcon>
+                            <ListItemText primary={"Analytics"} />
+                        </ListItemButton>
+                    </ListItem>
+
             </List>
             <Box sx={{
                 pt: 3,

@@ -142,7 +142,7 @@ export default function StudentPractical() {
         };
 
         const handleClick = () => {
-            onSeek(comment.timestamp);
+            onSeek(comment.timestamp-5);
             setCurrentCommentIndex(index);
         }
 
@@ -152,17 +152,16 @@ export default function StudentPractical() {
                     sx={{
                         position: 'absolute',
                         left: `${(comment.timestamp / videoLength) * 100}%`,
-                        top: '50%',
-                        width: '20px',
-                        height: '20px',
+                        width: '10px',
+                        height: '100%',
                         backgroundColor: getColorForRating(comment.rating),
-                        borderRadius: '50%',
-                        transform: 'translate(-50%, -50%)',
+                        transform: 'translate(-50%)',
                         cursor: 'pointer',
                         '&:hover': {
-                            width: '16px',
-                            height: '16px',
+                            height: '100%',
+                            width:"20px",
                         },
+                        zIndex:2,
                     }}
                     onClick={handleClick}
                 />
@@ -174,7 +173,7 @@ export default function StudentPractical() {
         const memoizedComments = useMemo(() => comments, [comments]);
 
         return (
-            <Box sx={{ position: 'relative', width: '100%', height: '40px', backgroundColor: '#e0e0e0', borderRadius: '20px', overflow: 'hidden' }}>
+            <Box sx={{ position: 'relative', width: '100%', height: '40px', backgroundColor: '#e0e0e0', overflow: 'hidden' }}>
                 {memoizedComments.map((comment, index) => (
                     <CommentMarker
                         key={index}
@@ -187,13 +186,14 @@ export default function StudentPractical() {
                 <Box
                     sx={{
                         position: 'absolute',
-                        left: `${(currentTime / videoLength) * 100}%`,
+                        width:`${(currentTime / videoLength) * 100}%`,
+                        left:`${(currentTime / videoLength) * 50}%`,
                         top: '0',
-                        width: '20px',
                         height: '100%',
-                        borderRadius: '10px',
                         backgroundColor: '#2196f3',
                         transform: 'translateX(-50%)',
+                        zIndex:"1",
+                        opacity:"40%",
                     }}
                 />
             </Box>

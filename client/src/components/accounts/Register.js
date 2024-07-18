@@ -49,13 +49,13 @@ export default function Register() {
             display: "flex",
             justifyContent: "center",
             alignItems: "center",
-            pt: 12,
+            pt: 10,
         }}>
 
             <Box sx={{
                 justifyContent: "center",
                 alignItems: "center",
-                my: 5,
+                mt: 5,
                 width:'32%',
                 
             }}>
@@ -65,7 +65,7 @@ export default function Register() {
 
 
                 }}>
-                    <Typography variant='h3'>
+                    <Typography variant='h4'>
                         Register Your Account
                     </Typography>
                 </Box>

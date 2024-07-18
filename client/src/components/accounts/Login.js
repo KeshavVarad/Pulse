@@ -44,21 +44,21 @@ export default function Login() {
             display: "flex",
             justifyContent: "center",
             alignItems: "center",
-            pt: 12,
+            pt: 10,
         }}>
 
             <Box sx={{
 
                 justifyContent: "center",
                 alignItems: "center",
-                my: 5,
+                mt: 5,
                 width:'32%',
             }}>
                 <Box sx={{
                     my: 4
                 }}>
-                    <Typography variant='h3'>
-                        Login to your account
+                    <Typography variant='h4'>
+                        Login To Your Account
                     </Typography>
                 </Box>
 

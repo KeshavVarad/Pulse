@@ -504,7 +504,8 @@ export default function InstructorPractical() {
                                 pt: 1,
 
                             }}>
-                                <Box sx={{ px: 2 }}>
+                                <Box sx={{ px: 2, minWidth:50
+                                }}>
                                     <Typography variant="h7">{task.name}</Typography>
                                 </Box>
                                 <Box sx={{ px: 2 }}>

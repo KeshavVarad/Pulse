@@ -180,7 +180,8 @@ export default function Layout({ children }) {
 
     return (
         <Box sx={{
-            display: "flex"
+            display: "flex",
+            height:"100%"
         }}>
             <Joyride steps={sidebar_tutorial_steps} continuous callback={handleNavJoyrideCallback} run={!navTutorial} styles={{ options: { zIndex: 1500 } }} />
             <Joyride steps={dashboard_tutorial_steps} continuous callback={handleDashJoyrideCallback} run={!dashTutorial} styles={{ options: { zIndex: 1500 } }} />
@@ -191,7 +192,8 @@ export default function Layout({ children }) {
             {currentUser ?
                 (
                     <Box sx={{
-                        width: "20%"
+                        width: "20%",
+                        height:"100%"
                     }}>
 
                         <SideBar />
