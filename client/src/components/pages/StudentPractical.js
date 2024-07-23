@@ -152,16 +152,17 @@ export default function StudentPractical() {
                     sx={{
                         position: 'absolute',
                         left: `${(comment.timestamp / videoLength) * 100}%`,
-                        width: '10px',
+                        width: '20px',
                         height: '100%',
                         backgroundColor: getColorForRating(comment.rating),
                         transform: 'translate(-50%)',
                         cursor: 'pointer',
                         '&:hover': {
                             height: '100%',
-                            width:"20px",
+                            width:"30px",
                         },
                         zIndex:2,
+                        borderRadius:"5px",
                     }}
                     onClick={handleClick}
                 />
@@ -169,33 +170,57 @@ export default function StudentPractical() {
         );
     });
 
-    const CommentTimeline = ({ comments, videoLength, currentTime, onSeek }) => {
+    const CommentTimeline = ({ comments, videoLength, currentTime, onSeek, tasks }) => {
         const memoizedComments = useMemo(() => comments, [comments]);
-
+        const taskColors = useMemo(() => {
+            const colors = {};
+            tasks.forEach((task, index) => {
+                colors[task.name] = `hsl(${(index * 360) / tasks.length}, 70%, 50%)`;
+            });
+            return colors;
+        }, [tasks]);
+    
         return (
-            <Box sx={{ position: 'relative', width: '100%', height: '40px', backgroundColor: '#e0e0e0', overflow: 'hidden' }}>
-                {memoizedComments.map((comment, index) => (
-                    <CommentMarker
-                        key={index}
-                        comment={comment}
-                        videoLength={videoLength}
-                        onSeek={onSeek}
-                        index={index}
-                    />
+            <Box sx={{ position: 'relative', width: '100%', height: `${(tasks.length * 40)}px`,  backgroundColor: "#d3d3d3", overflow: 'hidden', borderRadius:"15px"}}>
+                {tasks.map((task, taskIndex) => (
+                    <Box
+                        key={task.name}
+                        sx={{
+                            position: 'absolute',
+                            top: `${(taskIndex * 40)+5}px`,
+                            left: 0,
+                            width: '100%',
+                            height: '30px',
+                        }}>
+                        {memoizedComments
+                            .filter(comment => comment.task === task.name)
+                            .map((comment, index) => (
+                                <CommentMarker
+                                    key={index}
+                                    comment={comment}
+                                    videoLength={videoLength}
+                                    onSeek={onSeek}
+                                    index={index}
+                                    color={taskColors[task.name]}
+                                />
+                            ))}
+                    </Box>
                 ))}
                 <Box
                     sx={{
                         position: 'absolute',
-                        width:`${(currentTime / videoLength) * 100}%`,
-                        left:`${(currentTime / videoLength) * 50}%`,
-                        top: '0',
+                        left: `${(currentTime / videoLength) * 50}%`,
+                        top: 0,
+                        width: `${(currentTime / videoLength) * 100}%`,
                         height: '100%',
                         backgroundColor: '#2196f3',
                         transform: 'translateX(-50%)',
-                        zIndex:"1",
-                        opacity:"40%",
+                        zIndex: 1,
                     }}
                 />
+                
+
+
             </Box>
         );
     };
@@ -384,6 +409,7 @@ export default function StudentPractical() {
                         videoLength={player ? player.getDuration() : 0}
                         currentTime={currentTime}
                         onSeek={(timestamp) => player && player.seekTo(timestamp)}
+                        tasks={tasks}
                     />
 
 
