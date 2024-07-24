@@ -224,13 +224,6 @@ export default function StudentPractical() {
 
             setTasks(practical.tasks)
 
-            // if (tasks.length > 0) {
-            //     setDisplayTask(tasks[0])
-            //     setRedCount(tasks[0].red_count)
-            //     setYellowCount(tasks[0].yellow_count)
-            //     setGreenCount(tasks[0].green_count)
-            // }
-
             let newTaskNames = []
 
             practical.tasks.map((t) => {
