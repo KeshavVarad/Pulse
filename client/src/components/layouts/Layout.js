@@ -21,19 +21,23 @@ export default function Layout({ children }) {
             const auth_user = auth.currentUser;
             const token = auth_user && (await auth_user.getIdToken());
 
-            const userId = currentUser.uid
+            if (currentUser) {
+                const userId = currentUser.uid
 
-            const requestOptions = {
-                method: "PUT",
-                mode: "cors",
-                headers: {
-                    "Content-Type": "application/json",
-                    Authorization: `Bearer ${token}`,
-                },
-                body: JSON.stringify({ navigation_tutorial: true })
+                const requestOptions = {
+                    method: "PUT",
+                    mode: "cors",
+                    headers: {
+                        "Content-Type": "application/json",
+                        Authorization: `Bearer ${token}`,
+                    },
+                    body: JSON.stringify({ navigation_tutorial: true })
+                }
+                await fetch(`${process.env.REACT_APP_API_HOST}/api/updateUser/${userId}`, requestOptions);
+                setNavTutorial(true)
             }
-            await fetch(`${process.env.REACT_APP_API_HOST}/api/updateUser/${userId}`, requestOptions);
-            setNavTutorial(true)
+
+
         }
     }
 
@@ -44,20 +48,23 @@ export default function Layout({ children }) {
             const auth_user = auth.currentUser;
             const token = auth_user && (await auth_user.getIdToken());
 
-            const userId = currentUser.uid
+            if (currentUser) {
+                const userId = currentUser.uid
 
-            const requestOptions = {
-                method: "PUT",
-                mode: "cors",
-                headers: {
-                    "Content-Type": "application/json",
-                    Authorization: `Bearer ${token}`,
-                },
-                body: JSON.stringify({ dashboard_tutorial: true })
+                const requestOptions = {
+                    method: "PUT",
+                    mode: "cors",
+                    headers: {
+                        "Content-Type": "application/json",
+                        Authorization: `Bearer ${token}`,
+                    },
+                    body: JSON.stringify({ dashboard_tutorial: true })
+                }
+
+                await fetch(`${process.env.REACT_APP_API_HOST}/api/updateUser/${userId}`, requestOptions);
+                setDashTutorial(true)
             }
 
-            await fetch(`${process.env.REACT_APP_API_HOST}/api/updateUser/${userId}`, requestOptions);
-            setDashTutorial(true)
         }
     }
 
@@ -68,20 +75,23 @@ export default function Layout({ children }) {
             const auth_user = auth.currentUser;
             const token = auth_user && (await auth_user.getIdToken());
 
-            const userId = currentUser.uid
+            if (currentUser) {
+                const userId = currentUser.uid
 
-            const requestOptions = {
-                method: "PUT",
-                mode: "cors",
-                headers: {
-                    "Content-Type": "application/json",
-                    Authorization: `Bearer ${token}`,
-                },
-                body: JSON.stringify({ make_practical_tutorial: true })
+                const requestOptions = {
+                    method: "PUT",
+                    mode: "cors",
+                    headers: {
+                        "Content-Type": "application/json",
+                        Authorization: `Bearer ${token}`,
+                    },
+                    body: JSON.stringify({ make_practical_tutorial: true })
+                }
+
+                await fetch(`${process.env.REACT_APP_API_HOST}/api/updateUser/${userId}`, requestOptions);
+                setMakePracticalTutorial(true)
             }
 
-            await fetch(`${process.env.REACT_APP_API_HOST}/api/updateUser/${userId}`, requestOptions);
-            setMakePracticalTutorial(true)
         }
     }
 
@@ -91,23 +101,26 @@ export default function Layout({ children }) {
             const auth_user = auth.currentUser;
             const token = auth_user && (await auth_user.getIdToken());
 
-            const userId = currentUser.uid
+            if (currentUser) {
+                const userId = currentUser.uid
 
-            const requestOptions = {
-                method: "GET",
-                mode: "cors",
-                headers: {
-                    "Content-Type": "application/json",
-                    Authorization: `Bearer ${token}`,
-                },
+                const requestOptions = {
+                    method: "GET",
+                    mode: "cors",
+                    headers: {
+                        "Content-Type": "application/json",
+                        Authorization: `Bearer ${token}`,
+                    },
+                }
+
+                const user_res = await fetch(`${process.env.REACT_APP_API_HOST}/api/user/${userId}`, requestOptions);
+                const userData = await user_res.json()
+
+                setNavTutorial(userData.navigation_tutorial)
+                setDashTutorial(userData.dashboard_tutorial)
+                setMakePracticalTutorial(userData.make_practical_tutorial)
             }
 
-            const user_res = await fetch(`${process.env.REACT_APP_API_HOST}/api/user/${userId}`, requestOptions);
-            const userData = await user_res.json()
-
-            setNavTutorial(userData.navigation_tutorial)
-            setDashTutorial(userData.dashboard_tutorial)
-            setMakePracticalTutorial(userData.make_practical_tutorial)
         }
 
         if (currentUser) {
@@ -181,7 +194,7 @@ export default function Layout({ children }) {
     return (
         <Box sx={{
             display: "flex",
-            height:"100%"
+            height: "100%"
         }}>
             <Joyride steps={sidebar_tutorial_steps} continuous callback={handleNavJoyrideCallback} run={!navTutorial} styles={{ options: { zIndex: 1500 } }} />
             <Joyride steps={dashboard_tutorial_steps} continuous callback={handleDashJoyrideCallback} run={!dashTutorial} styles={{ options: { zIndex: 1500 } }} />
@@ -193,7 +206,7 @@ export default function Layout({ children }) {
                 (
                     <Box sx={{
                         width: "20%",
-                        height:"100%"
+                        height: "100%"
                     }}>
 
                         <SideBar />
