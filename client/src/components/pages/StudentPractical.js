@@ -159,7 +159,7 @@ export default function StudentPractical() {
                         cursor: 'pointer',
                         '&:hover': {
                             height: '100%',
-                            width:"30px",
+                            width:"25px",
                         },
                         zIndex:2,
                         borderRadius:"5px",
@@ -181,6 +181,7 @@ export default function StudentPractical() {
         }, [tasks]);
     
         return (
+            
             <Box sx={{ position: 'relative', width: '100%', height: `${(tasks.length * 40)}px`,  backgroundColor: "#d3d3d3", overflow: 'hidden', borderRadius:"15px"}}>
                 {tasks.map((task, taskIndex) => (
                     <Box
@@ -192,6 +193,21 @@ export default function StudentPractical() {
                             width: '100%',
                             height: '30px',
                         }}>
+
+
+
+                        <Box>
+
+                        <Box sx={{
+                            zIndex:3,
+                            position: 'absolute',
+                            left:10
+                        }}>
+                        <Typography variant="h7">{task.name}</Typography>
+                        </Box>
+
+
+                        </Box>
                         {memoizedComments
                             .filter(comment => comment.task === task.name)
                             .map((comment, index) => (
@@ -204,8 +220,17 @@ export default function StudentPractical() {
                                     color={taskColors[task.name]}
                                 />
                             ))}
+                            
+                            
                     </Box>
+                    
                 ))}
+                
+
+
+
+
+
                 <Box
                     sx={{
                         position: 'absolute',
@@ -215,12 +240,10 @@ export default function StudentPractical() {
                         height: '100%',
                         backgroundColor: '#2196f3',
                         transform: 'translateX(-50%)',
-                        zIndex: 1,
+                        zIndex: 0,
                     }}
                 />
                 
-
-
             </Box>
         );
     };
