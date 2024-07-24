@@ -22,7 +22,7 @@ export default function Header() {
     return (
         <div>
             <AppBar position='fixed'>
-                <Toolbar>
+                <Toolbar sx={{height:6}}>
                     {
                         !currentUser ? (
                             <MonitorHeartIcon fontSize='large' />
@@ -40,7 +40,6 @@ export default function Header() {
                         flexDirection: 'row',
                         justifyContent: 'right',
                         alignContent: 'right',
-                        alignItems: 'right',
                         p: 1,
                         m: 1
                     }}>

@@ -142,7 +142,7 @@ export default function StudentPractical() {
         };
 
         const handleClick = () => {
-            onSeek(comment.timestamp);
+            onSeek(comment.timestamp-5);
             setCurrentCommentIndex(index);
         }
 
@@ -152,17 +152,17 @@ export default function StudentPractical() {
                     sx={{
                         position: 'absolute',
                         left: `${(comment.timestamp / videoLength) * 100}%`,
-                        top: '50%',
                         width: '20px',
-                        height: '20px',
+                        height: '100%',
                         backgroundColor: getColorForRating(comment.rating),
-                        borderRadius: '50%',
-                        transform: 'translate(-50%, -50%)',
+                        transform: 'translate(-50%)',
                         cursor: 'pointer',
                         '&:hover': {
-                            width: '16px',
-                            height: '16px',
+                            height: '100%',
+                            width:"30px",
                         },
+                        zIndex:2,
+                        borderRadius:"5px",
                     }}
                     onClick={handleClick}
                 />
@@ -170,32 +170,57 @@ export default function StudentPractical() {
         );
     });
 
-    const CommentTimeline = ({ comments, videoLength, currentTime, onSeek }) => {
+    const CommentTimeline = ({ comments, videoLength, currentTime, onSeek, tasks }) => {
         const memoizedComments = useMemo(() => comments, [comments]);
-
+        const taskColors = useMemo(() => {
+            const colors = {};
+            tasks.forEach((task, index) => {
+                colors[task.name] = `hsl(${(index * 360) / tasks.length}, 70%, 50%)`;
+            });
+            return colors;
+        }, [tasks]);
+    
         return (
-            <Box sx={{ position: 'relative', width: '100%', height: '40px', backgroundColor: '#e0e0e0', borderRadius: '20px', overflow: 'hidden' }}>
-                {memoizedComments.map((comment, index) => (
-                    <CommentMarker
-                        key={index}
-                        comment={comment}
-                        videoLength={videoLength}
-                        onSeek={onSeek}
-                        index={index}
-                    />
+            <Box sx={{ position: 'relative', width: '100%', height: `${(tasks.length * 40)}px`,  backgroundColor: "#d3d3d3", overflow: 'hidden', borderRadius:"15px"}}>
+                {tasks.map((task, taskIndex) => (
+                    <Box
+                        key={task.name}
+                        sx={{
+                            position: 'absolute',
+                            top: `${(taskIndex * 40)+5}px`,
+                            left: 0,
+                            width: '100%',
+                            height: '30px',
+                        }}>
+                        {memoizedComments
+                            .filter(comment => comment.task === task.name)
+                            .map((comment, index) => (
+                                <CommentMarker
+                                    key={index}
+                                    comment={comment}
+                                    videoLength={videoLength}
+                                    onSeek={onSeek}
+                                    index={index}
+                                    color={taskColors[task.name]}
+                                />
+                            ))}
+                    </Box>
                 ))}
                 <Box
                     sx={{
                         position: 'absolute',
-                        left: `${(currentTime / videoLength) * 100}%`,
-                        top: '0',
-                        width: '20px',
+                        left: `${(currentTime / videoLength) * 50}%`,
+                        top: 0,
+                        width: `${(currentTime / videoLength) * 100}%`,
                         height: '100%',
-                        borderRadius: '10px',
                         backgroundColor: '#2196f3',
                         transform: 'translateX(-50%)',
+                        zIndex: 1,
                     }}
                 />
+                
+
+
             </Box>
         );
     };
@@ -377,6 +402,7 @@ export default function StudentPractical() {
                         videoLength={player ? player.getDuration() : 0}
                         currentTime={currentTime}
                         onSeek={(timestamp) => player && player.seekTo(timestamp)}
+                        tasks={tasks}
                     />
 
 

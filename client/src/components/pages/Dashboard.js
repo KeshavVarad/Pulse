@@ -133,14 +133,12 @@ export default function Dashboard() {
             minHeight: "100%",
             minWidth: "100%"
         }}>
-
             <Box sx={{
                 minHeight: "100%",
                 display: "flex",
                 justifyContent: "space-between",
                 alignItems: "center",
-                py: 8,
-                px: 4,
+                pt: 8,
                 flexDirection: "column",
             }}>
                 <Box sx={{
@@ -148,13 +146,12 @@ export default function Dashboard() {
                 }}>
                     <Typography variant="h4"> Dashboard </Typography>
                 </Box>
-
-                <Grid container spacing={0}>
-                    <Grid xs={6}>
-                        <Container maxWidth="sm" className="student_practicals" sx={{
-                            alignContent: "center",
-                            justifyContent: "center",
-                            alignItems: "center",
+                
+                <Box sx={{
+                    display:"flex",
+                    width:"100%",
+                }}>
+                        <Container className="student_practicals" sx={{
                         }}>
                             <Box>
                                 <center><h2>Student Practicals</h2></center>
@@ -164,7 +161,7 @@ export default function Dashboard() {
                                 <Table aria-label="simple table">
                                     <TableHead>
                                         <TableRow>
-                                            <TableCell>Practical Name</TableCell>
+                                            <TableCell style={{minWidth: 10}}>Practical Name</TableCell>
                                             <TableCell align="right">Instructor</TableCell>
                                             <TableCell align="right">Creation Date</TableCell>
                                         </TableRow>
@@ -188,13 +185,10 @@ export default function Dashboard() {
                                     </TableBody>
                                 </Table>
                             </TableContainer>
-
-
                         </Container>
 
-                    </Grid>
-                    <Grid xs={6}>
-                        <Container className="instructor_practicals" maxWidth="sm%">
+
+                        <Container className="instructor_practicals" >
                             <Box>
                                 <center><h2>Instructor Practicals</h2></center>
                             </Box>
@@ -203,7 +197,7 @@ export default function Dashboard() {
                                 <Table aria-label="simple table">
                                     <TableHead>
                                         <TableRow>
-                                            <TableCell>Practical Name</TableCell>
+                                            <TableCell style={{minWidth: 10}}>Practical Name</TableCell>
                                             <TableCell align="right">Instructor</TableCell>
                                             <TableCell align="right">Creation Date</TableCell>
                                             <TableCell align="right">Settings</TableCell>
@@ -223,8 +217,8 @@ export default function Dashboard() {
                                                 </TableCell>
                                                 <TableCell align="right">{practical.user_instructor_name}</TableCell>
                                                 <TableCell align="right">{practical.creation_date}</TableCell>
-                                                <TableCell align="right">
-                                                    <Button onClick={() => handleSettingsButton(idx)}>
+                                                <TableCell align="right" sx={{p:1}}>
+                                                    <Button sx={{}} onClick={() => handleSettingsButton(idx)}>
                                                         <SettingsIcon />
                                                     </Button>
                                                 </TableCell>
@@ -234,8 +228,7 @@ export default function Dashboard() {
                                 </Table>
                             </TableContainer>
                         </Container>
-                    </Grid>
-                </Grid>
+                    </Box>
 
 
                 <PracticalSettingsModal openState={practicalSettingsOpen} handleClose={handleSettingsClose} practicalId={practicalSettingsId} />

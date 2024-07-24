@@ -167,28 +167,18 @@ export default function MakePractical() {
             minHeight: "100%",
             minWidth: "100%"
         }}>
-
-
             <Box sx={{
                 minHeight: "100%",
-                minWidth: "83.33%",
                 display: "flex",
-                justifyContent: "center",
+                justifyContent: "space-between",
                 alignItems: "center",
-                pt: 3,
+                pt: 8,
+                flexDirection:"column"
             }}>
-
-
-                <Box sx={{
-
-                    justifyContent: "center",
-                    alignItems: "center",
-                    my: 5,
-                }}>
                     <Box sx={{
-                        my: 4
-                    }}>
-                        <Typography variant='h3'>
+                        py:5
+                    }}> 
+                    <Typography variant='h4'>
                             Create a Practical
                         </Typography>
                     </Box>
@@ -288,7 +278,7 @@ export default function MakePractical() {
                 </Box>
 
             </Box>
-        </Box>
+
 
 
 
