@@ -16,7 +16,6 @@ import Joyride from 'react-joyride';
 function App() {
 
 
-
   return (
     <AuthProvider>
       <Router>

@@ -7,6 +7,7 @@ import { useEffect } from "react";
 import auth from "../../config/firebase.js";
 import { v4 as uuidv4 } from 'uuid';
 import DeleteIcon from '@mui/icons-material/Delete';
+import Joyride from 'react-joyride';
 
 export default function MakePractical() {
 
@@ -23,6 +24,10 @@ export default function MakePractical() {
     const navigate = useNavigate();
     const { currentUser, login, setError } = useAuth();
     const [loading, setLoading] = useState(false);
+
+    const [makePracticalTutorial, setMakePracticalTutorial] = useState(false)
+    const [isMakePracticalMounted, setMakePracticalMounted] = useState(false);
+
 
     const handleAddParticipant = async () => {
 
@@ -161,123 +166,226 @@ export default function MakePractical() {
         setParticipantIds(cur_participant_ids)
     }
 
+    const handleMakePracticalJoyrideCallback = async (data) => {
+        const { action, index, origin, status, type } = data;
+
+        if (["finished", "skipped"].includes(status)) {
+            const auth_user = auth.currentUser;
+            const token = auth_user && (await auth_user.getIdToken());
+
+            if (currentUser) {
+                const userId = currentUser.uid
+
+                const requestOptions = {
+                    method: "PUT",
+                    mode: "cors",
+                    headers: {
+                        "Content-Type": "application/json",
+                        Authorization: `Bearer ${token}`,
+                    },
+                    body: JSON.stringify({ make_practical_tutorial: true })
+                }
+
+                await fetch(`${process.env.REACT_APP_API_HOST}/api/updateUser/${userId}`, requestOptions);
+                setMakePracticalTutorial(true)
+            }
+
+        }
+    }
+
+
+    useEffect(() => {
+        async function fetchUser() {
+            const auth_user = auth.currentUser;
+            const token = auth_user && (await auth_user.getIdToken());
+
+            if (currentUser) {
+                const userId = currentUser.uid
+
+                const requestOptions = {
+                    method: "GET",
+                    mode: "cors",
+                    headers: {
+                        "Content-Type": "application/json",
+                        Authorization: `Bearer ${token}`,
+                    },
+                }
+
+                const user_res = await fetch(`${process.env.REACT_APP_API_HOST}/api/user/${userId}`, requestOptions);
+                const userData = await user_res.json()
+
+                setMakePracticalTutorial(userData.make_practical_tutorial)
+            }
+
+        }
+
+        if (currentUser) {
+            fetchUser()
+        }
+    }, [currentUser])
+
+    useEffect(() => {
+        const make_practical_element = document.querySelector('.new_practical_name');
+        if (make_practical_element) {
+            setMakePracticalMounted(true);
+        } else {
+            setMakePracticalMounted(false);
+        }
+
+    }, [])
+
+    const make_practical_tutorial_steps = [
+        {
+            target: ".new_practical_name",
+            content: "A descriptive name for your practical.",
+            placement: "right"
+        },
+        {
+            target: ".new_practical_video_link",
+            content: "The YouTube video link of the practical. NOTE: Make sure that it is the part of the link BEFORE the question mark.",
+            placement: "right"
+        },
+        {
+            target: ".new_practical_participants",
+            content: "The emails of the students participating in your practical. As you add students, they will be displayed in a list underneath this box.",
+            placement: "right"
+        },
+        {
+            target: ".new_practical_instructor",
+            content: "The email of the instructor for this practical.",
+            placement: "right"
+        },
+        {
+            target: ".new_practical_submit",
+            content: "Press submit when you're done!",
+            placement: "right"
+        },
+    ]
+
+
+
     return (
 
         <Box sx={{
             minHeight: "100%",
             minWidth: "100%"
         }}>
+            {(isMakePracticalMounted) ?
+                (
+                    <Joyride steps={make_practical_tutorial_steps} continuous callback={handleMakePracticalJoyrideCallback} run={!makePracticalTutorial} styles={{ options: { zIndex: 1500 } }} />
+                ) : null
+            }
             <Box sx={{
                 minHeight: "100%",
                 display: "flex",
                 justifyContent: "space-between",
                 alignItems: "center",
                 pt: 8,
-                flexDirection:"column"
+                flexDirection: "column"
             }}>
-                    <Box sx={{
-                        py:5
-                    }}> 
+                <Box sx={{
+                    py: 5
+                }}>
                     <Typography variant='h4'>
-                            Create a Practical
-                        </Typography>
-                    </Box>
-
-                    <form onSubmit={handleFormSubmit}>
-                        <TextField label="Name"
-                            onChange={e => setPracticalName(e.target.value)}
-                            required
-                            className='new_practical_name'
-                            variant="outlined"
-                            color="secondary"
-                            sx={{ mb: 3 }}
-                            fullWidth
-                            value={practicalName} />
-
-                        <TextField label="Video Link"
-                            onChange={e => setVideoLink(e.target.value)}
-                            required
-                            className='new_practical_video_link'
-                            variant="outlined"
-                            color="secondary"
-                            sx={{ mb: 3 }}
-                            fullWidth
-                            value={videoLink} />
-
-                        <Box
-                            className='new_practical_participants'
-                            sx={{
-                                display: "flex",
-                                flexDirection: "row",
-                                justifyContent: "center",
-                                alignItems: "center",
-                            }}>
-                            <TextField label="Participant"
-                                onChange={e => setCurParticipant(e.target.value)}
-                                variant="outlined"
-                                color="secondary"
-                                fullWidth
-                                value={curParticipant} />
-
-                            <Button variant='contained' onClick={handleAddParticipant}>
-                                Add Participant
-                            </Button>
-
-                        </Box>
-
-                        <Box sx={{
-                            display: "flex",
-                            flexDirection: "column",
-                            justifyContent: "center",
-                            alignItems: "center",
-                            mb: 3
-                        }}>
-
-                            {participants.map((participant, idx) => (
-                                <Box
-                                    sx={{
-                                        display: "flex",
-                                        p: 4,
-                                        alignItems: "center"
-                                    }}>
-                                    <Typography variant='text'>
-                                        {participant}
-                                    </Typography>
-                                    <Button onClick={() => handleRemoveParticipant(idx)}>
-                                        <DeleteIcon />
-                                    </Button>
-                                </Box>
-                            ))}
-                        </Box>
-
-                        <TextField
-                            className='new_practical_instructor'
-                            label="Instructor"
-                            onChange={e => setInstructor(e.target.value)}
-                            required
-                            variant="outlined"
-                            color="secondary"
-                            sx={{ mb: 3 }}
-                            fullWidth
-                            value={instructor} />
-
-                        <Box
-                            className='new_practical_submit'
-                            sx={{
-                                display: "flex",
-                                flexDirection: "row",
-                                justifyContent: "center",
-                                alignItems: "center",
-                            }}>
-                            <Button variant='contained' type='submit' disabled={loading} sx={{ mx: 1 }}>
-                                Create Practical
-                            </Button>
-                        </Box>
-
-                    </form>
+                        Create a Practical
+                    </Typography>
                 </Box>
 
+                <form onSubmit={handleFormSubmit}>
+                    <TextField label="Name"
+                        onChange={e => setPracticalName(e.target.value)}
+                        required
+                        className='new_practical_name'
+                        variant="outlined"
+                        color="secondary"
+                        sx={{ mb: 3 }}
+                        fullWidth
+                        value={practicalName} />
+
+                    <TextField label="Video Link"
+                        onChange={e => setVideoLink(e.target.value)}
+                        required
+                        className='new_practical_video_link'
+                        variant="outlined"
+                        color="secondary"
+                        sx={{ mb: 3 }}
+                        fullWidth
+                        value={videoLink} />
+
+                    <Box
+                        className='new_practical_participants'
+                        sx={{
+                            display: "flex",
+                            flexDirection: "row",
+                            justifyContent: "center",
+                            alignItems: "center",
+                        }}>
+                        <TextField label="Participant"
+                            onChange={e => setCurParticipant(e.target.value)}
+                            variant="outlined"
+                            color="secondary"
+                            fullWidth
+                            value={curParticipant} />
+
+                        <Button variant='contained' onClick={handleAddParticipant}>
+                            Add Participant
+                        </Button>
+
+                    </Box>
+
+                    <Box sx={{
+                        display: "flex",
+                        flexDirection: "column",
+                        justifyContent: "center",
+                        alignItems: "center",
+                        mb: 3
+                    }}>
+
+                        {participants.map((participant, idx) => (
+                            <Box
+                                sx={{
+                                    display: "flex",
+                                    p: 4,
+                                    alignItems: "center"
+                                }}>
+                                <Typography variant='text'>
+                                    {participant}
+                                </Typography>
+                                <Button onClick={() => handleRemoveParticipant(idx)}>
+                                    <DeleteIcon />
+                                </Button>
+                            </Box>
+                        ))}
+                    </Box>
+
+                    <TextField
+                        className='new_practical_instructor'
+                        label="Instructor"
+                        onChange={e => setInstructor(e.target.value)}
+                        required
+                        variant="outlined"
+                        color="secondary"
+                        sx={{ mb: 3 }}
+                        fullWidth
+                        value={instructor} />
+
+                    <Box
+                        className='new_practical_submit'
+                        sx={{
+                            display: "flex",
+                            flexDirection: "row",
+                            justifyContent: "center",
+                            alignItems: "center",
+                        }}>
+                        <Button variant='contained' type='submit' disabled={loading} sx={{ mx: 1 }}>
+                            Create Practical
+                        </Button>
+                    </Box>
+
+                </form>
             </Box>
+
+        </Box>
 
 
 

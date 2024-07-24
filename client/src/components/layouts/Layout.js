@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { Component } from 'react'
 import { useAuth } from '../../contexts/AuthContext'
 import SideBar from '../elements/SideBar'
 import { Box, Grid } from '@mui/material'
@@ -6,18 +6,30 @@ import Header from '../elements/Header'
 import Joyride, { ACTIONS } from 'react-joyride'
 import { useState, useEffect } from 'react'
 import auth from '../../config/firebase'
+import { useLocation } from 'react-router-dom'
 
 export default function Layout({ children }) {
+
+    let { pathname } = useLocation()
 
     const { currentUser } = useAuth()
     const [navTutorial, setNavTutorial] = useState(false)
     const [dashTutorial, setDashTutorial] = useState(false)
     const [makePracticalTutorial, setMakePracticalTutorial] = useState(false)
 
+    const [isSidebarLoading, setSidebarLoading] = useState(true);
+    const [isDashboardLoading, setDashboardLoading] = useState(true);
+    const [isMakePracticalLoading, setMakePracticalLoading] = useState(true);
+
+    const [isSidebarMounted, setSidebarMounted] = useState(false);
+    const [isDashboardMounted, setDashboardMounted] = useState(false);
+    const [isMakePracticalMounted, setMakePracticalMounted] = useState(false);
+
+
     const handleNavJoyrideCallback = async (data) => {
         const { action, index, origin, status, type } = data;
 
-        if (action == "close" | action == "reset") {
+        if (["finished", "skipped"].includes(status)) {
             const auth_user = auth.currentUser;
             const token = auth_user && (await auth_user.getIdToken());
 
@@ -44,7 +56,7 @@ export default function Layout({ children }) {
     const handleDashJoyrideCallback = async (data) => {
         const { action, index, origin, status, type } = data;
 
-        if (action == "close" | action == "reset") {
+        if (["finished", "skipped"].includes(status)) {
             const auth_user = auth.currentUser;
             const token = auth_user && (await auth_user.getIdToken());
 
@@ -71,7 +83,7 @@ export default function Layout({ children }) {
     const handleMakePracticalJoyrideCallback = async (data) => {
         const { action, index, origin, status, type } = data;
 
-        if (action == "close" | action == "reset") {
+        if (["finished", "skipped"].includes(status)) {
             const auth_user = auth.currentUser;
             const token = auth_user && (await auth_user.getIdToken());
 
@@ -128,6 +140,44 @@ export default function Layout({ children }) {
         }
     }, [currentUser])
 
+    useEffect(() => {
+        setSidebarLoading(true);
+        const sidebar_element = document.querySelector('.dashboard');
+        if (sidebar_element) {
+            setSidebarMounted(true);
+        } else {
+            setSidebarMounted(false);
+        }
+
+        setSidebarLoading(false);
+
+    }, [pathname])
+
+    useEffect(() => {
+        setDashboardLoading(true);
+        const dashboard_element = document.querySelector('.student_practicals');
+        if (dashboard_element) {
+            setDashboardMounted(true);
+        } else {
+            setDashboardMounted(false);
+        }
+
+        setDashboardLoading(false);
+
+
+    }, [pathname])
+
+    useEffect(() => {
+        setMakePracticalLoading(true);
+        const make_practical_element = document.querySelector('.new_practical_name');
+        if (make_practical_element) {
+            setMakePracticalMounted(true);
+        } else {
+            setMakePracticalMounted(false);
+        }
+
+        setMakePracticalLoading(false);
+    }, [pathname])
 
 
     const sidebar_tutorial_steps = [
@@ -196,9 +246,12 @@ export default function Layout({ children }) {
             display: "flex",
             height: "100%"
         }}>
-            <Joyride steps={sidebar_tutorial_steps} continuous callback={handleNavJoyrideCallback} run={!navTutorial} styles={{ options: { zIndex: 1500 } }} />
-            <Joyride steps={dashboard_tutorial_steps} continuous callback={handleDashJoyrideCallback} run={!dashTutorial} styles={{ options: { zIndex: 1500 } }} />
-            <Joyride steps={make_practical_tutorial_steps} continuous callback={handleMakePracticalJoyrideCallback} run={!makePracticalTutorial} styles={{ options: { zIndex: 1500 } }} />
+
+
+
+
+
+
 
 
 
