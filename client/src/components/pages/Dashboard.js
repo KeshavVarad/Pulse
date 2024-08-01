@@ -131,7 +131,8 @@ export default function Dashboard() {
     return (
         <Box sx={{
             minHeight: "100%",
-            minWidth: "100%"
+            minWidth: "100%",
+            
         }}>
             <Box sx={{
                 minHeight: "100%",

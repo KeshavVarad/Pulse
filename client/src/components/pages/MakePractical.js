@@ -237,7 +237,7 @@ export default function MakePractical() {
                                 <Box
                                     sx={{
                                         display: "flex",
-                                        p: 4,
+                                        pt: 2,
                                         alignItems: "center"
                                     }}>
                                     <Typography variant='text'>

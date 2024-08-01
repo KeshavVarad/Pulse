@@ -11,6 +11,7 @@ import WithPrivateRoute from './utils/WithPrivateRoute';
 import MakePractical from './components/pages/MakePractical';
 import Layout from './components/layouts/Layout';
 import Joyride from 'react-joyride';
+import { Box } from '@mui/material';
 
 
 function App() {
@@ -20,6 +21,12 @@ function App() {
   return (
     <AuthProvider>
       <Router>
+
+        <Box sx={{
+          minHeight:"100vh"
+        }}>
+
+        
         <Layout>
           <ErrorMessage />
 
@@ -41,8 +48,11 @@ function App() {
             } />
           </Routes>
 
+          
+
 
         </Layout>
+        </Box>
       </Router>
     </AuthProvider>
   );
