@@ -25,6 +25,7 @@ export default function StudentPractical() {
     const [player, setPlayer] = useState(null);
     const [videoId, setVideoId] = useState("");
     const [comments, setComments] = useState([]);
+    const [avgRating, setAvgRating] = useState(0);
 
     const [commentChatOpen, setCommentChatOpen] = useState(false);
     const [commentToDisplay, setCommentToDisplay] = useState();
@@ -32,6 +33,7 @@ export default function StudentPractical() {
     const [curMessage, setMessage] = useState("");
 
     const [currentCommentIndex, setCurrentCommentIndex] = useState(comments.length > 0 ? 0 : -1);
+    const [currentTaskDiscussion, setCurrentTaskDiscussion] = useState(null);
 
     const [practical_name, setPracticalName] = useState("");
 
@@ -87,7 +89,8 @@ export default function StudentPractical() {
         }
 
 
-        let newCommentToDisplay = commentToDisplay
+        let newTaskToDisplay = currentTaskDiscussion
+        let newTasks = tasks.slice()
 
 
         try {
@@ -106,7 +109,9 @@ export default function StudentPractical() {
                 creatorId: user.uid
             }
 
-            newCommentToDisplay.replies.push(newReply)
+            newTaskToDisplay.replies.push(newReply)
+            newTasks[tasks.indexOf(currentTaskDiscussion)] = newTaskToDisplay
+
 
             const requestOptions = {
                 method: "PUT",
@@ -115,17 +120,20 @@ export default function StudentPractical() {
                     "Content-Type": "application/json",
                     Authorization: `Bearer ${token}`,
                 },
-                body: JSON.stringify({ replies: newCommentToDisplay.replies })
+                body: JSON.stringify({ tasks: newTasks })
 
             };
-            await fetch(`${process.env.REACT_APP_API_HOST}/api/updateComment/${newCommentToDisplay.id}`, requestOptions);
+            await fetch(`${process.env.REACT_APP_API_HOST}/api/updatePractical/${practicalId}`, requestOptions);
 
-            setCommentToDisplay(newCommentToDisplay)
+            setCurrentTaskDiscussion(newTaskToDisplay)
             setMessage("")
+
+
 
         } catch (e) {
             console.log(e);
         }
+
 
     }
 
@@ -134,16 +142,17 @@ export default function StudentPractical() {
     const CommentMarker = React.memo(({ comment, videoLength, onSeek, index }) => {
         const getColorForRating = (rating) => {
             switch (rating) {
-                case -1: return '#ff4d4d';
-                case 0: return '#ffd700';
-                case 1: return '#66cc66';
+                case 1: return '#ff4d4d';
+                case 3: return '#ffd700';
+                case 5: return '#66cc66';
                 default: return '#888888';
             }
         };
 
         const handleClick = () => {
-            onSeek(comment.timestamp-5);
+            onSeek(comment.timestamp - 5);
             setCurrentCommentIndex(index);
+            setCurrentTaskDiscussion(tasks.find(task => task.name === comments[currentCommentIndex].task))
         }
 
         return (
@@ -159,10 +168,10 @@ export default function StudentPractical() {
                         cursor: 'pointer',
                         '&:hover': {
                             height: '100%',
-                            width:"25px",
+                            width: "25px",
                         },
-                        zIndex:2,
-                        borderRadius:"5px",
+                        zIndex: 2,
+                        borderRadius: "5px",
                     }}
                     onClick={handleClick}
                 />
@@ -172,16 +181,16 @@ export default function StudentPractical() {
 
     const CommentTimeline = ({ comments, videoLength, currentTime, onSeek, tasks }) => {
         const memoizedComments = useMemo(() => comments, [comments]);
-    
+
         return (
-            
-            <Box sx={{ position: 'relative', width: '100%', height: `${(tasks.length * 40)}px`,  backgroundColor: "#d3d3d3", overflow: 'hidden', borderRadius:"15px"}}>
+
+            <Box sx={{ position: 'relative', width: '100%', height: `${(tasks.length * 40)}px`, backgroundColor: "#d3d3d3", overflow: 'hidden', borderRadius: "15px" }}>
                 {tasks.map((task, taskIndex) => (
                     <Box
                         key={task.name}
                         sx={{
                             position: 'absolute',
-                            top: `${(taskIndex * 40)+5}px`,
+                            top: `${(taskIndex * 40) + 5}px`,
                             left: 0,
                             width: '100%',
                             height: '30px',
@@ -191,13 +200,13 @@ export default function StudentPractical() {
 
                         <Box>
 
-                        <Box sx={{
-                            zIndex:3,
-                            position: 'absolute',
-                            left:10
-                        }}>
-                        <Typography variant="h7">{task.name}</Typography>
-                        </Box>
+                            <Box sx={{
+                                zIndex: 3,
+                                position: 'absolute',
+                                left: 10
+                            }}>
+                                <Typography variant="h7">{task.name}</Typography>
+                            </Box>
 
 
                         </Box>
@@ -212,12 +221,12 @@ export default function StudentPractical() {
                                     index={comments.indexOf(comment)}
                                 />
                             ))}
-                            
-                            
+
+
                     </Box>
-                    
+
                 ))}
-                
+
 
 
 
@@ -235,7 +244,7 @@ export default function StudentPractical() {
                         zIndex: 0,
                     }}
                 />
-                
+
             </Box>
         );
     };
@@ -262,6 +271,7 @@ export default function StudentPractical() {
 
             const practical = await practical_res.json()
 
+            setAvgRating(practical.avg_rating)
             setTasks(practical.tasks)
 
             let newTaskNames = []
@@ -288,6 +298,7 @@ export default function StudentPractical() {
                 commentsData.sort((a, b) => a.timestamp - b.timestamp);
 
                 setComments(commentsData)
+
             })
 
             if (comments.length > 0) {
@@ -295,7 +306,6 @@ export default function StudentPractical() {
             }
 
 
-            //console.log(commentsData)
             // setComments(commentsData)
         }
 
@@ -343,10 +353,16 @@ export default function StudentPractical() {
                 flexDirection: "column",
             }}>
                 <Box sx={{
+                    display: "flex",
+                    flexDirection: "column",
+                    alignItems: "center",
                     py: 5
                 }}>
                     <Typography variant="h4"> {practical_name} </Typography>
+                    <Typography variant="h6"> Average Rating: {Math.round((avgRating + Number.EPSILON) * 100) / 100} </Typography>
+
                 </Box>
+
 
                 <Box sx={{
                     display: "flex",
@@ -379,13 +395,6 @@ export default function StudentPractical() {
                                 onPrevious={moveToPreviousComment}
                                 onCommentChat={handleCommentChatButton}
                             />
-                            {/* <CurrentCommentDisplay
-                                comments={comments}
-                                currentIndex={currentCommentIndex}
-                                onNext={moveToNextComment}
-                                onPrevious={moveToPreviousComment}
-
-                            /> */}
 
                         </Box>
                     </Box>
@@ -421,161 +430,163 @@ export default function StudentPractical() {
                     />
 
 
-
                     <Box sx={{
                         display: "flex",
-                        width: "100%",
-                        justifyContent: "center",
-                        justifyItems: "center",
-                        pt: 8
-                    }}>
-                        <Typography variant="h5">Statistics</Typography>
-                    </Box>
-
-                    <Box sx={{
-                        display: "flex",
-                        width: "100%",
-                        py: 3,
-                        justifyContent: "center",
-                        justifyItems: "space-between",
-                        alignItems: "space-between",
-                        height: 300
-
+                        flexDirection: "row"
                     }}>
 
+                        <Box>
+                            <Box sx={{
+                                display: "flex",
+                                width: "100%",
+                                justifyContent: "center",
+                                pt: 8
+                            }}>
+                                <Typography variant="h5">Statistics</Typography>
+                            </Box>
 
+                            <Box sx={{
+                                display: "flex",
+                                width: "100%",
+                                py: 3,
+                                justifyContent: "center",
+                                justifyItems: "space-between",
+                                alignItems: "space-between",
+                                height: 300
 
+                            }}>
 
-                        <Box width="50%" pr="10">
-                            <BarChart
-                                xAxis={[{ scaleType: 'band', data: ["Red", "Yellow", "Green"], colorMap: { type: "ordinal", colors: ["red", "yellow", "green"] } }]}
-                                series={[{ data: [redCount, yellowCount, greenCount] }]}
-                                width={600}
-                                height={300}
-                            />
+                                <Box width="50%" pr="10">
+                                    <BarChart
+                                        xAxis={[{ scaleType: 'band', data: ["Red", "Yellow", "Green"], colorMap: { type: "ordinal", colors: ["red", "yellow", "green"] } }]}
+                                        series={[{ data: [redCount, yellowCount, greenCount] }]}
+                                        width={600}
+                                        height={300}
+                                    />
+                                </Box>
+
+                                <Box sx={{
+                                    display: "flex",
+                                    width: "20%",
+                                    height: "100%",
+                                    alignContent: "center",
+                                    alignItems: "center",
+                                }}>
+
+                                    <FormControl fullWidth>
+                                        <InputLabel id="demo-simple-select-label">Task</InputLabel>
+                                        <Select
+                                            labelId="demo-simple-select-label"
+                                            id="demo-simple-select"
+                                            value={displayTask}
+                                            label="Task"
+                                            onChange={handleChangeDisplayTask}
+                                        >
+                                            {tasks.map((t, idx) => {
+                                                return (<MenuItem key={idx} value={t}>{t.name}</MenuItem>)
+                                            })}
+                                        </Select>
+                                    </FormControl>
+                                </Box>
+
+                            </Box>
+
                         </Box>
 
-                        <Box sx={{
-                            display: "flex",
-                            width: "20%",
-                            height: "100%",
-                            alignContent: "center",
-                            alignItems: "center",
-                        }}>
+                        <Box>
+                            <Box sx={{
+                                display: "flex",
+                                width: "100%",
+                                justifyContent: "center",
+                                justifyItems: "center",
+                                pt: 8
+                            }}>
+                                {currentTaskDiscussion ?
+                                    <Typography variant="h5">{currentTaskDiscussion.name} Discussion</Typography> :
+                                    <Typography variant="h5">No Task Selected</Typography>
+                                }
 
-                            <FormControl fullWidth>
-                                <InputLabel id="demo-simple-select-label">Task</InputLabel>
-                                <Select
-                                    labelId="demo-simple-select-label"
-                                    id="demo-simple-select"
-                                    value={displayTask}
-                                    label="Task"
-                                    onChange={handleChangeDisplayTask}
-                                >
-                                    {tasks.map((t, idx) => {
-                                        return (<MenuItem key={idx} value={t}>{t.name}</MenuItem>)
-                                    })}
-                                </Select>
-                            </FormControl>
+                            </Box>
+                            <Box sx={{
+                                p: 4,
+                            }}>
+                                <Box sx={{
+                                    display: "flex",
+                                    flexDirection: "column",
+                                    width: "100%",
+                                    alignItems: "center",
+                                    justifyContent: "center"
+                                }}>
+                                    <Grid item sx={{
+                                        width: "100%",
+                                    }}>
+                                        <List sx={{
+                                            height: '70vh',
+                                            overflowY: 'auto',
+                                        }}>
+                                            {currentTaskDiscussion ? currentTaskDiscussion.replies.map((reply, idx) => {
+                                                return (<ListItem key={idx}>
+                                                    {(reply.creatorId == userId) ? (
+                                                        <Grid container sx={{ width: "100%" }}>
+                                                            <Grid item xs={12} >
+                                                                <ListItemText align="right" primary={reply.message}></ListItemText>
+                                                            </Grid>
+                                                            <Grid item xs={12}>
+                                                                <ListItemText align="right" secondary={reply.createdBy + " " + new Date(reply.createdAt * 1000).toISOString().substring(14, 19)}></ListItemText>
+                                                            </Grid>
+                                                        </Grid>
+                                                    ) : (
+                                                        <Grid container sx={{ width: "100%" }}>
+                                                            <Grid item xs={12} >
+                                                                <ListItemText align="left" primary={reply.message}></ListItemText>
+                                                            </Grid>
+                                                            <Grid item xs={12}>
+                                                                <ListItemText align="left" secondary={reply.createdBy + " " + new Date(reply.createdAt * 1000).toISOString().substring(14, 19)}></ListItemText>
+                                                            </Grid>
+                                                        </Grid>
+                                                    )}
+
+                                                </ListItem>)
+                                            }) : (<Typography>No Messages</Typography>)}
+                                        </List>
+                                    </Grid>
+
+                                    {currentTaskDiscussion ?
+                                        <Box sx={{
+                                            display: "flex",
+                                        }}>
+                                            <TextField label="New Message"
+                                                variant="outlined"
+                                                color="secondary"
+                                                sx={{
+                                                    mx: 2
+                                                }}
+                                                onChange={e => setMessage(e.target.value)}
+                                                fullWidth
+                                                value={curMessage} />
+
+
+                                            <Button variant="contained" onClick={handleMessageInput}>
+                                                <SendIcon />
+                                            </Button>
+                                        </Box> :
+                                        null}
+
+
+
+                                </Box>
+
+                            </Box>
                         </Box>
+
+
+
 
                     </Box>
-
 
                 </Box>
 
             </Box>
-
-
-            <Modal
-                open={commentChatOpen}
-                onClose={handleCommentChatClose}
-                aria-labelledby="modal-modal-title"
-                aria-describedby="modal-modal-description"
-            >
-                <Box sx={{
-                    position: "absolute",
-                    top: "50%",
-                    left: "50%",
-                    transform: "translate(-50%, -50%)",
-                    width: 800,
-                    bgcolor: "background.paper",
-                    border: "2px solid #000",
-                    boxShadow: 24,
-                    p: 4,
-                }}>
-                    <Box sx={{
-                        display: "flex",
-                        flexDirection: "column",
-                        width: "100%",
-                        alignItems: "center",
-                        justifyContent: "center"
-                    }}>
-                        <Typography id="modal-modal-title" variant="h6" component="h2">
-                            {commentToDisplay ? commentToDisplay.task : "No Comment"}
-                        </Typography>
-                        <Typography id="modal-modal-description" sx={{ mt: 2 }}>
-                            Instructor Feedback: {commentToDisplay ? commentToDisplay.feedback : "No Feedback"}
-                        </Typography>
-                        <Grid item sx={{
-                            width: "100%",
-                        }}>
-                            <List sx={{
-                                height: '70vh',
-                                overflowY: 'auto',
-                            }}>
-                                {commentToDisplay ? commentToDisplay.replies.map((reply, idx) => {
-                                    return (<ListItem key={idx}>
-                                        {(reply.creatorId == userId) ? (
-                                            <Grid container sx={{ width: "100%" }}>
-                                                <Grid item xs={12} >
-                                                    <ListItemText align="right" primary={reply.message}></ListItemText>
-                                                </Grid>
-                                                <Grid item xs={12}>
-                                                    <ListItemText align="right" secondary={reply.createdBy + " " + new Date(reply.createdAt * 1000).toISOString().substring(14, 19)}></ListItemText>
-                                                </Grid>
-                                            </Grid>
-                                        ) : (
-                                            <Grid container sx={{ width: "100%" }}>
-                                                <Grid item xs={12} >
-                                                    <ListItemText align="left" primary={reply.message}></ListItemText>
-                                                </Grid>
-                                                <Grid item xs={12}>
-                                                    <ListItemText align="left" secondary={new Date(reply.createdAt * 1000).toISOString().substring(14, 19)}></ListItemText>
-                                                </Grid>
-                                            </Grid>
-                                        )}
-
-                                    </ListItem>)
-                                }) : (<Typography>No Messages</Typography>)}
-                            </List>
-                        </Grid>
-
-                        <Box sx={{
-                            display: "flex",
-                        }}>
-                            <TextField label="New Message"
-                                variant="outlined"
-                                color="secondary"
-                                sx={{
-                                    mx: 2
-                                }}
-                                onChange={e => setMessage(e.target.value)}
-                                fullWidth
-                                value={curMessage} />
-
-
-                            <Button variant="contained" onClick={handleMessageInput}>
-                                <SendIcon />
-                            </Button>
-                        </Box>
-
-
-                    </Box>
-
-                </Box>
-            </Modal >
-
 
 
         </Box >

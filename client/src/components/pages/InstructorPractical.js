@@ -39,8 +39,10 @@ export default function InstructorPractical() {
     const [editableCommentIdx, setEditableCommentIdx] = useState(-1)
     const [commentEdit, setCommentEdit] = useState("")
 
-    const [commentChatOpen, setCommentChatOpen] = useState(false)
     const [commentToDisplay, setCommentToDisplay] = useState()
+
+    const [taskChatOpen, setTaskChatOpen] = useState(false)
+    const [taskToDisplay, setTaskToDisplay] = useState()
 
     // Message state
     const [curMessage, setMessage] = useState("")
@@ -54,7 +56,7 @@ export default function InstructorPractical() {
         }
 
         var newTasks = tasks.slice()
-        newTasks.push({ name: newTask, red_count: 0, yellow_count: 0, green_count: 0 })
+        newTasks.push({ name: newTask, replies: [], red_count: 0, yellow_count: 0, green_count: 0 })
 
         try {
             const user = auth.currentUser;
@@ -142,21 +144,27 @@ export default function InstructorPractical() {
 
             let practicalUpdateData = { comments: newComments }
 
-            if (rating == -1) {
-                practicalUpdateData.red_count = practical.red_count + 1
-                newTasks[taskIndex].red_count += 1
-
-            }
-
-            if (rating == 0) {
-                practicalUpdateData.yellow_count = practical.yellow_count + 1
-                newTasks[taskIndex].yellow_count += 1
-            }
+            let rating_sum = 1 * practical.red_count + 3 * practical.yellow_count + 5 * practical.green_count
 
             if (rating == 1) {
+                practicalUpdateData.red_count = practical.red_count + 1
+                newTasks[taskIndex].red_count += 1
+                rating_sum += 1
+
+            }
+
+            if (rating == 3) {
+                practicalUpdateData.yellow_count = practical.yellow_count + 1
+                newTasks[taskIndex].yellow_count += 1
+                rating_sum += 3
+            }
+
+            if (rating == 5) {
                 practicalUpdateData.green_count = practical.green_count + 1
                 newTasks[taskIndex].green_count += 1
+                rating_sum += 5
             }
+            practicalUpdateData.avg_rating = rating_sum / newComments.length
 
             practicalUpdateData.tasks = newTasks
 
@@ -266,17 +274,17 @@ export default function InstructorPractical() {
             let taskIndex = newTasks.findIndex(t => t.name == comments[idx].task)
 
 
-            if (comment_rating == -1) {
+            if (comment_rating == 1) {
                 practicalUpdateData.red_count = practical.red_count - 1
                 newTasks[taskIndex].red_count -= 1
             }
 
-            if (comment_rating == 0) {
+            if (comment_rating == 3) {
                 practicalUpdateData.yellow_count = practical.yellow_count - 1
                 newTasks[taskIndex].yellow_count -= 1
             }
 
-            if (comment_rating == 1) {
+            if (comment_rating == 5) {
                 practicalUpdateData.green_count = practical.green_count - 1
                 newTasks[taskIndex].green_count -= 1
             }
@@ -333,14 +341,14 @@ export default function InstructorPractical() {
 
     // Chat functions
 
-    const handleCommentChatButton = (comment) => {
-        setCommentToDisplay(comment)
-        setCommentChatOpen(true)
+    const handleTaskChatButton = (task) => {
+        setTaskToDisplay(task)
+        setTaskChatOpen(true)
     }
 
-    const handleCommentChatClose = () => {
-        setCommentToDisplay(null)
-        setCommentChatOpen(false)
+    const handleTaskChatClose = (task) => {
+        setTaskToDisplay(null)
+        setTaskChatOpen(false)
     }
 
     const handleMessageInput = async () => {
@@ -349,7 +357,8 @@ export default function InstructorPractical() {
         }
 
 
-        let newCommentToDisplay = commentToDisplay
+        let newTaskToDisplay = taskToDisplay
+        let newTasks = tasks.slice()
 
 
         try {
@@ -368,7 +377,9 @@ export default function InstructorPractical() {
                 creatorId: user.uid
             }
 
-            newCommentToDisplay.replies.push(newReply)
+            newTaskToDisplay.replies.push(newReply)
+            newTasks[tasks.indexOf(taskToDisplay)] = newTaskToDisplay
+
 
             const requestOptions = {
                 method: "PUT",
@@ -377,12 +388,12 @@ export default function InstructorPractical() {
                     "Content-Type": "application/json",
                     Authorization: `Bearer ${token}`,
                 },
-                body: JSON.stringify({ replies: newCommentToDisplay.replies })
+                body: JSON.stringify({ tasks: newTasks })
 
             };
-            await fetch(`${process.env.REACT_APP_API_HOST}/api/updateComment/${newCommentToDisplay.id}`, requestOptions);
+            await fetch(`${process.env.REACT_APP_API_HOST}/api/updatePractical/${practicalId}`, requestOptions);
 
-            setCommentToDisplay(newCommentToDisplay)
+            setTaskToDisplay(newTaskToDisplay)
             setMessage("")
 
 
@@ -504,16 +515,23 @@ export default function InstructorPractical() {
                                 pt: 1,
 
                             }}>
-                                <Box sx={{ px: 2, minWidth:50
+                                <Box sx={{
+                                    px: 2, minWidth: 50
                                 }}>
                                     <Typography variant="h7">{task.name}</Typography>
                                 </Box>
                                 <Box sx={{ px: 2 }}>
                                     <ButtonGroup variant="contained" aria-label="Basic button group" >
-                                        <Button onClick={() => { handleRating(task, -1) }} variant="contained" color="primary" size="large">RED</Button>
-                                        <Button onClick={() => { handleRating(task, 0) }} variant="contained" color="secondary">YELLOW</Button>
-                                        <Button onClick={() => { handleRating(task, 1) }} variant="contained">GREEN</Button>
+                                        <Button onClick={() => { handleRating(task, 1) }} variant="contained" color="primary" size="large">RED</Button>
+                                        <Button onClick={() => { handleRating(task, 3) }} variant="contained" color="secondary">YELLOW</Button>
+                                        <Button onClick={() => { handleRating(task, 5) }} variant="contained">GREEN</Button>
                                     </ButtonGroup>
+                                </Box>
+
+                                <Box>
+                                    <Button onClick={() => handleTaskChatButton(task)}>
+                                        <InsertCommentIcon />
+                                    </Button>
                                 </Box>
 
 
@@ -565,7 +583,6 @@ export default function InstructorPractical() {
                                     <TableCell align="right">Rating</TableCell>
                                     <TableCell align="right">Time Stamp</TableCell>
                                     <TableCell align="right">Additional Feedback</TableCell>
-                                    <TableCell align="right">Discussion</TableCell>
                                     <TableCell align="right">Delete Feedback</TableCell>
                                 </TableRow>
                             </TableHead>
@@ -598,11 +615,6 @@ export default function InstructorPractical() {
                                                 </TableCell>)
                                         }
                                         <TableCell align="right">
-                                            <Button onClick={() => handleCommentChatButton(comment)}>
-                                                <InsertCommentIcon />
-                                            </Button>
-                                        </TableCell>
-                                        <TableCell align="right">
                                             <Button onClick={() => handleDeleteComment(idx)}>
                                                 <DeleteIcon />
                                             </Button>
@@ -623,8 +635,8 @@ export default function InstructorPractical() {
 
 
             <Modal
-                open={commentChatOpen}
-                onClose={handleCommentChatClose}
+                open={taskChatOpen}
+                onClose={handleTaskChatClose}
                 aria-labelledby="modal-modal-title"
                 aria-describedby="modal-modal-description"
             >
@@ -647,10 +659,7 @@ export default function InstructorPractical() {
                         justifyContent: "center"
                     }}>
                         <Typography id="modal-modal-title" variant="h6" component="h2">
-                            {commentToDisplay ? commentToDisplay.task : "No Comment"}
-                        </Typography>
-                        <Typography id="modal-modal-description" sx={{ mt: 2 }}>
-                            Instructor Feedback: {commentToDisplay ? commentToDisplay.feedback : "No Feedback"}
+                            {taskToDisplay ? taskToDisplay.name : "No Task"}
                         </Typography>
                         <Grid item sx={{
                             width: "100%",
@@ -659,7 +668,7 @@ export default function InstructorPractical() {
                                 height: '70vh',
                                 overflowY: 'auto',
                             }}>
-                                {commentToDisplay ? commentToDisplay.replies.map((reply, idx) => {
+                                {taskToDisplay ? taskToDisplay.replies.map((reply, idx) => {
                                     return (<ListItem key={idx}>
                                         {(reply.creatorId == userId) ? (
                                             <Grid container sx={{ width: "100%" }}>
@@ -676,7 +685,7 @@ export default function InstructorPractical() {
                                                     <ListItemText align="left" primary={reply.message}></ListItemText>
                                                 </Grid>
                                                 <Grid item xs={12}>
-                                                    <ListItemText align="left" secondary={new Date(reply.createdAt * 1000).toISOString().substring(14, 19)}></ListItemText>
+                                                    <ListItemText align="left" secondary={reply.createdBy + " " + new Date(reply.createdAt * 1000).toISOString().substring(14, 19)}></ListItemText>
                                                 </Grid>
                                             </Grid>
                                         )}
