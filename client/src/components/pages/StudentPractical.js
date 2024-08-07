@@ -172,13 +172,6 @@ export default function StudentPractical() {
 
     const CommentTimeline = ({ comments, videoLength, currentTime, onSeek, tasks }) => {
         const memoizedComments = useMemo(() => comments, [comments]);
-        const taskColors = useMemo(() => {
-            const colors = {};
-            tasks.forEach((task, index) => {
-                colors[task.name] = `hsl(${(index * 360) / tasks.length}, 70%, 50%)`;
-            });
-            return colors;
-        }, [tasks]);
     
         return (
             
@@ -216,8 +209,7 @@ export default function StudentPractical() {
                                     comment={comment}
                                     videoLength={videoLength}
                                     onSeek={onSeek}
-                                    index={index}
-                                    color={taskColors[task.name]}
+                                    index={comments.indexOf(comment)}
                                 />
                             ))}
                             

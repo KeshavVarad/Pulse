@@ -244,7 +244,7 @@ export default function Layout({ children }) {
     return (
         <Box sx={{
             display: "flex",
-            height: "100%"
+            minHeight: "100%",
         }}>
 
 
@@ -275,9 +275,12 @@ export default function Layout({ children }) {
                 alignItems: "center"
             }}>
                 <Header />
+                <Box sx={{
 
+                    width:"100%"
+                }}>
                 {children}
-
+                </Box>
             </Box>
         </Box>
 
