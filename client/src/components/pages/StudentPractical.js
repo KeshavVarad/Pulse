@@ -429,48 +429,13 @@ export default function StudentPractical() {
                         tasks={tasks}
                     />
 
-
-                    <Box sx={{
-                        display: "flex",
-                        flexDirection: "row"
-                    }}>
-
-                        <Box>
-                            <Box sx={{
-                                display: "flex",
-                                width: "100%",
-                                justifyContent: "center",
-                                pt: 8
-                            }}>
-                                <Typography variant="h5">Statistics</Typography>
-                            </Box>
-
-                            <Box sx={{
-                                display: "flex",
-                                width: "100%",
-                                py: 3,
-                                justifyContent: "center",
-                                justifyItems: "space-between",
-                                alignItems: "space-between",
-                                height: 300
-
-                            }}>
-
-                                <Box width="50%" pr="10">
-                                    <BarChart
-                                        xAxis={[{ scaleType: 'band', data: ["Red", "Yellow", "Green"], colorMap: { type: "ordinal", colors: ["red", "yellow", "green"] } }]}
-                                        series={[{ data: [redCount, yellowCount, greenCount] }]}
-                                        width={600}
-                                        height={300}
-                                    />
-                                </Box>
-
-                                <Box sx={{
+                <Box sx={{
                                     display: "flex",
                                     width: "20%",
                                     height: "100%",
                                     alignContent: "center",
                                     alignItems: "center",
+                                    py:4,
                                 }}>
 
                                     <FormControl fullWidth>
@@ -487,112 +452,138 @@ export default function StudentPractical() {
                                             })}
                                         </Select>
                                     </FormControl>
-                                </Box>
+               </Box>
 
-                            </Box>
 
-                        </Box>
 
-                        <Box>
+
+                    <Box sx={{
+                        display: "flex",
+                        flexDirection: "row",
+                        width:"100%"
+                    }}>
+                        
                             <Box sx={{
                                 display: "flex",
-                                width: "100%",
-                                justifyContent: "center",
-                                justifyItems: "center",
-                                pt: 8
+                                width: "50%",
+                                flexDirection:"column",
+                                pt:5
+
                             }}>
+                                <center><Typography variant="h5">Statistics</Typography></center>
+                                
+                                
+                                <Box sx={{
+                                display: "flex",
+                                minWidth: "100%",
+                                
+                            }}>
+                                    <BarChart
+                                        xAxis={[{ scaleType: 'band', data: ["Red", "Yellow", "Green"], colorMap: { type: "ordinal", colors: ["red", "yellow", "green"] } }]}
+                                        series={[{ data: [redCount, yellowCount, greenCount] }]}
+                                        width={600}
+                                        height={300}/>
+                                
+
+                
+                        </Box>
+                            </Box>
+                            
+                            <Box sx={{
+                                display: "flex",
+                                width: "50%",
+                                justifyItems: "center",
+                                pt: 5,
+                                flexDirection:"column"
+                                }}>
+                                <center>
                                 {currentTaskDiscussion ?
                                     <Typography variant="h5">{currentTaskDiscussion.name} Discussion</Typography> :
                                     <Typography variant="h5">No Task Selected</Typography>
                                 }
+                                </center>
+
+                                {currentTaskDiscussion ?
+                                                                    <Box sx={{
+                                                                        p: 4,
+                                                                         }}>
+                                                                        <Box sx={{
+                                                                            display: "flex",
+                                                                            flexDirection: "column",
+                                                                            width: "100%",
+                                                                            alignItems: "center",
+                                                                            justifyContent: "center"
+                                                                        }}>
+                                                                            <Grid item sx={{
+                                                                                width: "100%",
+                                                                            }}>
+                                                                                <List sx={{
+                                                                                    height: '70vh',
+                                                                                    overflowY: 'auto',
+                                                                                }}>
+                                                                                    {currentTaskDiscussion ? currentTaskDiscussion.replies.map((reply, idx) => {
+                                                                                        return (<ListItem key={idx}>
+                                                                                            {(reply.creatorId == userId) ? (
+                                                                                                <Grid container sx={{ width: "100%" }}>
+                                                                                                    <Grid item xs={12} >
+                                                                                                        <ListItemText align="right" primary={reply.message}></ListItemText>
+                                                                                                    </Grid>
+                                                                                                    <Grid item xs={12}>
+                                                                                                        <ListItemText align="right" secondary={reply.createdBy + " " + new Date(reply.createdAt * 1000).toISOString().substring(14, 19)}></ListItemText>
+                                                                                                    </Grid>
+                                                                                                </Grid>
+                                                                                            ) : (
+                                                                                                <Grid container sx={{ width: "100%" }}>
+                                                                                                    <Grid item xs={12} >
+                                                                                                        <ListItemText align="left" primary={reply.message}></ListItemText>
+                                                                                                    </Grid>
+                                                                                                    <Grid item xs={12}>
+                                                                                                        <ListItemText align="left" secondary={reply.createdBy + " " + new Date(reply.createdAt * 1000).toISOString().substring(14, 19)}></ListItemText>
+                                                                                                    </Grid>
+                                                                                                </Grid>
+                                                                                            )}
+                                        
+                                                                                        </ListItem>)
+                                                                                    }) : (<Typography>No Messages</Typography>)}
+                                                                                </List>
+                                                                            </Grid>
+                                        
+                                                                            {currentTaskDiscussion ?
+                                                                                <Box sx={{
+                                                                                    display: "flex",
+                                                                                }}>
+                                                                                    <TextField label="New Message"
+                                                                                        variant="outlined"
+                                                                                        color="secondary"
+                                                                                        sx={{
+                                                                                            mx: 2
+                                                                                        }}
+                                                                                        onChange={e => setMessage(e.target.value)}
+                                                                                        fullWidth
+                                                                                        value={curMessage} />
+                                        
+                                        
+                                                                                    <Button variant="contained" onClick={handleMessageInput}>
+                                                                                        <SendIcon />
+                                                                                    </Button>
+                                                                                </Box> :
+                                                                                null}
+                                        
+                                        
+                                        
+                                                                        </Box>
+                                        
+                                                                    </Box>:
+                                                                    <Box></Box>
+
+                                }  
 
                             </Box>
-                            <Box sx={{
-                                p: 4,
-                            }}>
-                                <Box sx={{
-                                    display: "flex",
-                                    flexDirection: "column",
-                                    width: "100%",
-                                    alignItems: "center",
-                                    justifyContent: "center"
-                                }}>
-                                    <Grid item sx={{
-                                        width: "100%",
-                                    }}>
-                                        <List sx={{
-                                            height: '70vh',
-                                            overflowY: 'auto',
-                                        }}>
-                                            {currentTaskDiscussion ? currentTaskDiscussion.replies.map((reply, idx) => {
-                                                return (<ListItem key={idx}>
-                                                    {(reply.creatorId == userId) ? (
-                                                        <Grid container sx={{ width: "100%" }}>
-                                                            <Grid item xs={12} >
-                                                                <ListItemText align="right" primary={reply.message}></ListItemText>
-                                                            </Grid>
-                                                            <Grid item xs={12}>
-                                                                <ListItemText align="right" secondary={reply.createdBy + " " + new Date(reply.createdAt * 1000).toISOString().substring(14, 19)}></ListItemText>
-                                                            </Grid>
-                                                        </Grid>
-                                                    ) : (
-                                                        <Grid container sx={{ width: "100%" }}>
-                                                            <Grid item xs={12} >
-                                                                <ListItemText align="left" primary={reply.message}></ListItemText>
-                                                            </Grid>
-                                                            <Grid item xs={12}>
-                                                                <ListItemText align="left" secondary={reply.createdBy + " " + new Date(reply.createdAt * 1000).toISOString().substring(14, 19)}></ListItemText>
-                                                            </Grid>
-                                                        </Grid>
-                                                    )}
-
-                                                </ListItem>)
-                                            }) : (<Typography>No Messages</Typography>)}
-                                        </List>
-                                    </Grid>
-
-                                    {currentTaskDiscussion ?
-                                        <Box sx={{
-                                            display: "flex",
-                                        }}>
-                                            <TextField label="New Message"
-                                                variant="outlined"
-                                                color="secondary"
-                                                sx={{
-                                                    mx: 2
-                                                }}
-                                                onChange={e => setMessage(e.target.value)}
-                                                fullWidth
-                                                value={curMessage} />
-
-
-                                            <Button variant="contained" onClick={handleMessageInput}>
-                                                <SendIcon />
-                                            </Button>
-                                        </Box> :
-                                        null}
-
-
-
-                                </Box>
-
-                            </Box>
-                        </Box>
-
-
-
 
                     </Box>
-
                 </Box>
-
             </Box>
-
-
         </Box >
-
-
-
 
     )
 }
