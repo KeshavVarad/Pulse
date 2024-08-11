@@ -28,13 +28,25 @@ export default function MakePractical() {
     const [makePracticalTutorial, setMakePracticalTutorial] = useState(false)
     const [isMakePracticalMounted, setMakePracticalMounted] = useState(false);
 
+    const [schoolStudents, setSchoolStudents] = useState([])
+    const [schoolInstructors, setSchoolInstructors] = useState([])
+
+
 
     const handleAddParticipant = async () => {
+
+
+        console.log(schoolStudents)
+        if (schoolStudents.findIndex((student) => student.email == curParticipant) == -1) {
+            return setError("Participant not in school.")
+        }
+
 
         try {
             const participant_res = await fetch(`${process.env.REACT_APP_API_HOST}/api/user/email/${curParticipant}`);
             const participants = await participant_res.json()
             const participant = participants[0]
+
 
 
             let curParticipantIds = participantIds.slice()
@@ -58,6 +70,10 @@ export default function MakePractical() {
 
     async function handleFormSubmit(e) {
         e.preventDefault();
+
+        if (schoolInstructors.findIndex((school_instructor) => school_instructor.email == instructor) == -1) {
+            return setError("Instructor not in school.")
+        }
 
         try {
             const user = auth.currentUser;
@@ -213,9 +229,16 @@ export default function MakePractical() {
                 }
 
                 const user_res = await fetch(`${process.env.REACT_APP_API_HOST}/api/user/${userId}`, requestOptions);
-                const userData = await user_res.json()
 
-                setMakePracticalTutorial(userData.make_practical_tutorial)
+                if (user_res.status == 404) {
+                    setMakePracticalTutorial(true)
+                }
+                else {
+                    const userData = await user_res.json()
+
+                    setMakePracticalTutorial(userData.make_practical_tutorial)
+                }
+
             }
 
         }
@@ -234,6 +257,47 @@ export default function MakePractical() {
         }
 
     }, [])
+
+    useEffect(() => {
+        async function fetchAdmin() {
+            const auth_user = auth.currentUser;
+            const token = auth_user && (await auth_user.getIdToken());
+
+            if (currentUser) {
+                const userId = currentUser.uid
+
+                const requestOptions = {
+                    method: "GET",
+                    mode: "cors",
+                    headers: {
+                        "Content-Type": "application/json",
+                        Authorization: `Bearer ${token}`,
+                    },
+                }
+
+                const user_res = await fetch(`${process.env.REACT_APP_API_HOST}/api/admin/${userId}`, requestOptions);
+                const userData = await user_res.json()
+
+                let school_students = []
+                let school_instructors = []
+
+                userData.students.map((student) => {
+                    school_students.push(student)
+                })
+                userData.instructors.map((instructor) => {
+                    school_instructors.push(instructor)
+                })
+
+                setSchoolStudents(school_students)
+                setSchoolInstructors(school_instructors)
+            }
+
+        }
+
+        if (currentUser) {
+            fetchAdmin()
+        }
+    }, [currentUser])
 
     const make_practical_tutorial_steps = [
         {

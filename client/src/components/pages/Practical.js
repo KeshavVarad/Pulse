@@ -58,11 +58,6 @@ export default function Practical() {
 
             setComments(commentsData)
 
-            const user_creator_id = practical.user_creator
-            const creator_res = await fetch(`${process.env.REACT_APP_API_HOST}/api/user/${user_creator_id}`);
-            const userCreator = await creator_res.json()
-            setUserCreator(userCreator)
-
             const user_instructor_id = practical.user_instructor_id
 
             setUserInstructorId(user_instructor_id)
