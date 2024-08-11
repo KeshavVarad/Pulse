@@ -12,6 +12,7 @@ import InsertCommentIcon from "@mui/icons-material/InsertComment"
 import { FormControl, InputLabel, Select, MenuItem, Typography, Box, Button, TextField, Grid, Modal, List, ListItem, ListItemText, Tooltip } from "@mui/material";
 import { BarChart } from '@mui/x-charts/BarChart';
 import StudentDisplayComments from "../elements/StudentDisplayComments.js"
+import { grey } from "@mui/material/colors";
 
 export default function StudentPractical() {
 
@@ -41,6 +42,8 @@ export default function StudentPractical() {
     const [currentTime, setCurrentTime] = useState(0);
 
     const [tasks, setTasks] = useState([])
+
+
     const [taskNames, setTaskNames] = useState([])
     const [displayTask, setDisplayTask] = useState({ name: "", red_count: 0, yellow_count: 0, green_count: 0 })
     const [redCount, setRedCount] = useState(0)
@@ -49,10 +52,15 @@ export default function StudentPractical() {
 
 
     const handleChangeDisplayTask = (e) => {
-        setDisplayTask(e.target.value)
-        setRedCount(e.target.value.red_count)
-        setYellowCount(e.target.value.yellow_count)
-        setGreenCount(e.target.value.green_count)
+        
+        var selected_task = e.target.value
+        setCurrentTaskDiscussion( selected_task)
+        setDisplayTask(selected_task)
+       
+
+        setRedCount( selected_task.red_count)
+        setYellowCount( selected_task.yellow_count)
+        setGreenCount( selected_task.green_count)
     }
 
 
@@ -150,9 +158,18 @@ export default function StudentPractical() {
         };
 
         const handleClick = () => {
+
             onSeek(comment.timestamp - 5);
             setCurrentCommentIndex(index);
-            setCurrentTaskDiscussion(tasks.find(task => task.name === comments[currentCommentIndex].task))
+
+            var selected_task = tasks.find(task => task.name === comments[index].task)
+            setCurrentTaskDiscussion( selected_task)
+            setDisplayTask(selected_task)
+        
+
+            setRedCount( selected_task.red_count)
+            setYellowCount( selected_task.yellow_count)
+            setGreenCount( selected_task.green_count)
         }
 
         return (
@@ -184,7 +201,7 @@ export default function StudentPractical() {
 
         return (
 
-            <Box sx={{ position: 'relative', width: '100%', height: `${(tasks.length * 40)}px`, backgroundColor: "#d3d3d3", overflow: 'hidden', borderRadius: "15px" }}>
+            <Box sx={{ position: 'relative', width: '90%', height: `${(tasks.length * 40)}px`, backgroundColor: "#d3d3d3", overflow: 'hidden', borderRadius: "15px" }}>
                 {tasks.map((task, taskIndex) => (
                     <Box
                         key={task.name}
@@ -200,13 +217,7 @@ export default function StudentPractical() {
 
                         <Box>
 
-                            <Box sx={{
-                                zIndex: 3,
-                                position: 'absolute',
-                                left: 10
-                            }}>
-                                <Typography variant="h7">{task.name}</Typography>
-                            </Box>
+
 
 
                         </Box>
@@ -226,11 +237,6 @@ export default function StudentPractical() {
                     </Box>
 
                 ))}
-
-
-
-
-
 
                 <Box
                     sx={{
@@ -421,6 +427,33 @@ export default function StudentPractical() {
                     }}>
                         <Typography variant="h5"  >Timeline</Typography>
                     </Box>
+                    <Box sx ={{
+                        display:"flex",
+                        flexDirection: "row",
+                        width : '100%'
+                    }}>
+
+                    <Box sx={{
+                        minWidth:"5%",
+                        height:"100%",
+                        flexDirection: "column",
+                    }}>
+                        {tasks.map((task, taskIndex) => (
+                            <Box
+                            key={task.name}
+                            sx={{
+                                left: 0,
+                                width: '100%',
+                                height: '30px',
+                                pt:"10px",
+                            }}>
+                                <Typography variant="h7">{task.name}</Typography>
+                            </Box>
+                        ))  
+                        }
+                        
+                    </Box>
+
                     <CommentTimeline
                         comments={comments}
                         videoLength={player ? player.getDuration() : 0}
@@ -428,6 +461,8 @@ export default function StudentPractical() {
                         onSeek={(timestamp) => player && player.seekTo(timestamp)}
                         tasks={tasks}
                     />
+                    </Box>
+
 
                     <Box sx={{
                         display: "flex",
@@ -467,7 +502,7 @@ export default function StudentPractical() {
                             display: "flex",
                             width: "50%",
                             flexDirection: "column",
-                            pt: 5
+                            pt: 3
 
                         }}>
                             <center><Typography variant="h5">Statistics</Typography></center>
@@ -493,7 +528,7 @@ export default function StudentPractical() {
                             display: "flex",
                             width: "50%",
                             justifyItems: "center",
-                            pt: 5,
+                            pt: 3,
                             flexDirection: "column"
                         }}>
                             <center>
@@ -512,13 +547,15 @@ export default function StudentPractical() {
                                         flexDirection: "column",
                                         width: "100%",
                                         alignItems: "center",
-                                        justifyContent: "center"
+                                        justifyContent: "center",
+                                        border: '5px solid #ccc',
+                                        borderRadius:2,
                                     }}>
                                         <Grid item sx={{
                                             width: "100%",
                                         }}>
                                             <List sx={{
-                                                height: '70vh',
+                                                height: '20vh',
                                                 overflowY: 'auto',
                                             }}>
                                                 {currentTaskDiscussion ? currentTaskDiscussion.replies.map((reply, idx) => {
