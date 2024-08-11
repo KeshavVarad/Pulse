@@ -23,6 +23,8 @@ export default function InstructorPractical() {
     const params = useParams();
     const practicalId = params.id;
 
+    const [practicalName, setPracticalName] = useState("");
+
 
     // Video state
     const [videoId, setVideoId] = useState("")
@@ -414,6 +416,8 @@ export default function InstructorPractical() {
 
             const practical = await practical_res.json()
 
+            setPracticalName(practical.practical_name)
+
             const videoParams = practical.video_link.split("/")
             setVideoId(videoParams[videoParams.length - 1])
 
@@ -480,7 +484,7 @@ export default function InstructorPractical() {
                 <Box sx={{
                     py: 5
                 }}>
-                    <Typography variant="h4"> Practical </Typography>
+                    <Typography variant="h4"> {practicalName} </Typography>
                 </Box>
 
                 <Box sx={{

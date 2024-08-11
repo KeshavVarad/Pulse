@@ -39,7 +39,7 @@ export const getUsers = async (req, res, next) => {
             users.forEach((doc) => {
                 const user = new User(
                     doc.id,
-                    doc.data().name,
+                    doc.data().username,
                     doc.data().real_name,
                     doc.data().email,
                     doc.data().createdPracticals,
@@ -48,6 +48,7 @@ export const getUsers = async (req, res, next) => {
                     doc.data().navigation_tutorial,
                     doc.data().dashboard_tutorial,
                     doc.data().make_practical_tutorial,
+                    doc.data().role,
                 );
                 userArray.push(user);
             });
@@ -91,7 +92,7 @@ export const getUserByEmail = async (req, res, next) => {
             data.forEach((doc) => {
                 const user = new User(
                     doc.id,
-                    doc.data().name,
+                    doc.data().username,
                     doc.data().real_name,
                     doc.data().email,
                     doc.data().createdPracticals,
@@ -100,6 +101,7 @@ export const getUserByEmail = async (req, res, next) => {
                     doc.data().navigation_tutorial,
                     doc.data().dashboard_tutorial,
                     doc.data().make_practical_tutorial,
+                    doc.data().role,
                 );
                 userArray.push(user);
             });

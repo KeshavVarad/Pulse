@@ -14,6 +14,7 @@ import { VerifyToken } from "./middleware/VerifyToken.js";
 import userRoute from "./routes/userRoutes.js"
 import practicalRoute from "./routes/practicalRoutes.js"
 import commentRoute from "./routes/commentRoutes.js"
+import adminRoute from "./routes/adminRoutes.js"
 
 dotenv.config();
 
@@ -43,6 +44,7 @@ app.use(function (req, res, next) {
 app.use('/api', userRoute);
 app.use('/api', practicalRoute);
 app.use('/api', commentRoute);
+app.use('/api', adminRoute);
 
 if (process.env.MODE != "dev") {
     app.get("*", (req, res, next) => {

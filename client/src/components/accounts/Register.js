@@ -12,6 +12,7 @@ export default function Register() {
     const [confirmPassword, setConfirmPassword] = useState("");
     const [username, setUsername] = useState("");
     const [real_name, setRealName] = useState("");
+    const [school_name, setSchoolName] = useState("");
 
     const navigate = useNavigate();
     const { currentUser, register, setError } = useAuth();
@@ -32,7 +33,7 @@ export default function Register() {
 
         try {
             setLoading(true);
-            await register(email, password, username, real_name);
+            await register(email, password, username, school_name, true, "", "", "");
             navigate("/dashboard");
         } catch (e) {
             setError("Failed to register");
@@ -56,17 +57,17 @@ export default function Register() {
                 justifyContent: "center",
                 alignItems: "center",
                 mt: 5,
-                width:'32%',
-                
+                width: '32%',
+
             }}>
                 <Box sx={{
                     my: 4,
-                    justifyItems:"center",
+                    justifyItems: "center",
 
 
                 }}>
                     <Typography variant='h4'>
-                        Register Your Account
+                        Register Your School
                     </Typography>
                 </Box>
 
@@ -79,14 +80,14 @@ export default function Register() {
                         sx={{ mb: 3 }}
                         fullWidth
                         value={username} />
-                    <TextField label="Full Name"
-                        onChange={e => setRealName(e.target.value)}
+                    <TextField label="School Name"
+                        onChange={e => setSchoolName(e.target.value)}
                         required
                         variant="outlined"
                         color="secondary"
                         sx={{ mb: 3 }}
                         fullWidth
-                        value={real_name} />
+                        value={school_name} />
                     <TextField label="Email"
                         onChange={e => setEmail(e.target.value)}
                         required

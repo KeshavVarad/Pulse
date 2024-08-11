@@ -126,11 +126,20 @@ export default function Layout({ children }) {
                 }
 
                 const user_res = await fetch(`${process.env.REACT_APP_API_HOST}/api/user/${userId}`, requestOptions);
-                const userData = await user_res.json()
 
-                setNavTutorial(userData.navigation_tutorial)
-                setDashTutorial(userData.dashboard_tutorial)
-                setMakePracticalTutorial(userData.make_practical_tutorial)
+                if (user_res.status == 200) {
+                    const userData = await user_res.json()
+
+                    setNavTutorial(userData.navigation_tutorial)
+                    setDashTutorial(userData.dashboard_tutorial)
+                    setMakePracticalTutorial(userData.make_practical_tutorial)
+                }
+                else {
+                    setNavTutorial(false)
+                    setDashTutorial(false)
+                    setMakePracticalTutorial(false)
+                }
+
             }
 
         }
@@ -277,9 +286,9 @@ export default function Layout({ children }) {
                 <Header />
                 <Box sx={{
 
-                    width:"100%"
+                    width: "100%"
                 }}>
-                {children}
+                    {children}
                 </Box>
             </Box>
         </Box>

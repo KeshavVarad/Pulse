@@ -19,37 +19,69 @@ export function AuthProvider({ children }) {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState("");
 
-    function register(email, password, username, real_name) {
+    function register(email, password, username, name, isAdmin, roleType, adminPass, adminEmail) {
         return createUserWithEmailAndPassword(auth, email, password)
             .then(async function (data) {
                 const user = data.user;
                 const token = user && (await user.getIdToken());
 
-                const newUserData = {
-                    id: user.uid,
-                    username: username,
-                    real_name: real_name,
-                    email: email,
-                    createdPracticals: [],
-                    inPracticals: [],
-                    teachPracticals: [],
-                    navigation_tutorial: false,
-                    dashboard_tutorial: false,
-                    make_navigation_tutorial: false
+                if (!isAdmin) {
+                    const newUserData = {
+                        id: user.uid,
+                        username: username,
+                        real_name: name,
+                        email: email,
+                        createdPracticals: [],
+                        inPracticals: [],
+                        teachPracticals: [],
+                        navigation_tutorial: false,
+                        dashboard_tutorial: false,
+                        make_navigation_tutorial: false,
+                        role: roleType
+                    }
+
+                    const createNewUserOptions = {
+                        method: "POST",
+                        mode: "cors",
+                        headers: {
+                            "Content-Type": "application/json",
+                            Authorization: `Bearer ${token}`,
+                        },
+                        body: JSON.stringify(newUserData)
+
+                    };
+
+                    await fetch(`${process.env.REACT_APP_API_HOST}/api/newUser`, createNewUserOptions);
+
+                    signOut(auth);
+                    signInWithEmailAndPassword(auth, adminEmail, adminPass)
+                }
+                else {
+                    const newAdminData = {
+                        id: user.uid,
+                        username: username,
+                        school_name: name,
+                        email: email,
+                        createdPracticals: [],
+                        students: [],
+                        instructors: []
+                    }
+
+                    const createNewAdminOptions = {
+                        method: "POST",
+                        mode: "cors",
+                        headers: {
+                            "Content-Type": "application/json",
+                            Authorization: `Bearer ${token}`,
+                        },
+                        body: JSON.stringify(newAdminData)
+                    };
+
+                    await fetch(`${process.env.REACT_APP_API_HOST}/api/newAdmin`, createNewAdminOptions);
+
                 }
 
-                const createNewUserOptions = {
-                    method: "POST",
-                    mode: "cors",
-                    headers: {
-                        "Content-Type": "application/json",
-                        Authorization: `Bearer ${token}`,
-                    },
-                    body: JSON.stringify(newUserData)
 
-                };
-
-                await fetch(`${process.env.REACT_APP_API_HOST}/api/newUser`, createNewUserOptions);
 
                 //Here if you want you can sign in the user
             }).catch(function (error) {
