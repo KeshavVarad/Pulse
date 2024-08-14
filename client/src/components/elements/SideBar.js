@@ -16,13 +16,14 @@ import AssessmentOutlinedIcon from '@mui/icons-material/AssessmentOutlined';
 import AddchartIcon from '@mui/icons-material/Addchart';
 import { Box, Icon } from '@mui/material';
 import InsightsIcon from '@mui/icons-material/Insights';
-import { useAuth } from '../../contexts/AuthContext';
 import AccountCircleOutlinedIcon from '@mui/icons-material/AccountCircleOutlined';
 import LogoutOutlinedIcon from '@mui/icons-material/LogoutOutlined';
 import { Link, useNavigate } from 'react-router-dom'
 import MonitorHeartIcon from '@mui/icons-material/MonitorHeart';
 import Joyride from 'react-joyride';
 import { useState, useEffect } from 'react';
+import auth from "../../config/firebase.js";
+import { useAuth } from '../../contexts/AuthContext.js';
 
 const drawerWidth = 240;
 export default function SideBar() {
@@ -38,8 +39,47 @@ export default function SideBar() {
             setError("Failed to logout");
         }
     }
+    const [isAdmin, setIsAdmin] = useState(false)
+
+    useEffect(() => {
+
+        async function checkUser() {
+            try {
+                const user = auth.currentUser;
+                const token = user && (await user.getIdToken());
+
+                console.log(user)
+
+                const userId = user.uid;
+
+                const requestOptions = {
+                    method: "GET",
+                    mode: "cors",
+                    headers: {
+                        "Content-Type": "application/json",
+                        Authorization: `Bearer ${token}`,
+                    },
+
+                };
+
+                const admin_res = await fetch(`${process.env.REACT_APP_API_HOST}/api/admin/${userId}`, requestOptions);
+
+                if (admin_res.status == 200) {
+                    setIsAdmin(true);
+                }
 
 
+
+            } catch (e) {
+                console.log(e);
+            }
+        }
+
+        checkUser()
+
+    }, [])
+
+    
     return (
         <Drawer sx={{
             width: 120,
@@ -74,13 +114,16 @@ export default function SideBar() {
                             <ListItemText primary={"Dashboard"} />
                         </ListItemButton>
                     </ListItem>
+
+                    {isAdmin ? 
                     <ListItem key={"Make Practical"} disablePadding>
-                        <ListItemButton component={Link} to={"/makepractical"}
-                            variant="contained" color="secondary">
-                            <ListItemIcon><AddchartIcon /></ListItemIcon>
-                            <ListItemText primary={"Make Practical"} />
-                        </ListItemButton>
-                    </ListItem>
+                    <ListItemButton component={Link} to={"/makepractical"}
+                        variant="contained" color="secondary">
+                        <ListItemIcon><AddchartIcon /></ListItemIcon>
+                        <ListItemText primary={"Make Practical"} />
+                    </ListItemButton>
+                    </ListItem>: <Box></Box>}
+                    
                     <ListItem key={"Analytics"} disablePadding>
                         <ListItemButton component={Link} to={""}
                             variant="contained" color="secondary">

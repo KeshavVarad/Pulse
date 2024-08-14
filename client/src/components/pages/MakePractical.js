@@ -311,7 +311,7 @@ export default function MakePractical() {
             placement: "right"
         },
         {
-            target: ".new_practical_participants",
+            target: ".new_practical_sparticipant",
             content: "The emails of the students participating in your practical. As you add students, they will be displayed in a list underneath this box.",
             placement: "right"
         },
@@ -385,7 +385,7 @@ export default function MakePractical() {
                             justifyContent: "center",
                             alignItems: "center",
                         }}>
-                        <TextField label="Participant"
+                        <TextField label="Student"
                             onChange={e => setCurParticipant(e.target.value)}
                             variant="outlined"
                             color="secondary"
@@ -393,7 +393,7 @@ export default function MakePractical() {
                             value={curParticipant} />
 
                         <Button variant='contained' onClick={handleAddParticipant}>
-                            Add Participant
+                            Add Student
                         </Button>
 
                     </Box>

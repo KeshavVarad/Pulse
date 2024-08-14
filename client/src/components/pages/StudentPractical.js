@@ -178,7 +178,7 @@ export default function StudentPractical() {
                     sx={{
                         position: 'absolute',
                         left: `${(comment.timestamp / videoLength) * 100}%`,
-                        width: '20px',
+                        width: '15px',
                         height: '100%',
                         backgroundColor: getColorForRating(comment.rating),
                         transform: 'translate(-50%)',

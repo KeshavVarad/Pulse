@@ -169,6 +169,7 @@ export default function InstructorPractical() {
             practicalUpdateData.avg_rating = rating_sum / newComments.length
 
             practicalUpdateData.tasks = newTasks
+            setTasks(newTasks)
 
             const requestOptions = {
                 method: "PUT",
@@ -183,7 +184,7 @@ export default function InstructorPractical() {
             await fetch(`${process.env.REACT_APP_API_HOST}/api/updatePractical/${practicalId}`, requestOptions);
 
             let newCommentsData = comments.slice()
-
+            console.log(practicalUpdateData);
             newCommentsData.unshift(newComment)
 
             setComments(newCommentsData)
@@ -274,25 +275,28 @@ export default function InstructorPractical() {
             let practicalUpdateData = { comments: oldCommentIds }
             let newTasks = practical.tasks
             let taskIndex = newTasks.findIndex(t => t.name == comments[idx].task)
-
+            let rating_sum = 1 * practical.red_count + 3 * practical.yellow_count + 5 * practical.green_count
 
             if (comment_rating == 1) {
                 practicalUpdateData.red_count = practical.red_count - 1
                 newTasks[taskIndex].red_count -= 1
+                rating_sum-=1
             }
 
             if (comment_rating == 3) {
                 practicalUpdateData.yellow_count = practical.yellow_count - 1
                 newTasks[taskIndex].yellow_count -= 1
+                rating_sum-=3
             }
 
             if (comment_rating == 5) {
                 practicalUpdateData.green_count = practical.green_count - 1
                 newTasks[taskIndex].green_count -= 1
+                rating_sum-=5
             }
 
             practicalUpdateData.tasks = newTasks
-
+            practicalUpdateData.avg_rating = rating_sum / comments.length
             const updatePracticalRequestOptions = {
                 method: "PUT",
                 mode: "cors",
@@ -305,10 +309,11 @@ export default function InstructorPractical() {
             await fetch(`${process.env.REACT_APP_API_HOST}/api/updatePractical/${practicalId}`, updatePracticalRequestOptions);
 
             let newComments = comments.slice()
-
+            console.log(practicalUpdateData)
             newComments.splice(idx, 1)
 
             setComments(newComments)
+            setTasks(newTasks)
 
         } catch (e) {
             console.log(e);
@@ -613,8 +618,12 @@ export default function InstructorPractical() {
                                                         onChange={e => setCommentEdit(e.target.value)}
                                                         variant="outlined"
                                                         color="secondary"
-                                                        sx={{ mb: 3 }}
-                                                        fullWidth
+                                                        size="small"
+                                                        sx={{
+                                                             
+                                                             width:"60%"
+                                                            }}
+                                                        
                                                         value={commentEdit} />
                                                 </TableCell>)
                                         }
