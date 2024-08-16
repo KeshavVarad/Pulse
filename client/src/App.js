@@ -1,6 +1,7 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 
 import Register from './components/accounts/Register';
+import RegisterUser from './components/accounts/RegisterUser';
 import Login from './components/accounts/Login';
 import Home from './components/pages/Home';
 import Practical from './components/pages/Practical';
@@ -22,35 +23,36 @@ function App() {
       <Router>
 
         <Box sx={{
-          minHeight:"80vh"
+          minHeight: "80vh"
         }}>
 
-        
-        <Layout>
-          <ErrorMessage />
+
+          <Layout>
+            <ErrorMessage />
 
 
-          <Routes>
-            <Route exact path="/dashboard" element={<Dashboard />} />
-            <Route exact path="/" element={<Home />} />
-            <Route exact path="/register" element={<Register />} />
-            <Route exact path="/login" element={<Login />} />
-            <Route exact path="/practical/:id" element={
-              <WithPrivateRoute>
-                <Practical />
-              </WithPrivateRoute>
-            } />
-            <Route exact path="/makepractical" element={
-              <WithPrivateRoute>
-                <MakePractical />
-              </WithPrivateRoute>
-            } />
-          </Routes>
+            <Routes>
+              <Route exact path="/dashboard" element={<Dashboard />} />
+              <Route exact path="/" element={<Home />} />
+              <Route exact path="/register_school" element={<Register />} />
+              <Route exact path="/register_user" element={<RegisterUser />} />
+              <Route exact path="/login" element={<Login />} />
+              <Route exact path="/practical/:id" element={
+                <WithPrivateRoute>
+                  <Practical />
+                </WithPrivateRoute>
+              } />
+              <Route exact path="/makepractical" element={
+                <WithPrivateRoute>
+                  <MakePractical />
+                </WithPrivateRoute>
+              } />
+            </Routes>
 
-          
 
 
-        </Layout>
+
+          </Layout>
         </Box>
       </Router>
     </AuthProvider>

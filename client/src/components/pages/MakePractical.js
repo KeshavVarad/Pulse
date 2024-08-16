@@ -275,16 +275,19 @@ export default function MakePractical() {
                     },
                 }
 
-                const user_res = await fetch(`${process.env.REACT_APP_API_HOST}/api/admin/${userId}`, requestOptions);
-                const userData = await user_res.json()
+                const user_res = await fetch(`${process.env.REACT_APP_API_HOST}/api/user/${userId}`, requestOptions);
+                const user_data = await user_res.json()
+
+                const school_res = await fetch(`${process.env.REACT_APP_API_HOST}/api/school/${user_data.school_id}`, requestOptions);
+                const school_data = await school_res.json()
 
                 let school_students = []
                 let school_instructors = []
 
-                userData.students.map((student) => {
+                school_data.students.map((student) => {
                     school_students.push(student)
                 })
-                userData.instructors.map((instructor) => {
+                school_data.instructors.map((instructor) => {
                     school_instructors.push(instructor)
                 })
 

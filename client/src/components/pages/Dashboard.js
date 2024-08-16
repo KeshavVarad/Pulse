@@ -35,8 +35,6 @@ export default function Dashboard() {
                 const user = auth.currentUser;
                 const token = user && (await user.getIdToken());
 
-                console.log(user)
-
                 const userId = user.uid;
 
                 const requestOptions = {
@@ -49,9 +47,10 @@ export default function Dashboard() {
 
                 };
 
-                const admin_res = await fetch(`${process.env.REACT_APP_API_HOST}/api/admin/${userId}`, requestOptions);
+                const user_res = await fetch(`${process.env.REACT_APP_API_HOST}/api/user/${userId}`, requestOptions);
+                const user_data = await user_res.json()
 
-                if (admin_res.status == 200) {
+                if (user_data.role === "admin") {
                     setIsAdmin(true);
                 }
 

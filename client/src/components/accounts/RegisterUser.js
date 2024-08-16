@@ -5,14 +5,13 @@ import { Box, Typography, TextField, Button } from '@mui/material'
 import { useAuth } from '../../contexts/AuthContext';
 import { useEffect } from "react";
 
-export default function Register() {
+export default function RegisterUser() {
 
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [confirmPassword, setConfirmPassword] = useState("");
     const [username, setUsername] = useState("");
     const [real_name, setRealName] = useState("");
-    const [school_name, setSchoolName] = useState("");
 
     const navigate = useNavigate();
     const { currentUser, register, setError } = useAuth();
@@ -34,7 +33,30 @@ export default function Register() {
         try {
             setLoading(true);
 
-            await register(email, password, username, real_name, "admin", school_name, null, null);
+            const invite_res = await fetch(`${process.env.REACT_APP_API_HOST}/api/invite/email/${email}`); // TODO: Have to figure out how to make this an unprotected route.
+
+            let invite_data = null
+
+            if (invite_res.status == 200) {
+                const invite_data_array = await invite_res.json()
+                invite_data = invite_data_array[0]
+            }
+            else {
+                return setError("Invalid invite.")
+            }
+
+            if (invite_data.status != "invited") {
+                return setError("Invalid invite.")
+            }
+
+            const inviteExpireDate = Date(invite_data.expires_on)
+            const currentDate = Date.now()
+
+            if (currentDate > inviteExpireDate) {
+                return setError("Your invite expired.")
+            }
+
+            await register(email, password, username, real_name, invite_data.role, invite_data.school_name, invite_data.school_id, invite_data.id);
             navigate("/dashboard");
         } catch (e) {
             setError("Failed to register");
@@ -64,11 +86,9 @@ export default function Register() {
                 <Box sx={{
                     my: 4,
                     justifyItems: "center",
-
-
                 }}>
                     <Typography variant='h4'>
-                        Register Your School
+                        Register Your Account
                     </Typography>
                 </Box>
 
@@ -89,14 +109,6 @@ export default function Register() {
                         sx={{ mb: 3 }}
                         fullWidth
                         value={real_name} />
-                    <TextField label="School Name"
-                        onChange={e => setSchoolName(e.target.value)}
-                        required
-                        variant="outlined"
-                        color="secondary"
-                        sx={{ mb: 3 }}
-                        fullWidth
-                        value={school_name} />
                     <TextField label="Email"
                         onChange={e => setEmail(e.target.value)}
                         required

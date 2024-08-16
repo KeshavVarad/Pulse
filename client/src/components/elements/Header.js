@@ -22,7 +22,7 @@ export default function Header() {
     return (
         <div>
             <AppBar position='fixed'>
-                <Toolbar sx={{height:6}}>
+                <Toolbar sx={{ height: 6 }}>
                     {
                         !currentUser ? (
                             <MonitorHeartIcon fontSize='large' />
@@ -56,7 +56,7 @@ export default function Header() {
                                         Login
                                     </Button>}
 
-                                    <Button component={Link} to="/register" variant="contained">
+                                    <Button component={Link} to="/register_school" variant="contained">
                                         Sign Up
                                     </Button>
                                 </Box>) : (<Box>

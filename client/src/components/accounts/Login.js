@@ -52,7 +52,7 @@ export default function Login() {
                 justifyContent: "center",
                 alignItems: "center",
                 mt: 5,
-                width:'32%',
+                width: '32%',
             }}>
                 <Box sx={{
                     my: 4
@@ -93,7 +93,7 @@ export default function Login() {
                             Login
                         </Button>
 
-                        <Button component={Link} to="/register" sx={{ mx: 1 }}>
+                        <Button component={Link} to="/register_school" sx={{ mx: 1 }}>
                             Don't have an account? Register
                         </Button>
                     </Box>

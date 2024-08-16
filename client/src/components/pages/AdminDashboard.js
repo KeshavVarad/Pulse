@@ -16,11 +16,21 @@ import {
 } from '@mui/material'
 import { useAuth } from '../../contexts/AuthContext'
 import auth from '../../config/firebase'
+import { v4 as uuidv4 } from "uuid"
+import CloseIcon from '@mui/icons-material/Close';
 
 export default function AdminDashboard() {
 
+    const [schoolId, setSchoolId] = useState(null)
+    const [schoolName, setSchoolName] = useState(null)
+
     const [studentInfo, setStudentInfo] = useState([])
     const [instructorInfo, setInstructorInfo] = useState([])
+    const [adminInfo, setAdminInfo] = useState([])
+
+    const [invitedStudentInfo, setInvitedStudentInfo] = useState([])
+    const [invitedInstructorInfo, setInvitedInstructorInfo] = useState([])
+    const [invitedAdminInfo, setInvitedAdminInfo] = useState([])
     const [registerOpen, setRegisterOpen] = useState(false)
 
     const [email, setEmail] = useState("");
@@ -49,6 +59,58 @@ export default function AdminDashboard() {
         setRegisterType("instructor")
     }
 
+    const handleRemoveInviteButton = async (role, idx) => {
+        let invite_id = null
+
+        if (role === "student") {
+            invite_id = invitedStudentInfo[idx].id
+            let new_info = invitedStudentInfo.slice()
+
+            new_info.splice(idx, 1)
+
+            setInvitedStudentInfo(new_info)
+        }
+
+        if (role === "instructor") {
+            invite_id = invitedInstructorInfo[idx].id
+
+            let new_info = invitedInstructorInfo.slice()
+
+            new_info.splice(idx, 1)
+
+            setInvitedInstructorInfo(new_info)
+        }
+
+        if (role === "admin") {
+            invite_id = invitedAdminInfo[idx].id
+
+            let new_info = invitedAdminInfo.slice()
+
+            new_info.splice(idx, 1)
+
+            setInvitedAdminInfo(new_info)
+        }
+
+        try {
+            const user = auth.currentUser;
+            const token = user && (await user.getIdToken());
+
+            const deleteOptions = {
+                method: "DELETE",
+                mode: "cors",
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${token}`,
+                },
+            };
+
+            await fetch(`${process.env.REACT_APP_API_HOST}/api/deleteInvite/${invite_id}`, deleteOptions);
+
+        } catch (e) {
+            console.log(e)
+        }
+    }
+
     async function handleFormSubmit(e) {
         e.preventDefault();
 
@@ -61,31 +123,61 @@ export default function AdminDashboard() {
             const token = user && (await user.getIdToken());
 
             setLoading(true);
-            await register(email, password, username, real_name, false, registerType, adminPassword, user.email);
 
-            let new_student_info = studentInfo.slice()
-            if (registerType == "student") {
-                new_student_info.push({ username, real_name, email })
-            }
-            let new_instructor_info = instructorInfo.slice()
-            if (registerType == "instructor") {
-                new_instructor_info.push({ username, real_name, email })
+            const currentDate = new Date();
+
+            // Add 7 days (a week) to the current date
+            const nextWeek = new Date();
+            nextWeek.setDate(currentDate.getDate() + 7);
+
+
+            const newInvite = {
+                id: uuidv4(),
+                school_name: schoolName,
+                school_id: schoolId,
+                invite_email: email,
+                role: registerType,
+                status: "invited",
+                expires_on: nextWeek
             }
 
-            const updateOptions = {
-                method: "PUT",
+            const createInviteOptions = {
+                method: "POST",
                 mode: "cors",
                 headers: {
                     "Content-Type": "application/json",
                     Authorization: `Bearer ${token}`,
                 },
-                body: JSON.stringify({ students: new_student_info, instructors: new_instructor_info })
+                body: JSON.stringify(newInvite)
             }
-            await fetch(`${process.env.REACT_APP_API_HOST}/api/updateAdmin/${user.uid}`, updateOptions);
 
-            setStudentInfo(new_student_info)
-            setInstructorInfo(new_instructor_info)
+            await fetch(`${process.env.REACT_APP_API_HOST}/api/newInvite`, createInviteOptions);
 
+            if (registerType === "student") {
+                let new_student_invites = invitedStudentInfo.slice()
+
+                new_student_invites.push(newInvite)
+
+                setInvitedStudentInfo(new_student_invites)
+            }
+
+            if (registerType === "instructor") {
+                let new_instructor_invites = invitedInstructorInfo.slice()
+
+                new_instructor_invites.push(newInvite)
+
+                setInvitedInstructorInfo(new_instructor_invites)
+            }
+
+            if (registerType === "admin") {
+                let new_admin_invites = invitedAdminInfo.slice()
+
+                new_admin_invites.push(newInvite)
+
+                setInvitedAdminInfo(new_admin_invites)
+            }
+
+            setEmail("")
             setRegisterOpen(false)
             setRegisterType("")
 
@@ -116,13 +208,55 @@ export default function AdminDashboard() {
 
                 };
 
-                const admin_res = await fetch(`${process.env.REACT_APP_API_HOST}/api/admin/${userId}`, requestOptions);
-                const admin_data = await admin_res.json()
+                const user_res = await fetch(`${process.env.REACT_APP_API_HOST}/api/user/${userId}`, requestOptions);
+                const user_data = await user_res.json()
+
+                const school_res = await fetch(`${process.env.REACT_APP_API_HOST}/api/school/${user_data.school_id}`, requestOptions);
+                const school_data = await school_res.json()
+
+                const invite_res = await fetch(`${process.env.REACT_APP_API_HOST}/api/invite/school/${school_data.school_name}`, requestOptions);
+
+                let invite_data = []
+
+                if (invite_res.status == 200) {
+                    invite_data = await invite_res.json()
+                }
 
 
-                setStudentInfo(admin_data.students.slice())
+                let student_invites = []
+                let instructor_invites = []
+                let admin_invites = []
 
-                setInstructorInfo(admin_data.instructors.slice())
+                invite_data.map((invite) => {
+                    if (invite.status === "accepted") {
+                        return;
+                    }
+
+                    if (invite.role === "student") {
+                        student_invites.push(invite)
+                    }
+                    else if (invite.role === "instructor") {
+                        instructor_invites.push(invite)
+                    }
+                    else {
+                        admin_invites.push(invite)
+                    }
+                })
+
+                console.log(school_data.admins)
+
+
+                setSchoolId(user_data.school_id)
+                setSchoolName(user_data.school_name)
+
+                setStudentInfo(school_data.students.slice())
+                setInstructorInfo(school_data.instructors.slice())
+                setAdminInfo(school_data.admins.slice())
+
+                setInvitedStudentInfo(student_invites)
+                setInvitedInstructorInfo(instructor_invites)
+                setInvitedAdminInfo(admin_invites)
+
 
             } catch (e) {
                 console.log(e);
@@ -171,6 +305,7 @@ export default function AdminDashboard() {
                                     <TableRow>
                                         <TableCell style={{ minWidth: 10 }}>Student Name</TableCell>
                                         <TableCell align="right">Email</TableCell>
+                                        <TableCell align="right">Cancel Invite</TableCell>
                                     </TableRow>
                                 </TableHead>
                                 <TableBody>
@@ -185,6 +320,25 @@ export default function AdminDashboard() {
                                         <TableCell align="right">{student.email}</TableCell>
                                     </TableRow>)
                                     )}
+
+                                    {invitedStudentInfo.map((invite, idx) =>
+                                    (<TableRow
+                                        key={idx}
+                                        sx={{
+                                            '&:last-child td, &:last-child th': { border: 0, color: "#555555" },
+                                        }}
+                                    >
+                                        <TableCell component="th" scope="row">
+                                            INVITE PENDING
+                                        </TableCell>
+                                        <TableCell align="right">{invite.invite_email}</TableCell>
+                                        <TableCell align="right">
+                                            <Button onClick={() => handleRemoveInviteButton("student", idx)}>
+                                                <CloseIcon />
+                                            </Button>
+                                        </TableCell>
+                                    </TableRow>)
+                                    )}
                                 </TableBody>
                             </Table>
                         </TableContainer>
@@ -193,7 +347,7 @@ export default function AdminDashboard() {
                             pt: 5
                         }}>
                             <Button variant="contained" onClick={handleAddStudentButton}>
-                                Add Student
+                                Invite Student
                             </Button>
                         </Box>
 
@@ -214,6 +368,7 @@ export default function AdminDashboard() {
                                     <TableRow>
                                         <TableCell style={{ minWidth: 10 }}>Instructor Name</TableCell>
                                         <TableCell align="right">Email</TableCell>
+                                        <TableCell>Cancel Invite</TableCell>
                                     </TableRow>
                                 </TableHead>
                                 <TableBody>
@@ -231,6 +386,24 @@ export default function AdminDashboard() {
                                         <TableCell align="right">{instructor.email}</TableCell>
                                     </TableRow>)
                                     )}
+                                    {invitedInstructorInfo.map((invite, idx) =>
+                                    (<TableRow
+                                        key={idx}
+                                        sx={{
+                                            '&:last-child td, &:last-child th': { border: 0, color: "#555555" },
+                                        }}
+                                    >
+                                        <TableCell component="th" scope="row">
+                                            INVITE PENDING
+                                        </TableCell>
+                                        <TableCell align="right">{invite.invite_email}</TableCell>
+                                        <TableCell align="right">
+                                            <Button onClick={() => handleRemoveInviteButton("instructor", idx)}>
+                                                <CloseIcon />
+                                            </Button>
+                                        </TableCell>
+                                    </TableRow>)
+                                    )}
                                 </TableBody>
                             </Table>
                         </TableContainer>
@@ -239,10 +412,75 @@ export default function AdminDashboard() {
                             pt: 5
                         }}>
                             <Button variant="contained" onClick={handleAddInstructorButton}>
-                                Add Instructor
+                                Invite Instructor
                             </Button>
                         </Box>
                     </Container>
+
+
+                    <Container className="admins" sx={{
+                        display: "flex",
+                        flexDirection: "column",
+                        alignItems: "center"
+                    }}>
+                        <Box>
+                            <center><h2>Admins</h2></center>
+                        </Box>
+
+                        <TableContainer component={Paper}>
+                            <Table aria-label="simple table">
+                                <TableHead>
+                                    <TableRow>
+                                        <TableCell style={{ minWidth: 10 }}>Admin Name</TableCell>
+                                        <TableCell align="right">Email</TableCell>
+                                        <TableCell>Cancel Invite</TableCell>
+                                    </TableRow>
+                                </TableHead>
+                                <TableBody>
+                                    {adminInfo.map((admin, idx) =>
+                                    (<TableRow
+                                        key={idx}
+                                        sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
+                                    >
+                                        <TableCell component="th" scope="row">
+                                            {admin.real_name}
+                                        </TableCell>
+                                        <TableCell align="right">{admin.email}</TableCell>
+                                    </TableRow>)
+                                    )}
+
+                                    {invitedAdminInfo.map((invite, idx) =>
+                                    (<TableRow
+                                        key={idx}
+                                        sx={{
+                                            '&:last-child td, &:last-child th': { border: 0, color: "#555555" },
+                                        }}
+                                    >
+                                        <TableCell component="th" scope="row">
+                                            INVITE PENDING
+                                        </TableCell>
+                                        <TableCell align="right">{invite.invite_email}</TableCell>
+                                        <TableCell align="right">
+                                            <Button onClick={() => handleRemoveInviteButton("student", idx)}>
+                                                <CloseIcon />
+                                            </Button>
+                                        </TableCell>
+                                    </TableRow>)
+                                    )}
+                                </TableBody>
+                            </Table>
+                        </TableContainer>
+
+                        <Box sx={{
+                            pt: 5
+                        }}>
+                            <Button variant="contained" onClick={handleAddStudentButton}>
+                                Invite Admin
+                            </Button>
+                        </Box>
+
+                    </Container>
+
 
                 </Box>
             </Box>
@@ -271,26 +509,10 @@ export default function AdminDashboard() {
                         justifyContent: "center"
                     }}>
                         <Typography id="modal-modal-title" variant="h6" component="h2">
-                            Register {registerType}
+                            Invite {registerType}
                         </Typography>
 
                         <form onSubmit={handleFormSubmit}>
-                            <TextField label="Username"
-                                onChange={e => setUsername(e.target.value)}
-                                required
-                                variant="outlined"
-                                color="secondary"
-                                sx={{ mb: 3 }}
-                                fullWidth
-                                value={username} />
-                            <TextField label="Full Name"
-                                onChange={e => setRealName(e.target.value)}
-                                required
-                                variant="outlined"
-                                color="secondary"
-                                sx={{ mb: 3 }}
-                                fullWidth
-                                value={real_name} />
                             <TextField label="Email"
                                 onChange={e => setEmail(e.target.value)}
                                 required
@@ -301,37 +523,6 @@ export default function AdminDashboard() {
                                 fullWidth
                                 value={email} />
 
-                            <TextField label="Password"
-                                onChange={e => setPassword(e.target.value)}
-                                required
-                                variant="outlined"
-                                color="secondary"
-                                type="password"
-                                sx={{ mb: 3 }}
-                                fullWidth
-                                value={password} />
-
-                            <TextField label="Confirm Password"
-                                onChange={e => setConfirmPassword(e.target.value)}
-                                required
-                                variant="outlined"
-                                color="secondary"
-                                type="password"
-                                sx={{ mb: 3 }}
-                                fullWidth
-                                value={confirmPassword}
-                                error={password !== confirmPassword} />
-
-                            <TextField label="Admin Password"
-                                onChange={e => setAdminPassword(e.target.value)}
-                                required
-                                variant="outlined"
-                                color="secondary"
-                                type="password"
-                                sx={{ mb: 3 }}
-                                fullWidth
-                                value={adminPassword} />
-
                             <Box sx={{
                                 display: "flex",
                                 flexDirection: "row",
@@ -339,7 +530,7 @@ export default function AdminDashboard() {
                                 alignItems: "center",
                             }}>
                                 <Button variant='contained' type='submit' disabled={loading} sx={{ mx: 1 }}>
-                                    Register
+                                    Invite
                                 </Button>
                             </Box>
 

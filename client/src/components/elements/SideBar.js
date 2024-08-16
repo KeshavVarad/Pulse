@@ -48,8 +48,6 @@ export default function SideBar() {
                 const user = auth.currentUser;
                 const token = user && (await user.getIdToken());
 
-                console.log(user)
-
                 const userId = user.uid;
 
                 const requestOptions = {
@@ -62,9 +60,10 @@ export default function SideBar() {
 
                 };
 
-                const admin_res = await fetch(`${process.env.REACT_APP_API_HOST}/api/admin/${userId}`, requestOptions);
+                const user_res = await fetch(`${process.env.REACT_APP_API_HOST}/api/user/${userId}`, requestOptions);
+                const user_data = await user_res.json()
 
-                if (admin_res.status == 200) {
+                if (user_data.role === "admin") {
                     setIsAdmin(true);
                 }
 
@@ -79,7 +78,7 @@ export default function SideBar() {
 
     }, [])
 
-    
+
     return (
         <Drawer sx={{
             width: 120,
@@ -108,29 +107,29 @@ export default function SideBar() {
             <List className='navigation_options'>
 
                 <ListItem key={"Dashboard"} disablePadding>
-                        <ListItemButton component={Link} to={"/dashboard"}
-                            variant="contained" color="secondary">
-                            <ListItemIcon><SpaceDashboardOutlinedIcon /></ListItemIcon>
-                            <ListItemText primary={"Dashboard"} />
-                        </ListItemButton>
-                    </ListItem>
-
-                    {isAdmin ? 
-                    <ListItem key={"Make Practical"} disablePadding>
-                    <ListItemButton component={Link} to={"/makepractical"}
+                    <ListItemButton component={Link} to={"/dashboard"}
                         variant="contained" color="secondary">
-                        <ListItemIcon><AddchartIcon /></ListItemIcon>
-                        <ListItemText primary={"Make Practical"} />
+                        <ListItemIcon><SpaceDashboardOutlinedIcon /></ListItemIcon>
+                        <ListItemText primary={"Dashboard"} />
                     </ListItemButton>
-                    </ListItem>: <Box></Box>}
-                    
-                    <ListItem key={"Analytics"} disablePadding>
-                        <ListItemButton component={Link} to={""}
+                </ListItem>
+
+                {isAdmin ?
+                    <ListItem key={"Make Practical"} disablePadding>
+                        <ListItemButton component={Link} to={"/makepractical"}
                             variant="contained" color="secondary">
-                            <ListItemIcon><InsightsIcon /></ListItemIcon>
-                            <ListItemText primary={"Analytics"} />
+                            <ListItemIcon><AddchartIcon /></ListItemIcon>
+                            <ListItemText primary={"Make Practical"} />
                         </ListItemButton>
-                    </ListItem>
+                    </ListItem> : <Box></Box>}
+
+                <ListItem key={"Analytics"} disablePadding>
+                    <ListItemButton component={Link} to={""}
+                        variant="contained" color="secondary">
+                        <ListItemIcon><InsightsIcon /></ListItemIcon>
+                        <ListItemText primary={"Analytics"} />
+                    </ListItemButton>
+                </ListItem>
 
             </List>
             <Box sx={{
