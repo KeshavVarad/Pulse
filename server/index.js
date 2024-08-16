@@ -15,6 +15,8 @@ import userRoute from "./routes/userRoutes.js"
 import practicalRoute from "./routes/practicalRoutes.js"
 import commentRoute from "./routes/commentRoutes.js"
 import adminRoute from "./routes/adminRoutes.js"
+import schoolRoute from "./routes/schoolRoutes.js"
+import inviteRoute from "./routes/inviteRoutes.js"
 
 dotenv.config();
 
@@ -45,6 +47,9 @@ app.use('/api', userRoute);
 app.use('/api', practicalRoute);
 app.use('/api', commentRoute);
 app.use('/api', adminRoute);
+app.use('/api', schoolRoute);
+app.use('/api', inviteRoute);
+
 
 if (process.env.MODE != "dev") {
     app.get("*", (req, res, next) => {
