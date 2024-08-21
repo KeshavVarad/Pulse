@@ -11,7 +11,7 @@ import ErrorMessage from './components/layouts/ErrorMessage';
 import WithPrivateRoute from './utils/WithPrivateRoute';
 import MakePractical from './components/pages/MakePractical';
 import Layout from './components/layouts/Layout';
-import Joyride from 'react-joyride';
+import Analytics from './components/pages/Analytics';
 import { Box } from '@mui/material';
 
 
@@ -45,6 +45,12 @@ function App() {
               <Route exact path="/makepractical" element={
                 <WithPrivateRoute>
                   <MakePractical />
+                </WithPrivateRoute>
+              } />
+
+              <Route exact path="/analytics" element={
+                <WithPrivateRoute>
+                  <Analytics />
                 </WithPrivateRoute>
               } />
             </Routes>

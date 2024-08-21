@@ -11,7 +11,8 @@ class User {
         make_practical_tutorial,
         role,
         school_name,
-        school_id
+        school_id,
+        grad_year
     ) {
         (this.id = id),
             (this.username = username),
@@ -25,7 +26,8 @@ class User {
             (this.make_practical_tutorial = make_practical_tutorial),
             (this.role = role),
             (this.school_name = school_name),
-            (this.school_id = school_id);
+            (this.school_id = school_id),
+            (this.grad_year = grad_year);
     }
 }
 

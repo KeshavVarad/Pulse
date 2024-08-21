@@ -130,6 +130,7 @@ export default function Layout({ children }) {
                 if (user_res.status == 200) {
                     const userData = await user_res.json()
 
+
                     setNavTutorial(userData.navigation_tutorial)
                     setDashTutorial(userData.dashboard_tutorial)
                     setMakePracticalTutorial(userData.make_practical_tutorial)

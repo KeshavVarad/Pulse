@@ -53,6 +53,8 @@ export const getPracticals = async (req, res, next) => {
                     doc.data().yellow_count,
                     doc.data().green_count,
                     doc.data().avg_rating,
+                    doc.data().school_id,
+                    doc.data().cohort_year
                 );
                 practicalArray.push(practical);
             });
@@ -110,6 +112,8 @@ export const getStudentPracticals = async (req, res, next) => {
                     doc.data().yellow_count,
                     doc.data().green_count,
                     doc.data().avg_rating,
+                    doc.data().school_id,
+                    doc.data().cohort_year
                 );
                 practicalArray.push(practical);
             });
@@ -154,6 +158,8 @@ export const getInstructorPracticals = async (req, res, next) => {
                     doc.data().yellow_count,
                     doc.data().green_count,
                     doc.data().avg_rating,
+                    doc.data().school_id,
+                    doc.data().cohort_year
                 );
                 practicalArray.push(practical);
             });

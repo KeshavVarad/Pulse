@@ -51,6 +51,7 @@ export const getUsers = async (req, res, next) => {
                     doc.data().role,
                     doc.data().school_name,
                     doc.data().school_id,
+                    doc.data().grad_year,
                 );
                 userArray.push(user);
             });
@@ -106,6 +107,7 @@ export const getUserByEmail = async (req, res, next) => {
                     doc.data().role,
                     doc.data().school_name,
                     doc.data().school_id,
+                    doc.data().grad_year,
                 );
                 userArray.push(user);
             });

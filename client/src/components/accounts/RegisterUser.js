@@ -12,6 +12,7 @@ export default function RegisterUser() {
     const [confirmPassword, setConfirmPassword] = useState("");
     const [username, setUsername] = useState("");
     const [real_name, setRealName] = useState("");
+    const [gradYear, setGradYear] = useState(null);
 
     const navigate = useNavigate();
     const { currentUser, register, setError } = useAuth();
@@ -56,7 +57,7 @@ export default function RegisterUser() {
                 return setError("Your invite expired.")
             }
 
-            await register(email, password, username, real_name, invite_data.role, invite_data.school_name, invite_data.school_id, invite_data.id);
+            await register(email, password, username, real_name, invite_data.role, invite_data.school_name, invite_data.school_id, invite_data.id, gradYear);
             navigate("/dashboard");
         } catch (e) {
             setError("Failed to register");
@@ -109,6 +110,15 @@ export default function RegisterUser() {
                         sx={{ mb: 3 }}
                         fullWidth
                         value={real_name} />
+
+                    <TextField label="Graduation Year (For Students)"
+                        onChange={e => setGradYear(e.target.value)}
+                        variant="outlined"
+                        color="secondary"
+                        sx={{ mb: 3 }}
+                        fullWidth
+                        value={gradYear} />
+
                     <TextField label="Email"
                         onChange={e => setEmail(e.target.value)}
                         required

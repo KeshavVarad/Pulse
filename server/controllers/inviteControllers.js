@@ -22,9 +22,6 @@ dotenv.config();
 
 const db = getFirestore(firebase);
 
-console.log(process.env.NODEMAILER_EMAIL)
-console.log(process.env.NODEMAILER_PASSWORD)
-
 
 const transporter = nodemailer.createTransport({
     service: 'gmail',

@@ -25,6 +25,12 @@ export default function InstructorPractical() {
 
     const [practicalName, setPracticalName] = useState("");
 
+    const [schoolId, setSchoolId] = useState();
+    const [studentYear, setStudentYear] = useState();
+    const [schoolTaskData, setSchoolTaskData] = useState([]);
+    const [cohortInd, setCohortInd] = useState(-1)
+    const [yearInd, setYearInd] = useState(-1)
+
 
     // Video state
     const [videoId, setVideoId] = useState("")
@@ -40,8 +46,6 @@ export default function InstructorPractical() {
     const [comments, setComments] = useState([])
     const [editableCommentIdx, setEditableCommentIdx] = useState(-1)
     const [commentEdit, setCommentEdit] = useState("")
-
-    const [commentToDisplay, setCommentToDisplay] = useState()
 
     const [taskChatOpen, setTaskChatOpen] = useState(false)
     const [taskToDisplay, setTaskToDisplay] = useState()
@@ -59,6 +63,19 @@ export default function InstructorPractical() {
 
         var newTasks = tasks.slice()
         newTasks.push({ name: newTask, replies: [], red_count: 0, yellow_count: 0, green_count: 0 })
+
+        let schoolDataTaskIndex = schoolTaskData[cohortInd].data[yearInd].data.findIndex((d) => d.name == newTask)
+
+        if (schoolDataTaskIndex == -1) {
+            let newSchoolTaskData = schoolTaskData.slice()
+            newSchoolTaskData[cohortInd].data[yearInd].data.push({
+                name: newTask,
+                red_count: 0,
+                yellow_count: 0,
+                green_count: 0,
+                avg_rating: 0
+            })
+        }
 
         try {
             const user = auth.currentUser;
@@ -142,7 +159,9 @@ export default function InstructorPractical() {
             newComments.push(commentId)
 
             let newTasks = practical.tasks
+            let newSchoolTaskData = schoolTaskData.slice()
             let taskIndex = newTasks.findIndex(t => t.name == task.name)
+            let schoolDataTaskIndex = newSchoolTaskData[cohortInd].data[yearInd].data.findIndex(data => data.name == task.name)
 
             let practicalUpdateData = { comments: newComments }
 
@@ -151,6 +170,7 @@ export default function InstructorPractical() {
             if (rating == 1) {
                 practicalUpdateData.red_count = practical.red_count + 1
                 newTasks[taskIndex].red_count += 1
+                newSchoolTaskData[cohortInd].data[yearInd].data[schoolDataTaskIndex].red_count += 1
                 rating_sum += 1
 
             }
@@ -158,20 +178,36 @@ export default function InstructorPractical() {
             if (rating == 3) {
                 practicalUpdateData.yellow_count = practical.yellow_count + 1
                 newTasks[taskIndex].yellow_count += 1
+                newSchoolTaskData[cohortInd].data[yearInd].data[schoolDataTaskIndex].yellow_count += 1
+
                 rating_sum += 3
             }
 
             if (rating == 5) {
                 practicalUpdateData.green_count = practical.green_count + 1
                 newTasks[taskIndex].green_count += 1
+                newSchoolTaskData[cohortInd].data[yearInd].data[schoolDataTaskIndex].green_count += 1
+
                 rating_sum += 5
             }
+            newSchoolTaskData[cohortInd].data[yearInd].data[schoolDataTaskIndex].avg_rating = (
+                newSchoolTaskData[cohortInd].data[yearInd].data[schoolDataTaskIndex].red_count +
+                newSchoolTaskData[cohortInd].data[yearInd].data[schoolDataTaskIndex].yellow_count * 3 +
+                newSchoolTaskData[cohortInd].data[yearInd].data[schoolDataTaskIndex].green_count * 5) / (
+                    newSchoolTaskData[cohortInd].data[yearInd].data[schoolDataTaskIndex].red_count +
+                    newSchoolTaskData[cohortInd].data[yearInd].data[schoolDataTaskIndex].yellow_count +
+                    newSchoolTaskData[cohortInd].data[yearInd].data[schoolDataTaskIndex].green_count
+                )
+
+
+
             practicalUpdateData.avg_rating = rating_sum / newComments.length
 
             practicalUpdateData.tasks = newTasks
             setTasks(newTasks)
+            setSchoolTaskData(newSchoolTaskData)
 
-            const requestOptions = {
+            const updatePracticalRequestOptions = {
                 method: "PUT",
                 mode: "cors",
                 headers: {
@@ -181,7 +217,19 @@ export default function InstructorPractical() {
                 body: JSON.stringify(practicalUpdateData)
 
             };
-            await fetch(`${process.env.REACT_APP_API_HOST}/api/updatePractical/${practicalId}`, requestOptions);
+            await fetch(`${process.env.REACT_APP_API_HOST}/api/updatePractical/${practicalId}`, updatePracticalRequestOptions);
+
+            const updateSchoolRequestOptions = {
+                method: "PUT",
+                mode: "cors",
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${token}`,
+                },
+                body: JSON.stringify({ task_data: schoolTaskData })
+            };
+            await fetch(`${process.env.REACT_APP_API_HOST}/api/updateSchool/${schoolId}`, updateSchoolRequestOptions);
+
 
             let newCommentsData = comments.slice()
             console.log(practicalUpdateData);
@@ -274,26 +322,45 @@ export default function InstructorPractical() {
 
             let practicalUpdateData = { comments: oldCommentIds }
             let newTasks = practical.tasks
+            let newSchoolTaskData = schoolTaskData.slice()
+
             let taskIndex = newTasks.findIndex(t => t.name == comments[idx].task)
+            let schoolDataTaskIndex = newSchoolTaskData[cohortInd].data[yearInd].data.findIndex(data => data.name == comments[idx].name)
+
             let rating_sum = 1 * practical.red_count + 3 * practical.yellow_count + 5 * practical.green_count
 
             if (comment_rating == 1) {
                 practicalUpdateData.red_count = practical.red_count - 1
                 newTasks[taskIndex].red_count -= 1
-                rating_sum-=1
+                newSchoolTaskData[cohortInd].data[yearInd].data[schoolDataTaskIndex].red_count -= 1
+
+                rating_sum -= 1
             }
 
             if (comment_rating == 3) {
                 practicalUpdateData.yellow_count = practical.yellow_count - 1
                 newTasks[taskIndex].yellow_count -= 1
-                rating_sum-=3
+                newSchoolTaskData[cohortInd].data[yearInd].data[schoolDataTaskIndex].yellow_count -= 1
+
+                rating_sum -= 3
             }
 
             if (comment_rating == 5) {
                 practicalUpdateData.green_count = practical.green_count - 1
                 newTasks[taskIndex].green_count -= 1
-                rating_sum-=5
+                newSchoolTaskData[cohortInd].data[yearInd].data[schoolDataTaskIndex].green_count -= 1
+
+                rating_sum -= 5
             }
+
+            newSchoolTaskData[cohortInd].data[yearInd].data[schoolDataTaskIndex].avg_rating = (
+                newSchoolTaskData[cohortInd].data[yearInd].data[schoolDataTaskIndex].red_count +
+                newSchoolTaskData[cohortInd].data[yearInd].data[schoolDataTaskIndex].yellow_count * 3 +
+                newSchoolTaskData[cohortInd].data[yearInd].data[schoolDataTaskIndex].green_count * 5) / (
+                    newSchoolTaskData[cohortInd].data[yearInd].data[schoolDataTaskIndex].red_count +
+                    newSchoolTaskData[cohortInd].data[yearInd].data[schoolDataTaskIndex].yellow_count +
+                    newSchoolTaskData[cohortInd].data[yearInd].data[schoolDataTaskIndex].green_count
+                )
 
             practicalUpdateData.tasks = newTasks
             practicalUpdateData.avg_rating = rating_sum / comments.length
@@ -307,6 +374,18 @@ export default function InstructorPractical() {
                 body: JSON.stringify(practicalUpdateData)
             };
             await fetch(`${process.env.REACT_APP_API_HOST}/api/updatePractical/${practicalId}`, updatePracticalRequestOptions);
+
+            const updateSchoolRequestOptions = {
+                method: "PUT",
+                mode: "cors",
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${token}`,
+                },
+                body: JSON.stringify({ task_data: schoolTaskData })
+            };
+            await fetch(`${process.env.REACT_APP_API_HOST}/api/updateSchool/${schoolId}`, updateSchoolRequestOptions);
+
 
             let newComments = comments.slice()
             console.log(practicalUpdateData)
@@ -344,6 +423,65 @@ export default function InstructorPractical() {
             document.removeEventListener('keydown', handleKeyPress);
         };
     }, [handleKeyPress]);
+
+    useEffect(() => {
+        async function fetchSchoolData() {
+
+            try {
+                const user = auth.currentUser;
+                const token = user && (await user.getIdToken());
+
+                const requestOptions = {
+                    method: "GET",
+                    mode: "cors",
+                    headers: {
+                        "Content-Type": "application/json",
+                        Authorization: `Bearer ${token}`,
+                    },
+                };
+
+                const school_res = await fetch(`${process.env.REACT_APP_API_HOST}/api/school/${schoolId}`, requestOptions);
+                const school_data = await school_res.json()
+
+                const school_task_data = school_data.task_data
+
+                let schoolDataCohortIndex = school_task_data.findIndex((data) => data.cohort_year == studentYear)
+
+                if (schoolDataCohortIndex == -1) {
+                    school_task_data.push({
+                        cohort_year: studentYear,
+                        data: []
+                    })
+                    schoolDataCohortIndex = school_task_data.length - 1
+                }
+                setCohortInd(schoolDataCohortIndex)
+
+                const currentYear = new Date().getFullYear().toString();
+                let schoolDataYearIndex = school_task_data[schoolDataCohortIndex].data.findIndex((d) => d.year == currentYear)
+
+                if (schoolDataYearIndex == -1) {
+                    school_task_data[schoolDataCohortIndex].data.push({
+                        year: currentYear,
+                        data: []
+                    })
+                    schoolDataYearIndex = school_task_data[schoolDataCohortIndex].data.length - 1
+                }
+
+                setYearInd(schoolDataYearIndex)
+
+                setSchoolTaskData(school_task_data)
+
+            }
+            catch (e) {
+                console.log(e);
+            }
+
+        }
+
+        if (schoolId) {
+            fetchSchoolData()
+        }
+    }, [schoolId])
 
 
     // Chat functions
@@ -422,6 +560,9 @@ export default function InstructorPractical() {
             const practical = await practical_res.json()
 
             setPracticalName(practical.practical_name)
+            setSchoolId(practical.school_id)
+            setStudentYear(practical.cohort_year)
+
 
             const videoParams = practical.video_link.split("/")
             setVideoId(videoParams[videoParams.length - 1])
@@ -620,10 +761,10 @@ export default function InstructorPractical() {
                                                         color="secondary"
                                                         size="small"
                                                         sx={{
-                                                             
-                                                             width:"60%"
-                                                            }}
-                                                        
+
+                                                            width: "60%"
+                                                        }}
+
                                                         value={commentEdit} />
                                                 </TableCell>)
                                         }

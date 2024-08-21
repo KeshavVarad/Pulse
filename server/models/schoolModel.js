@@ -1,11 +1,12 @@
 class School {
-    constructor(id, school_name, practicals, students, instructors, admins, invited_students, invited_instructors, invited_admins) {
+    constructor(id, school_name, practicals, students, instructors, admins, task_data) {
         (this.id = id),
             (this.school_name = school_name),
             (this.practicals = practicals),
             (this.students = students),
             (this.instructors = instructors),
-            (this.admins = admins)
+            (this.admins = admins),
+            (this.task_data = task_data)
     }
 }
 

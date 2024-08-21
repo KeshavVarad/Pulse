@@ -21,7 +21,7 @@ export function AuthProvider({ children }) {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState("");
 
-    function register(email, password, username, real_name, role_type, school_name, school_id, invite_id) {
+    function register(email, password, username, real_name, role_type, school_name, school_id, invite_id, grad_year) {
         return createUserWithEmailAndPassword(auth, email, password)
             .then(async function (data) {
                 const user = data.user;
@@ -35,9 +35,7 @@ export function AuthProvider({ children }) {
                         students: [],
                         instructors: [],
                         admins: [],
-                        invited_students: [],
-                        invited_instructors: [],
-                        invited_admins: [],
+                        task_data: []
                     }
 
                     const createNewSchoolOptions = {
@@ -82,7 +80,8 @@ export function AuthProvider({ children }) {
                     make_navigation_tutorial: false,
                     role: role_type,
                     school_name: schoolData.school_name,
-                    school_id: school_id
+                    school_id: school_id,
+                    grad_year: grad_year
                 }
 
                 const createNewUserOptions = {

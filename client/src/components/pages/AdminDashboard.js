@@ -282,7 +282,7 @@ export default function AdminDashboard() {
                 <Box sx={{
                     py: 5
                 }}>
-                    <Typography variant="h4"> Dashboard </Typography>
+                    <Typography variant="h4"> Admin Dashboard </Typography>
                 </Box>
 
                 <Box sx={{

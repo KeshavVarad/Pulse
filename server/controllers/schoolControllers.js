@@ -45,6 +45,7 @@ export const getSchools = async (req, res, next) => {
                     doc.data().students,
                     doc.data().instructors,
                     doc.data().admins,
+                    doc.data().task_data,
                 );
                 schoolArray.push(school);
             });
@@ -93,6 +94,7 @@ export const getSchoolByName = async (req, res, next) => {
                     doc.data().students,
                     doc.data().instructors,
                     doc.data().admins,
+                    doc.data().task_data,
                 );
                 schoolArray.push(school);
             });

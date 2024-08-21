@@ -35,8 +35,6 @@ export default function MakePractical() {
 
     const handleAddParticipant = async () => {
 
-
-        console.log(schoolStudents)
         if (schoolStudents.findIndex((student) => student.email == curParticipant) == -1) {
             return setError("Participant not in school.")
         }
@@ -85,10 +83,14 @@ export default function MakePractical() {
             const user_creator = user.uid
             let user_participants = []
 
+            let participant_year = null
+
             participants.map(async (participantEmail) => {
                 const participant_res = await fetch(`${process.env.REACT_APP_API_HOST}/api/user/email/${participantEmail}`);
                 const participants_matching_email = await participant_res.json()
                 const participant = participants_matching_email[0]
+
+                participant_year = participant.grad_year
                 user_participants.push(participant.id)
 
 
@@ -131,7 +133,7 @@ export default function MakePractical() {
 
             await fetch(`${process.env.REACT_APP_API_HOST}/api/updateUser/${user_instructor_id}`, updateInstructorOptions);
 
-
+            console.log(instructorData)
             let newPracticalData = {
                 id: practicalId,
                 practical_name: practicalName,
@@ -147,7 +149,9 @@ export default function MakePractical() {
                 red_count: 0,
                 yellow_count: 0,
                 green_count: 0,
-                avg_rating: 0
+                avg_rating: 0,
+                school_id: instructorData[0].school_id,
+                cohort_year: participant_year
             }
 
             const createNewPracticalOptions = {
