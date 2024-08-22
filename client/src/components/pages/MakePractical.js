@@ -132,8 +132,6 @@ export default function MakePractical() {
             };
 
             await fetch(`${process.env.REACT_APP_API_HOST}/api/updateUser/${user_instructor_id}`, updateInstructorOptions);
-
-            console.log(instructorData)
             let newPracticalData = {
                 id: practicalId,
                 practical_name: practicalName,
