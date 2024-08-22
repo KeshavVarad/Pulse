@@ -248,8 +248,6 @@ export default function AdminDashboard() {
                     }
                 })
 
-                console.log(school_data.admins)
-
 
                 setSchoolId(user_data.school_id)
                 setSchoolName(user_data.school_name)
@@ -466,7 +464,7 @@ export default function AdminDashboard() {
                                         </TableCell>
                                         <TableCell align="right">{invite.invite_email}</TableCell>
                                         <TableCell align="right">
-                                            <Button onClick={() => handleRemoveInviteButton("student", idx)}>
+                                            <Button onClick={() => handleRemoveInviteButton("admin", idx)}>
                                                 <CloseIcon />
                                             </Button>
                                         </TableCell>
