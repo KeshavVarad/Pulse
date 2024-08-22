@@ -17,19 +17,23 @@ import {
 } from 'firebase/firestore';
 import dotenv from "dotenv";
 import nodemailer from "nodemailer"
+import sgMail from "@sendgrid/mail"
 
 dotenv.config();
 
 const db = getFirestore(firebase);
 
 
-const transporter = nodemailer.createTransport({
-    service: 'gmail',
-    auth: {
-        user: process.env.NODEMAILER_EMAIL,
-        pass: process.env.NODEMAILER_PASSWORD
-    }
-});
+// const transporter = nodemailer.createTransport({
+//     service: 'gmail',
+//     auth: {
+//         user: process.env.NODEMAILER_EMAIL,
+//         pass: process.env.NODEMAILER_PASSWORD
+//     }
+// });
+
+// sgMail.setApiKey(process.env.SENDGRID_API_KEY)
+
 
 
 export const createInvite = async (req, res, next) => {
@@ -41,26 +45,39 @@ export const createInvite = async (req, res, next) => {
         const email_text = `You have been invited to join ${data.school_name} on Pulse. Sign up at the link below and get started!\n\n\n${sign_up_link}`
 
 
-        const mailOptions = {
-            from: process.env.NODEMAILER_EMAIL,
-            to: data.invite_email,
-            subject: email_subject,
-            text: email_text
-        }
+        // const mailOptions = {
+        //     from: process.env.NODEMAILER_EMAIL,
+        //     to: data.invite_email,
+        //     subject: email_subject,
+        //     text: email_text
+        // }
 
-        transporter.sendMail(mailOptions, (error, info) => {
-            if (error) {
-                console.error('Error sending email:', error);
-                return res.status(500).json({ error: 'Failed to send email' });
-            } else {
-                console.log('Email sent:', info.response);
-            }
-        });
+        const msg = {
+            to: data.invite_email, // Change to your recipient
+            from: 'test@example.com', // Change to your verified sender
+            subject: email_subject,
+            text: email_text,
+            // html: '<strong>and easy to do anywhere, even with Node.js</strong>',
+        }
+        // sgMail
+        //     .send(msg)
+        //     .then(() => {
+        //         console.log('Email sent')
+        //     })
+        //     .catch((error) => {
+        //         console.error(error)
+        //     })
+
+        // transporter.sendMail(mailOptions, (error, info) => {
+        //     if (error) {
+        //         console.error('Error sending email:', error);
+        //         return res.status(500).json({ error: 'Failed to send email' });
+        //     } else {
+        //         console.log('Email sent:', info.response);
+        //     }
+        // });
 
         await setDoc(doc(db, 'invites', data.id), data);
-
-
-
 
         res.status(200).send('Invite created successfully');
     } catch (error) {

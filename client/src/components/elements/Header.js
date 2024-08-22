@@ -46,7 +46,7 @@ export default function Header() {
                         {
                             !currentUser ? (
                                 <Box sx={{
-                                    width: "13%",
+                                    width: "25%",
                                     display: 'flex',
                                     flexDirection: 'row',
                                     justifyContent: 'space-between',
@@ -57,7 +57,11 @@ export default function Header() {
                                     </Button>}
 
                                     <Button component={Link} to="/register_school" variant="contained">
-                                        Sign Up
+                                        Register School
+                                    </Button>
+
+                                    <Button component={Link} to="/register_user" variant="contained">
+                                        Register User
                                     </Button>
                                 </Box>) : (<Box>
                                     <Button onClick={handleLogout} variant="contained" color="primary">

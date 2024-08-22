@@ -59,6 +59,11 @@ export default function AdminDashboard() {
         setRegisterType("instructor")
     }
 
+    const handleAddAdminButton = () => {
+        setRegisterOpen(true)
+        setRegisterType("admin")
+    }
+
     const handleRemoveInviteButton = async (role, idx) => {
         let invite_id = null
 
@@ -474,7 +479,7 @@ export default function AdminDashboard() {
                         <Box sx={{
                             pt: 5
                         }}>
-                            <Button variant="contained" onClick={handleAddStudentButton}>
+                            <Button variant="contained" onClick={handleAddAdminButton}>
                                 Invite Admin
                             </Button>
                         </Box>
