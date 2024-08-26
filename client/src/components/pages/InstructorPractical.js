@@ -7,9 +7,7 @@ import auth from "../../config/firebase.js";
 import { v4 as uuidv4 } from 'uuid';
 
 import YouTube from "react-youtube"
-import { Modal, List, ListItem, ListItemText, ButtonGroup, Grid, Typography, Box, Button, TextField, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper } from "@mui/material"
-import EditIcon from '@mui/icons-material/Edit';
-import DoneIcon from '@mui/icons-material/Done';
+import { Modal, List, ListItem, ListItemText, ButtonGroup, Grid, Typography, Box, Button, TextField, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Autocomplete } from "@mui/material"
 import DeleteIcon from '@mui/icons-material/Delete';
 import InsertCommentIcon from '@mui/icons-material/InsertComment';
 import SendIcon from '@mui/icons-material/Send';
@@ -30,6 +28,7 @@ export default function InstructorPractical() {
     const [schoolTaskData, setSchoolTaskData] = useState([]);
     const [cohortInd, setCohortInd] = useState(-1)
     const [yearInd, setYearInd] = useState(-1)
+    const [schoolTaskPool, setSchoolTaskPool] = useState([]);
 
 
     // Video state
@@ -65,6 +64,37 @@ export default function InstructorPractical() {
         newTasks.push({ name: newTask, replies: [], red_count: 0, yellow_count: 0, green_count: 0 })
 
         let schoolDataTaskIndex = schoolTaskData[cohortInd].data[yearInd].data.findIndex((d) => d.name == newTask)
+
+        let schoolTaskPoolIndex = schoolTaskPool.findIndex((t) => t == newTask)
+
+        if (schoolTaskPoolIndex == -1) {
+
+            try {
+                const user = auth.currentUser;
+                const token = user && (await user.getIdToken());
+
+                let newSchoolTaskPool = schoolTaskPool.slice()
+                newSchoolTaskPool.push(newTask)
+
+                setSchoolTaskPool(newSchoolTaskPool)
+                const requestOptions = {
+                    method: "PUT",
+                    mode: "cors",
+                    headers: {
+                        "Content-Type": "application/json",
+                        Authorization: `Bearer ${token}`,
+                    },
+                    body: JSON.stringify({ task_pool: newSchoolTaskPool })
+
+                };
+
+                await fetch(`${process.env.REACT_APP_API_HOST}/api/updateSchool/${schoolId}`, requestOptions);
+            } catch (e) {
+                console.log(e);
+            }
+
+
+        }
 
         if (schoolDataTaskIndex == -1) {
             let newSchoolTaskData = schoolTaskData.slice()
@@ -443,6 +473,8 @@ export default function InstructorPractical() {
                 const school_res = await fetch(`${process.env.REACT_APP_API_HOST}/api/school/${schoolId}`, requestOptions);
                 const school_data = await school_res.json()
 
+                setSchoolTaskPool(school_data.task_pool)
+
                 const school_task_data = school_data.task_data
 
                 let schoolDataCohortIndex = school_task_data.findIndex((data) => data.cohort_year == studentYear)
@@ -695,15 +727,27 @@ export default function InstructorPractical() {
                             alignItems: "center",
                             width: "60%",
                         }}>
-                            <TextField label="New Task"
-                                variant="outlined"
-                                color="secondary"
+
+                            <Autocomplete
                                 sx={{
-                                    mx: 2
+                                    width: "100%"
                                 }}
-                                onChange={e => setNewTask(e.target.value)}
-                                fullWidth
-                                value={newTask} />
+                                id="free-solo-demo"
+                                freeSolo
+                                options={schoolTaskPool}
+                                renderInput={(params) => (<TextField
+                                    {...params}
+                                    label="New Task"
+                                    variant="outlined"
+                                    color="secondary"
+                                    sx={{
+                                        mx: 2
+                                    }}
+                                    onChange={e => setNewTask(e.target.value)}
+                                    fullWidth
+                                    value={newTask} />)}
+                            />
+
 
 
                             <Button variant="contained" onClick={handleNewTaskChange}>Add Task</Button>

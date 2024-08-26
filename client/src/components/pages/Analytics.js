@@ -320,7 +320,7 @@ export default function Analytics() {
                                     }}>
                                         <CardContent>
                                             <Typography variant="h5" component="div" gutterBottom>
-                                                Fitness Activity Levels
+                                                {cohort_data.datasets.label}
                                             </Typography>
                                             <Radar data={cohort_data} options={options} />
                                         </CardContent>
