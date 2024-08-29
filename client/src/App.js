@@ -23,7 +23,7 @@ function App() {
       <Router>
 
         <Box sx={{
-          minHeight: "80vh"
+          minHeight: "100vh"
         }}>
 
 

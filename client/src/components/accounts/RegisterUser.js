@@ -85,11 +85,11 @@ export default function RegisterUser() {
 
             }}>
                 <Box sx={{
-                    my: 4,
+                    my: 2,
                     justifyItems: "center",
                 }}>
                     <Typography variant='h4'>
-                        Register Your Account
+                        Register Account
                     </Typography>
                 </Box>
 
@@ -99,7 +99,7 @@ export default function RegisterUser() {
                         required
                         variant="outlined"
                         color="secondary"
-                        sx={{ mb: 3 }}
+                        sx={{ mb: 2 }}
                         fullWidth
                         value={username} />
                     <TextField label="Full Name"
@@ -107,7 +107,7 @@ export default function RegisterUser() {
                         required
                         variant="outlined"
                         color="secondary"
-                        sx={{ mb: 3 }}
+                        sx={{ mb: 2 }}
                         fullWidth
                         value={real_name} />
 
@@ -115,7 +115,7 @@ export default function RegisterUser() {
                         onChange={e => setGradYear(e.target.value)}
                         variant="outlined"
                         color="secondary"
-                        sx={{ mb: 3 }}
+                        sx={{ mb: 2 }}
                         fullWidth
                         value={gradYear} />
 
@@ -125,7 +125,7 @@ export default function RegisterUser() {
                         variant="outlined"
                         color="secondary"
                         type="email"
-                        sx={{ mb: 3 }}
+                        sx={{ mb: 2 }}
                         fullWidth
                         value={email} />
 
@@ -135,7 +135,7 @@ export default function RegisterUser() {
                         variant="outlined"
                         color="secondary"
                         type="password"
-                        sx={{ mb: 3 }}
+                        sx={{ mb: 2 }}
                         fullWidth
                         value={password} />
 
@@ -145,7 +145,7 @@ export default function RegisterUser() {
                         variant="outlined"
                         color="secondary"
                         type="password"
-                        sx={{ mb: 3 }}
+                        sx={{ mb: 2 }}
                         fullWidth
                         value={confirmPassword}
                         error={password !== confirmPassword} />

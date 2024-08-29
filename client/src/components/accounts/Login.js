@@ -55,7 +55,7 @@ export default function Login() {
                 width: '32%',
             }}>
                 <Box sx={{
-                    my: 4
+                    my: 2
                 }}>
                     <Typography variant='h4'>
                         Login To Your Account
@@ -69,7 +69,7 @@ export default function Login() {
                         variant="outlined"
                         color="secondary"
                         type="email"
-                        sx={{ mb: 3 }}
+                        sx={{ mb: 2 }}
                         fullWidth
                         value={email} />
 
@@ -79,7 +79,7 @@ export default function Login() {
                         variant="outlined"
                         color="secondary"
                         type="password"
-                        sx={{ mb: 3 }}
+                        sx={{ mb: 2 }}
                         fullWidth
                         value={password} />
 

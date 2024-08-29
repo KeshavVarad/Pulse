@@ -46,7 +46,7 @@ export default function Header() {
                         {
                             !currentUser ? (
                                 <Box sx={{
-                                    width: "25%",
+                                    width: "28%",
                                     display: 'flex',
                                     flexDirection: 'row',
                                     justifyContent: 'space-between',
