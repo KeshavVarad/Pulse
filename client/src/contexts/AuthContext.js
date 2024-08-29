@@ -35,7 +35,8 @@ export function AuthProvider({ children }) {
                         students: [],
                         instructors: [],
                         admins: [],
-                        task_data: []
+                        task_data: [],
+                        task_pool: []
                     }
 
                     const createNewSchoolOptions = {
