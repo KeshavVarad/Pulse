@@ -13,12 +13,19 @@ import MakePractical from './components/pages/MakePractical';
 import Layout from './components/layouts/Layout';
 import Analytics from './components/pages/Analytics';
 import { Box } from '@mui/material';
+import { ThemeProvider } from '@emotion/react';
+import theme from './theme';
+import CssBaseline from '@mui/material/CssBaseline';
 
 
 function App() {
 
 
   return (
+    <ThemeProvider theme={theme}>
+    <CssBaseline />
+
+    
     <AuthProvider>
       <Router>
 
@@ -62,6 +69,7 @@ function App() {
         </Box>
       </Router>
     </AuthProvider>
+    </ThemeProvider>
   );
 }
 

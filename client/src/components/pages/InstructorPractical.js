@@ -662,7 +662,7 @@ export default function InstructorPractical() {
                 <Box sx={{
                     py: 5
                 }}>
-                    <Typography variant="h4"> {practicalName} </Typography>
+                    <Typography variant="h3"> {practicalName} </Typography>
                 </Box>
 
                 <Box sx={{

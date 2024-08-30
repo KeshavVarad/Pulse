@@ -364,7 +364,7 @@ export default function StudentPractical() {
                     alignItems: "center",
                     py: 5
                 }}>
-                    <Typography variant="h4"> {practical_name} </Typography>
+                    <Typography variant="h3"> {practical_name} </Typography>
                     <Typography variant="h6"> Average Rating: {Math.round((avgRating + Number.EPSILON) * 100) / 100} </Typography>
 
                 </Box>

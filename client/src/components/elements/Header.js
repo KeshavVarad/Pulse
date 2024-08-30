@@ -2,8 +2,8 @@ import React from 'react'
 import { AppBar, Toolbar, Typography, Box, Button } from "@mui/material"
 import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../../contexts/AuthContext';
-import theme from "../../theme";
 import MonitorHeartIcon from '@mui/icons-material/MonitorHeart';
+
 
 export default function Header() {
     const { currentUser, logout, setError } = useAuth();
@@ -22,7 +22,7 @@ export default function Header() {
     return (
         <div>
             <AppBar position='fixed'>
-                <Toolbar sx={{ height: 6 }}>
+                <Toolbar sx={{ height: 6}}>
                     {
                         !currentUser ? (
                             <MonitorHeartIcon fontSize='large' />
@@ -52,7 +52,7 @@ export default function Header() {
                                     justifyContent: 'space-between',
 
                                 }}>
-                                    {<Button component={Link} to="/login" variant="contained" color="primary">
+                                    {<Button component={Link} to="/login" variant="contained" color="primary" >
                                         Login
                                     </Button>}
 
