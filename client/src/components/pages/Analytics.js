@@ -226,7 +226,7 @@ export default function Analytics() {
                 <Box sx={{
                     py: 5
                 }}>
-                    <Typography variant="h4"> Analytics Dashboard </Typography>
+                    <Typography variant="h2"> Analytics Dashboard </Typography>
                 </Box>
 
                 <Box sx={{
