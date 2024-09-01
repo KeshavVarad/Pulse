@@ -52,15 +52,15 @@ export default function StudentPractical() {
 
 
     const handleChangeDisplayTask = (e) => {
-        
-        var selected_task = e.target.value
-        setCurrentTaskDiscussion( selected_task)
-        setDisplayTask(selected_task)
-       
 
-        setRedCount( selected_task.red_count)
-        setYellowCount( selected_task.yellow_count)
-        setGreenCount( selected_task.green_count)
+        var selected_task = e.target.value
+        setCurrentTaskDiscussion(selected_task)
+        setDisplayTask(selected_task)
+
+
+        setRedCount(selected_task.red_count)
+        setYellowCount(selected_task.yellow_count)
+        setGreenCount(selected_task.green_count)
     }
 
 
@@ -145,6 +145,32 @@ export default function StudentPractical() {
 
     }
 
+    const now = new Date();
+
+    // Function to format the time, day of the week, or date
+    function formatCreatedAt(createdAt) {
+        const oneDayInMillis = 24 * 60 * 60 * 1000; // 24 hours in milliseconds
+        const oneWeekInMillis = 7 * oneDayInMillis; // 7 days in milliseconds
+        const createdAtDate = new Date(createdAt);
+
+        const timeDifference = now - createdAtDate;
+
+        if (timeDifference < oneDayInMillis) {
+            // Format as HH:mm if within the last 24 hours
+            return createdAtDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        } else if (timeDifference < oneWeekInMillis) {
+            // Format as the name of the day if within the last week
+            return createdAtDate.toLocaleDateString('en-US', { weekday: 'long' });
+        } else {
+            // Format as MM/DD/YY if older than a week
+            return createdAtDate.toLocaleDateString('en-US', {
+                month: '2-digit',
+                day: '2-digit',
+                year: '2-digit',
+            });
+        }
+    }
+
 
 
     const CommentMarker = React.memo(({ comment, videoLength, onSeek, index }) => {
@@ -163,13 +189,13 @@ export default function StudentPractical() {
             setCurrentCommentIndex(index);
 
             var selected_task = tasks.find(task => task.name === comments[index].task)
-            setCurrentTaskDiscussion( selected_task)
+            setCurrentTaskDiscussion(selected_task)
             setDisplayTask(selected_task)
-        
 
-            setRedCount( selected_task.red_count)
-            setYellowCount( selected_task.yellow_count)
-            setGreenCount( selected_task.green_count)
+
+            setRedCount(selected_task.red_count)
+            setYellowCount(selected_task.yellow_count)
+            setGreenCount(selected_task.green_count)
         }
 
         return (
@@ -427,40 +453,40 @@ export default function StudentPractical() {
                     }}>
                         <Typography variant="h5"  >Timeline</Typography>
                     </Box>
-                    <Box sx ={{
-                        display:"flex",
-                        flexDirection: "row",
-                        width : '100%'
-                    }}>
-
                     <Box sx={{
-                        minWidth:"5%",
-                        height:"100%",
-                        flexDirection: "column",
+                        display: "flex",
+                        flexDirection: "row",
+                        width: '100%'
                     }}>
-                        {tasks.map((task, taskIndex) => (
-                            <Box
-                            key={task.name}
-                            sx={{
-                                left: 0,
-                                width: '100%',
-                                height: '30px',
-                                pt:"10px",
-                            }}>
-                                <Typography variant="h7">{task.name}</Typography>
-                            </Box>
-                        ))  
-                        }
-                        
-                    </Box>
 
-                    <CommentTimeline
-                        comments={comments}
-                        videoLength={player ? player.getDuration() : 0}
-                        currentTime={currentTime}
-                        onSeek={(timestamp) => player && player.seekTo(timestamp)}
-                        tasks={tasks}
-                    />
+                        <Box sx={{
+                            minWidth: "5%",
+                            height: "100%",
+                            flexDirection: "column",
+                        }}>
+                            {tasks.map((task, taskIndex) => (
+                                <Box
+                                    key={task.name}
+                                    sx={{
+                                        left: 0,
+                                        width: '100%',
+                                        height: '30px',
+                                        pt: "10px",
+                                    }}>
+                                    <Typography variant="h7">{task.name}</Typography>
+                                </Box>
+                            ))
+                            }
+
+                        </Box>
+
+                        <CommentTimeline
+                            comments={comments}
+                            videoLength={player ? player.getDuration() : 0}
+                            currentTime={currentTime}
+                            onSeek={(timestamp) => player && player.seekTo(timestamp)}
+                            tasks={tasks}
+                        />
                     </Box>
 
 
@@ -547,7 +573,7 @@ export default function StudentPractical() {
                                         alignItems: "center",
                                         justifyContent: "center",
                                         border: '5px solid #ccc',
-                                        borderRadius:2,
+                                        borderRadius: 2,
                                     }}>
                                         <Grid item sx={{
                                             width: "100%",
@@ -564,7 +590,7 @@ export default function StudentPractical() {
                                                                     <ListItemText align="right" primary={reply.message}></ListItemText>
                                                                 </Grid>
                                                                 <Grid item xs={12}>
-                                                                    <ListItemText align="right" secondary={reply.createdBy + " " + new Date(reply.createdAt * 1000).toISOString().substring(14, 19)}></ListItemText>
+                                                                    <ListItemText align="right" secondary={reply.createdBy + " " + formatCreatedAt(reply.createdAt)}></ListItemText>
                                                                 </Grid>
                                                             </Grid>
                                                         ) : (
@@ -573,7 +599,7 @@ export default function StudentPractical() {
                                                                     <ListItemText align="left" primary={reply.message}></ListItemText>
                                                                 </Grid>
                                                                 <Grid item xs={12}>
-                                                                    <ListItemText align="left" secondary={reply.createdBy + " " + new Date(reply.createdAt * 1000).toISOString().substring(14, 19)}></ListItemText>
+                                                                    <ListItemText align="left" secondary={reply.createdBy + " " + formatCreatedAt(reply.createdAt)}></ListItemText>
                                                                 </Grid>
                                                             </Grid>
                                                         )}

@@ -355,9 +355,12 @@ export default function InstructorPractical() {
             let newSchoolTaskData = schoolTaskData.slice()
 
             let taskIndex = newTasks.findIndex(t => t.name == comments[idx].task)
-            let schoolDataTaskIndex = newSchoolTaskData[cohortInd].data[yearInd].data.findIndex(data => data.name == comments[idx].name)
+
+            let schoolDataTaskIndex = newSchoolTaskData[cohortInd].data[yearInd].data.findIndex(data => data.name == comments[idx].task)
 
             let rating_sum = 1 * practical.red_count + 3 * practical.yellow_count + 5 * practical.green_count
+
+            console.log(cohortInd, yearInd, schoolDataTaskIndex)
 
             if (comment_rating == 1) {
                 practicalUpdateData.red_count = practical.red_count - 1
@@ -517,6 +520,32 @@ export default function InstructorPractical() {
 
 
     // Chat functions
+    const now = new Date();
+
+    // Function to format the time, day of the week, or date
+    function formatCreatedAt(createdAt) {
+        const oneDayInMillis = 24 * 60 * 60 * 1000; // 24 hours in milliseconds
+        const oneWeekInMillis = 7 * oneDayInMillis; // 7 days in milliseconds
+        const createdAtDate = new Date(createdAt);
+
+        const timeDifference = now - createdAtDate;
+
+        if (timeDifference < oneDayInMillis) {
+            // Format as HH:mm if within the last 24 hours
+            return createdAtDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        } else if (timeDifference < oneWeekInMillis) {
+            // Format as the name of the day if within the last week
+            return createdAtDate.toLocaleDateString('en-US', { weekday: 'long' });
+        } else {
+            // Format as MM/DD/YY if older than a week
+            return createdAtDate.toLocaleDateString('en-US', {
+                month: '2-digit',
+                day: '2-digit',
+                year: '2-digit',
+            });
+        }
+    }
+
 
     const handleTaskChatButton = (task) => {
         setTaskToDisplay(task)
@@ -735,6 +764,10 @@ export default function InstructorPractical() {
                                 id="free-solo-demo"
                                 freeSolo
                                 options={schoolTaskPool}
+                                value={newTask}
+                                onInputChange={(event, newInputValue) => {
+                                    setNewTask(newInputValue);
+                                }}
                                 renderInput={(params) => (<TextField
                                     {...params}
                                     label="New Task"
@@ -743,7 +776,6 @@ export default function InstructorPractical() {
                                     sx={{
                                         mx: 2
                                     }}
-                                    onChange={e => setNewTask(e.target.value)}
                                     fullWidth
                                     value={newTask} />)}
                             />
@@ -874,7 +906,7 @@ export default function InstructorPractical() {
                                                     <ListItemText align="right" primary={reply.message}></ListItemText>
                                                 </Grid>
                                                 <Grid item xs={12}>
-                                                    <ListItemText align="right" secondary={reply.createdBy + " " + new Date(reply.createdAt * 1000).toISOString().substring(14, 19)}></ListItemText>
+                                                    <ListItemText align="right" secondary={reply.createdBy + " " + formatCreatedAt(reply.createdAt)}></ListItemText>
                                                 </Grid>
                                             </Grid>
                                         ) : (
@@ -883,7 +915,7 @@ export default function InstructorPractical() {
                                                     <ListItemText align="left" primary={reply.message}></ListItemText>
                                                 </Grid>
                                                 <Grid item xs={12}>
-                                                    <ListItemText align="left" secondary={reply.createdBy + " " + new Date(reply.createdAt * 1000).toISOString().substring(14, 19)}></ListItemText>
+                                                    <ListItemText align="left" secondary={reply.createdBy + " " + formatCreatedAt(reply.createdAt)}></ListItemText>
                                                 </Grid>
                                             </Grid>
                                         )}

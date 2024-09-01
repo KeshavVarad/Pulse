@@ -77,7 +77,7 @@ export default function UserDashboard() {
 
                 const userId = user.uid;
 
-               
+
 
 
                 const requestOptions = {
@@ -100,7 +100,7 @@ export default function UserDashboard() {
                     userData = null
                 }
 
-                
+
 
                 if (userData.role === "instructor") {
                     setIsInstructor(true);
@@ -280,54 +280,54 @@ export default function UserDashboard() {
                     width: "100%",
                 }}>
 
-                    {isInstructor?(
+                    {isInstructor ? (
                         <Container className="instructor_practicals" >
 
 
-                        <TableContainer component={Paper}>
-                            <Table aria-label="simple table">
-                                <TableHead>
-                                    <TableRow>
-                                        <TableCell style={{ minWidth: 10 }}>Practical Name</TableCell>
-                                        <TableCell align="right">Instructor</TableCell>
-                                        <TableCell align="right">Creation Date</TableCell>
-                                        <TableCell align="right">Settings</TableCell>
-                                    </TableRow>
-                                </TableHead>
-                                <TableBody>
-                                    {ownedPracticals.map((practical, idx) => (
-                                        <TableRow
-                                            key={idx}
-                                            sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
-                                        >
-                                            <TableCell component="th" scope="row">
-                                                <Link href={practical.path} underline = "hover" variant="h4">
-                                                    {practical.practical_name}
-                                                </Link>
-                                                
-
-                                            </TableCell>
-                                            <TableCell align="right">{practical.user_instructor_name}</TableCell>
-                                            <TableCell align="right">{practical.creation_date}</TableCell>
-                                            <TableCell align="right" sx={{ p: 1 }}>
-                                                <Button sx={{}} onClick={() => handleSettingsButton(idx)}>
-                                                    <SettingsIcon />
-                                                </Button>
-                                            </TableCell>
+                            <TableContainer component={Paper}>
+                                <Table aria-label="simple table">
+                                    <TableHead>
+                                        <TableRow>
+                                            <TableCell style={{ minWidth: 10 }}>Practical Name</TableCell>
+                                            <TableCell align="right">Instructor</TableCell>
+                                            <TableCell align="right">Creation Date</TableCell>
+                                            <TableCell align="right">Settings</TableCell>
                                         </TableRow>
-                                    ))}
-                                </TableBody>
-                            </Table>
-                        </TableContainer>
-                    </Container>
+                                    </TableHead>
+                                    <TableBody>
+                                        {ownedPracticals.map((practical, idx) => (
+                                            <TableRow
+                                                key={idx}
+                                                sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
+                                            >
+                                                <TableCell component="th" scope="row">
+                                                    <Link href={practical.path} underline="hover" variant="h4">
+                                                        {practical.practical_name}
+                                                    </Link>
+
+
+                                                </TableCell>
+                                                <TableCell align="right">{practical.user_instructor_name}</TableCell>
+                                                <TableCell align="right">{practical.creation_date}</TableCell>
+                                                <TableCell align="right" sx={{ p: 1 }}>
+                                                    <Button sx={{}} onClick={() => handleSettingsButton(idx)}>
+                                                        <SettingsIcon />
+                                                    </Button>
+                                                </TableCell>
+                                            </TableRow>
+                                        ))}
+                                    </TableBody>
+                                </Table>
+                            </TableContainer>
+                        </Container>
 
 
 
-                    ):(
+                    ) : (
                         <Container className="student_practicals" sx={{
                         }}>
 
-    
+
                             <TableContainer component={Paper}>
                                 <Table aria-label="simple table">
                                     <TableHead>
@@ -347,7 +347,7 @@ export default function UserDashboard() {
                                                     <Link href={practical.path}>
                                                         {practical.practical_name}
                                                     </Link>
-    
+
                                                 </TableCell>
                                                 <TableCell align="right">{practical.user_instructor_name}</TableCell>
                                                 <TableCell align="right">{practical.creation_date}</TableCell>
@@ -366,10 +366,10 @@ export default function UserDashboard() {
 
 
 
-                    
 
 
-                    
+
+
                 </Box>
 
 
