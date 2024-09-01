@@ -12,6 +12,7 @@ import WithPrivateRoute from './utils/WithPrivateRoute';
 import MakePractical from './components/pages/MakePractical';
 import Layout from './components/layouts/Layout';
 import Analytics from './components/pages/Analytics';
+import Account from './components/pages/Account';
 import { Box } from '@mui/material';
 import { ThemeProvider } from '@emotion/react';
 import theme from './theme';
@@ -23,52 +24,58 @@ function App() {
 
   return (
     <ThemeProvider theme={theme}>
-    <CssBaseline />
-
-    
-    <AuthProvider>
-      <Router>
-
-        <Box sx={{
-          minHeight: "100vh"
-        }}>
+      <CssBaseline />
 
 
-          <Layout>
-            <ErrorMessage />
+      <AuthProvider>
+        <Router>
+
+          <Box sx={{
+            minHeight: "100vh"
+          }}>
 
 
-            <Routes>
-              <Route exact path="/dashboard" element={<Dashboard />} />
-              <Route exact path="/" element={<Home />} />
-              <Route exact path="/register_school" element={<Register />} />
-              <Route exact path="/register_user" element={<RegisterUser />} />
-              <Route exact path="/login" element={<Login />} />
-              <Route exact path="/practical/:id" element={
-                <WithPrivateRoute>
-                  <Practical />
-                </WithPrivateRoute>
-              } />
-              <Route exact path="/makepractical" element={
-                <WithPrivateRoute>
-                  <MakePractical />
-                </WithPrivateRoute>
-              } />
-
-              <Route exact path="/analytics" element={
-                <WithPrivateRoute>
-                  <Analytics />
-                </WithPrivateRoute>
-              } />
-            </Routes>
+            <Layout>
+              <ErrorMessage />
 
 
+              <Routes>
+                <Route exact path="/dashboard" element={<Dashboard />} />
+                <Route exact path="/" element={<Home />} />
+                <Route exact path="/register_school" element={<Register />} />
+                <Route exact path="/register_user" element={<RegisterUser />} />
+                <Route exact path="/login" element={<Login />} />
+                <Route exact path="/practical/:id" element={
+                  <WithPrivateRoute>
+                    <Practical />
+                  </WithPrivateRoute>
+                } />
+                <Route exact path="/makepractical" element={
+                  <WithPrivateRoute>
+                    <MakePractical />
+                  </WithPrivateRoute>
+                } />
+
+                <Route exact path="/analytics" element={
+                  <WithPrivateRoute>
+                    <Analytics />
+                  </WithPrivateRoute>
+                } />
+
+                <Route exact path="/account" element={
+                  <WithPrivateRoute>
+                    <Account />
+                  </WithPrivateRoute>
+                } />
+              </Routes>
 
 
-          </Layout>
-        </Box>
-      </Router>
-    </AuthProvider>
+
+
+            </Layout>
+          </Box>
+        </Router>
+      </AuthProvider>
     </ThemeProvider>
   );
 }

@@ -144,7 +144,7 @@ export default function SideBar() {
             {
                 <List>
                     <ListItem key={"Account"} disablePadding>
-                        <ListItemButton component={Link} to={""}
+                        <ListItemButton component={Link} to={"/account"}
                             variant="contained" color="secondary">
                             <ListItemIcon><AccountCircleOutlinedIcon /></ListItemIcon>
                             <ListItemText primary={"Account"} />
