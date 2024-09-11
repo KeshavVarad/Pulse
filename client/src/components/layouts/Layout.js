@@ -109,6 +109,7 @@ export default function Layout({ children }) {
 
 
     useEffect(() => {
+        
         async function fetchUser() {
             const auth_user = auth.currentUser;
             const token = auth_user && (await auth_user.getIdToken());
@@ -244,7 +245,7 @@ export default function Layout({ children }) {
         },
         {
             target: ".new_practical_submit",
-            content: "Press submit when you're done!",
+            content: "Press submit when you're done",
             placement: "right"
         },
     ]

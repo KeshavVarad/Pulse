@@ -272,7 +272,7 @@ export default function UserDashboard() {
                 <Box sx={{
                     py: 5
                 }}>
-                    <Typography variant="h2"> Dashboard </Typography>
+                    <Typography variant="h3"> Dashboard </Typography>
                 </Box>
 
                 <Box sx={{
@@ -301,7 +301,7 @@ export default function UserDashboard() {
                                                 sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
                                             >
                                                 <TableCell component="th" scope="row">
-                                                    <Link href={practical.path} underline="hover" variant="h4">
+                                                    <Link href={practical.path} underline="hover" variant="h5" fontWeight={500}>
                                                         {practical.practical_name}
                                                     </Link>
 

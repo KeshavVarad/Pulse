@@ -176,9 +176,9 @@ export default function StudentPractical() {
     const CommentMarker = React.memo(({ comment, videoLength, onSeek, index }) => {
         const getColorForRating = (rating) => {
             switch (rating) {
-                case 1: return '#ff4d4d';
-                case 3: return '#ffd700';
-                case 5: return '#66cc66';
+                case 1: return 'red.main';
+                case 3: return 'yellow.main';
+                case 5: return 'green.main';
                 default: return '#888888';
             }
         };
@@ -271,7 +271,7 @@ export default function StudentPractical() {
                         top: 0,
                         width: `${(currentTime / videoLength) * 100}%`,
                         height: '100%',
-                        backgroundColor: '#2196f3',
+                        backgroundColor: 'primary.light',
                         transform: 'translateX(-50%)',
                         zIndex: 0,
                     }}
@@ -391,7 +391,7 @@ export default function StudentPractical() {
                     py: 5
                 }}>
                     <Typography variant="h3"> {practical_name} </Typography>
-                    <Typography variant="h6"> Average Rating: {Math.round((avgRating + Number.EPSILON) * 100) / 100} </Typography>
+                    <Typography variant="h5"> Average Rating: {Math.round((avgRating + Number.EPSILON) * 100) / 100} </Typography>
 
                 </Box>
 
@@ -405,7 +405,7 @@ export default function StudentPractical() {
                 }}>
                     <Box sx={{
                         display: "flex",
-                        width: "90%",
+                        width: "100%",
                         justifyContent: "space-between"
 
                     }}>
@@ -415,7 +415,7 @@ export default function StudentPractical() {
 
                         <Box sx={{
                             width: "100%",
-                            //bgcolor: 'primary.main',
+                            height:"98%",
                             alignContent: "center",
                             justifyContent: "center"
                         }}>
@@ -451,7 +451,7 @@ export default function StudentPractical() {
                         justifyContent: 'center',
                         alignItems: "center"
                     }}>
-                        <Typography variant="h5"  >Timeline</Typography>
+                        <Typography variant="h4"  >Timeline</Typography>
                     </Box>
                     <Box sx={{
                         display: "flex",

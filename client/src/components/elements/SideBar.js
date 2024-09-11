@@ -98,7 +98,7 @@ export default function SideBar() {
             <Divider />
 
             <Box sx={{
-                pt: 3,
+                pt: 2,
                 pl: 3,
             }}>
                 Navigation
@@ -136,7 +136,7 @@ export default function SideBar() {
 
             </List>
             <Box sx={{
-                pt: 3,
+                pt: 2,
                 pl: 3
             }}>
                 Account

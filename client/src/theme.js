@@ -12,6 +12,15 @@ const theme = createTheme({
     },
     secondary:{
         main:'#FF9F1C',
+    },
+    red:{
+        main:'#f94144',
+    },
+    green:{
+        main:'#90be6d',
+    },
+    yellow:{
+        main:'#f9c74f',
     }
   },
   typography:{
@@ -28,18 +37,30 @@ const theme = createTheme({
     },
     h3: {
       fontFamily: '"Lato", sans-serif;',
-      fontWeight: 400,
-      fontSize: '2.25rem',
-    },
-    h4: {
-      fontFamily: '"Lato", sans-serif;',
-      fontWeight: 400,
-      fontSize: '2rem',
+      fontWeight: 300,
+      fontSize: '2.5rem',
     },
     h4: {
       fontFamily: '"Lato", sans-serif;',
       fontWeight: 300,
+      fontSize: '1.5rem',
+    },
+    h5: {
+      fontFamily: '"Lato", sans-serif;',
+      fontWeight: 300,
       fontSize: '1rem',
+    },
+    h6: {
+      fontFamily: '"Lato", sans-serif;',
+      fontWeight: 400,
+      fontSize: '1rem',
+      
+    },
+    h7: {
+      fontFamily: '"Lato", sans-serif;',
+      fontWeight: 400,
+      fontSize: '1rem',
+      
     },
   }
 });
