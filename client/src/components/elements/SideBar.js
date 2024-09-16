@@ -87,6 +87,7 @@ export default function SideBar() {
                 width: 2 / 12,
                 boxSizing: 'border-box',
             },
+            
         }}
             variant="permanent"
             anchor="left">
@@ -98,7 +99,7 @@ export default function SideBar() {
             <Divider />
 
             <Box sx={{
-                pt: 3,
+                pt: 2,
                 pl: 3,
             }}>
                 Navigation
@@ -136,7 +137,7 @@ export default function SideBar() {
 
             </List>
             <Box sx={{
-                pt: 3,
+                pt: 2,
                 pl: 3
             }}>
                 Account

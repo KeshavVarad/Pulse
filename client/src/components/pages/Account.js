@@ -170,20 +170,18 @@ export default function Account() {
                 <Box sx={{
                     py: 5
                 }}>
-                    <Typography variant="h2"> Profile </Typography>
+                    <Typography variant="h3"> Profile </Typography>
                 </Box>
 
                 <Box sx={{
                     display: "flex",
-                    width: "100%",
+                    width: "60%",
                 }}>
                     <Container>
                         <TableContainer component={Paper}>
                             <Table>
                                 <TableRow>
-                                    <TableCell component="th" style={{
-                                        minWidth: 10, fontWeight: 'bold', fontSize: 18
-                                    }}>Name</TableCell>
+                                    <TableCell component="th"><Typography variant='h5' fontWeight='bold' >Name</Typography></TableCell>
 
                                     {
                                         (editableSetting !== "real_name") ?
@@ -197,7 +195,8 @@ export default function Account() {
                                                     size="small"
                                                     sx={{
 
-                                                        width: "60%"
+                                                        width: "50%",
+                                                        
                                                     }}
 
                                                     value={setting}
@@ -211,7 +210,7 @@ export default function Account() {
 
                                 </TableRow>
                                 <TableRow>
-                                    <TableCell component="th" style={{ minWidth: 10, fontWeight: 'bold', fontSize: 18 }}>Username</TableCell>
+                                    <TableCell component="th"><Typography variant='h5' fontWeight='bold'>Username</Typography></TableCell>
 
                                     {
                                         (editableSetting !== "username") ?
@@ -225,7 +224,7 @@ export default function Account() {
                                                     size="small"
                                                     sx={{
 
-                                                        width: "60%"
+                                                        width: "50%"
                                                     }}
 
                                                     value={setting}
@@ -236,7 +235,7 @@ export default function Account() {
                                     }
                                 </TableRow>
                                 <TableRow>
-                                    <TableCell component="th" style={{ minWidth: 10, fontWeight: 'bold', fontSize: 18 }}>Email</TableCell>
+                                    <TableCell component="th"><Typography variant='h5' fontWeight='bold'>Email</Typography></TableCell>
                                     {
                                         (editableSetting !== "email") ?
                                             (<TableCell align="right" onClick={() => handleEditButton("email")}>{email}</TableCell>) :
@@ -249,7 +248,7 @@ export default function Account() {
                                                     size="small"
                                                     sx={{
 
-                                                        width: "60%"
+                                                        width: "50%"
                                                     }}
 
                                                     value={setting}
@@ -261,7 +260,7 @@ export default function Account() {
 
                                 </TableRow>
                                 <TableRow>
-                                    <TableCell component="th" style={{ minWidth: 10, fontWeight: 'bold', fontSize: 18 }}>School</TableCell>
+                                    <TableCell component="th"><Typography variant='h5' fontWeight='bold'>School</Typography></TableCell>
                                     <TableCell align="right">{schoolName}</TableCell>
 
                                 </TableRow>

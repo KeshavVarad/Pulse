@@ -356,7 +356,7 @@ export default function MakePractical() {
                 <Box sx={{
                     py: 5
                 }}>
-                    <Typography variant='h4'>
+                    <Typography variant='h3'>
                         Create a Practical
                     </Typography>
                 </Box>

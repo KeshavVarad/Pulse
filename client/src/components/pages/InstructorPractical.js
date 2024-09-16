@@ -670,14 +670,15 @@ export default function InstructorPractical() {
             control: 0,
             disablekb: 0,
             fs: 0,
-            color: "white"
+            color: "primary.main"
         }
     };
 
     return (
         <Box sx={{
             minHeight: "100%",
-            minWidth: "100%"
+            minWidth: "100%",
+            
         }}>
             <Box sx={{
                 minHeight: "100%",
@@ -687,18 +688,36 @@ export default function InstructorPractical() {
                 py: 8,
                 px: 4,
                 flexDirection: "column",
+                
             }}>
                 <Box sx={{
-                    py: 5
+                    display: "flex",
+                    flexDirection: "column",
+                    alignItems: "center",
+                    py: 5,
+                    
                 }}>
                     <Typography variant="h3"> {practicalName} </Typography>
                 </Box>
 
                 <Box sx={{
                     display: "flex",
-                    width: "100%"
+                    width: "100%",
+                    alignContent: "center",
+                    alignSelf: "center",
+                    justifyContent: "center",
+                    
+                }}>
+
+                <Box sx={{
+                    display: "flex",
+                    width: "100%",
+                    
+                    
                 }}>
                     <Box sx={{
+                        display:"absolute",
+                        width:"65%"
 
                     }}>
                         <YouTube videoId={videoId} onStateChange={handleVideoChange} opts={video_opts} ref={videoRef} onReady={(event) => { setPlayer(event.target); }} />
@@ -707,19 +726,19 @@ export default function InstructorPractical() {
                     <Box sx={{
                         display: "flex",
                         flexDirection: "column",
-                        width: "100%",
+                        maxWidth: "35%",
                         justifyContent: "space-between",
                         alignItems: "center",
 
                     }}>
-                        <Typography variant="h5">
+                        <Typography variant="h4">
                             Make Ratings
                         </Typography>
 
                         {tasks.map(task => (
                             <Box sx={{
-                                width: "80%",
-                                display: "flex",
+                                width:"100%",
+                                display: "absolute",
                                 flexDirection: "row",
                                 justifyContent: "space-between",
                                 alignItems: "center",
@@ -727,24 +746,31 @@ export default function InstructorPractical() {
 
                             }}>
                                 <Box sx={{
-                                    px: 2, minWidth: 50
+                                    display:"flex",
+                                    flexDirection: "row",
+                                    width:"100%",
+                                    alignItems: "center",
+                                }}>
+
+                                <Box sx={{
+                                     width:"200px", display:"absolute"
                                 }}>
                                     <Typography variant="h7">{task.name}</Typography>
                                 </Box>
-                                <Box sx={{ px: 2 }}>
+                                <Box sx={{ width:"180px", display:"absolute"}}>
                                     <ButtonGroup variant="contained" aria-label="Basic button group" >
-                                        <Button onClick={() => { handleRating(task, 1) }} variant="contained" color="primary" size="large">RED</Button>
-                                        <Button onClick={() => { handleRating(task, 3) }} variant="contained" color="secondary">YELLOW</Button>
-                                        <Button onClick={() => { handleRating(task, 5) }} variant="contained">GREEN</Button>
+                                        <Button onClick={() => { handleRating(task, 1) }} variant="contained" color="red" size="small" disableElevation>Red</Button>
+                                        <Button onClick={() => { handleRating(task, 3) }} variant="contained" color="yellow" size="small" disableElevation>Yellow</Button>
+                                        <Button onClick={() => { handleRating(task, 5) }} variant="contained" color="green" size="small" disableElevation>Green</Button>
                                     </ButtonGroup>
                                 </Box>
 
-                                <Box>
+                                <Box sx={{ width:"10%"}}>
                                     <Button onClick={() => handleTaskChatButton(task)}>
                                         <InsertCommentIcon />
                                     </Button>
                                 </Box>
-
+                                </Box>
 
                             </Box>
                         ))}
@@ -754,12 +780,13 @@ export default function InstructorPractical() {
                             display: "flex",
                             justifyContent: "center",
                             alignItems: "center",
-                            width: "60%",
+                            width: "100%",
                         }}>
 
                             <Autocomplete
                                 sx={{
-                                    width: "100%"
+                                    width: "50%",
+                                    size: "small"
                                 }}
                                 id="free-solo-demo"
                                 freeSolo
@@ -774,20 +801,21 @@ export default function InstructorPractical() {
                                     variant="outlined"
                                     color="secondary"
                                     sx={{
-                                        mx: 2
+                                       
                                     }}
-                                    fullWidth
+                                    
                                     value={newTask} />)}
                             />
 
 
 
-                            <Button variant="contained" onClick={handleNewTaskChange}>Add Task</Button>
+                            <Button variant="contained" size="large" onClick={handleNewTaskChange}>Add Task</Button>
                         </Box>
 
                     </Box>
 
 
+                </Box>
                 </Box>
 
 
@@ -795,7 +823,7 @@ export default function InstructorPractical() {
                     display: "flex",
                     flexDirection: "column",
                     pt: 5,
-                    width: "100%",
+                    width: "90%",
                     justifyContent: 'center',
                     alignItems: "center"
                 }}>

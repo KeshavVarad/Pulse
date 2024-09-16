@@ -88,7 +88,7 @@ export default function RegisterUser() {
                     my: 2,
                     justifyItems: "center",
                 }}>
-                    <Typography variant='h4'>
+                    <Typography variant='h3'>
                         Register Account
                     </Typography>
                 </Box>

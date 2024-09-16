@@ -57,7 +57,7 @@ export default function Login() {
                 <Box sx={{
                     my: 2
                 }}>
-                    <Typography variant='h4'>
+                    <Typography variant='h3'>
                         Login To Your Account
                     </Typography>
                 </Box>

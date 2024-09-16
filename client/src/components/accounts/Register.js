@@ -67,7 +67,7 @@ export default function Register() {
 
 
                 }}>
-                    <Typography variant='h4'>
+                    <Typography variant='h3'>
                         Register School
                     </Typography>
                 </Box>

@@ -9,7 +9,7 @@ import auth from "../../config/firebase.js";
 import SendIcon from '@mui/icons-material/Send';
 import InsertCommentIcon from "@mui/icons-material/InsertComment"
 
-import { FormControl, InputLabel, Select, MenuItem, Typography, Box, Button, TextField, Grid, Modal, List, ListItem, ListItemText, Tooltip } from "@mui/material";
+import { FormControl, InputLabel, Select, MenuItem, Typography, Box, Button, TextField, Grid, Modal, List, ListItem, ListItemText, Tooltip,TableContainer, Table, TableBody, TableCell , TableRow, TableHead, ButtonGroupContext} from "@mui/material";
 import { BarChart } from '@mui/x-charts/BarChart';
 import StudentDisplayComments from "../elements/StudentDisplayComments.js"
 import { grey } from "@mui/material/colors";
@@ -176,9 +176,9 @@ export default function StudentPractical() {
     const CommentMarker = React.memo(({ comment, videoLength, onSeek, index }) => {
         const getColorForRating = (rating) => {
             switch (rating) {
-                case 1: return '#ff4d4d';
-                case 3: return '#ffd700';
-                case 5: return '#66cc66';
+                case 1: return 'red.main';
+                case 3: return 'yellow.main';
+                case 5: return 'green.main';
                 default: return '#888888';
             }
         };
@@ -199,85 +199,105 @@ export default function StudentPractical() {
         }
 
         return (
-            <Tooltip title={`${comment.task} (Rating: ${comment.rating})`} arrow>
+            
                 <Box
                     sx={{
-                        position: 'absolute',
+                        position:"absolute",
                         left: `${(comment.timestamp / videoLength) * 100}%`,
-                        width: '15px',
+                        width: '10px',
                         height: '100%',
                         backgroundColor: getColorForRating(comment.rating),
                         transform: 'translate(-50%)',
                         cursor: 'pointer',
                         '&:hover': {
                             height: '100%',
-                            width: "25px",
+                            width: "20px",
                         },
                         zIndex: 2,
                         borderRadius: "5px",
+                        opacity:0.9,
                     }}
                     onClick={handleClick}
                 />
-            </Tooltip>
+            
         );
     });
 
     const CommentTimeline = ({ comments, videoLength, currentTime, onSeek, tasks }) => {
         const memoizedComments = useMemo(() => comments, [comments]);
-
         return (
 
-            <Box sx={{ position: 'relative', width: '90%', height: `${(tasks.length * 40)}px`, backgroundColor: "#d3d3d3", overflow: 'hidden', borderRadius: "15px" }}>
-                {tasks.map((task, taskIndex) => (
-                    <Box
-                        key={task.name}
-                        sx={{
-                            position: 'absolute',
-                            top: `${(taskIndex * 40) + 5}px`,
-                            left: 0,
-                            width: '100%',
-                            height: '30px',
-                        }}>
+            <Box sx={{minWidth:"95%", position: 'relative'}}>
 
+                <TableContainer>
+                    <Table sx={{ minWidth: "100%" }} aria-label="simple table">
+                         <TableHead>
 
+                            </TableHead>
+                        <TableBody>
+                            {tasks.map((task) => (
+                                <TableRow sx={{
+                                }}>
+                                     <TableCell sx={{
+                                        maxWidth:"120px"
+                                     }}>
+                                            <Typography variant="h7" sx={{
+                                                textOverflow: "ellipsis",
+                                                maxWidth:"60px"
+                                            }}>{task.name}</Typography>
+                                            
+                                    </TableCell>
+                                    <TableCell sx={{
+                                        width:"100%",
+                                        p:0
+                                    }}>
+                                    <Box
+                                        key={task.name}
+                                        sx={{
+                                            position:"relative",
+                                            width:"100%",
+                                            height: "50px",
+                                            backgroundColor:"primary.grey",
+                                            p:0,
+                                            left: 0,
+                                        }}>
+                                        {memoizedComments
+                                            .filter(comment => comment.task === task.name)
+                                            .map((comment, index) => (
+                                                <CommentMarker
+                                                    key={index}
+                                                    comment={comment}
+                                                    videoLength={videoLength}
+                                                    onSeek={onSeek}
+                                                    index={comments.indexOf(comment)}
+                                                />
+                                            ))}
 
-                        <Box>
-
-
-
-
-                        </Box>
-                        {memoizedComments
-                            .filter(comment => comment.task === task.name)
-                            .map((comment, index) => (
-                                <CommentMarker
-                                    key={index}
-                                    comment={comment}
-                                    videoLength={videoLength}
-                                    onSeek={onSeek}
-                                    index={comments.indexOf(comment)}
-                                />
+                                    </Box>
+                                        
+                                    </TableCell>
+                                </TableRow>
                             ))}
-
-
-                    </Box>
-
-                ))}
-
-                <Box
-                    sx={{
-                        position: 'absolute',
-                        left: `${(currentTime / videoLength) * 50}%`,
-                        top: 0,
-                        width: `${(currentTime / videoLength) * 100}%`,
-                        height: '100%',
-                        backgroundColor: '#2196f3',
-                        transform: 'translateX(-50%)',
-                        zIndex: 0,
-                    }}
-                />
+                        </TableBody>
+                    </Table>
+                </TableContainer>
 
             </Box>
+
+
+                // <Box
+                //     sx={{
+                //         position: 'absolute',
+                //         left: `${(currentTime / videoLength) * 50}%`,
+                //         top: 0,
+                //         width: `${(currentTime / videoLength) * 100}%`,
+                //         height: '100%',
+                //         backgroundColor: 'primary.light',
+                //         transform: 'translateX(-50%)',
+                //         zIndex: 0,
+                //     }}
+                // />
+
         );
     };
 
@@ -391,7 +411,7 @@ export default function StudentPractical() {
                     py: 5
                 }}>
                     <Typography variant="h3"> {practical_name} </Typography>
-                    <Typography variant="h6"> Average Rating: {Math.round((avgRating + Number.EPSILON) * 100) / 100} </Typography>
+                    <Typography variant="h5"> Average Rating: {Math.round((avgRating + Number.EPSILON) * 100) / 100} </Typography>
 
                 </Box>
 
@@ -405,7 +425,7 @@ export default function StudentPractical() {
                 }}>
                     <Box sx={{
                         display: "flex",
-                        width: "90%",
+                        width: "100%",
                         justifyContent: "space-between"
 
                     }}>
@@ -415,7 +435,7 @@ export default function StudentPractical() {
 
                         <Box sx={{
                             width: "100%",
-                            //bgcolor: 'primary.main',
+                            height:"98%",
                             alignContent: "center",
                             justifyContent: "center"
                         }}>
@@ -444,16 +464,29 @@ export default function StudentPractical() {
                 }}>
 
                     <Box sx={{
-                        display: "flex",
+                        
                         flexDirection: "column",
                         py: 3,
                         width: "100%",
                         justifyContent: 'center',
                         alignItems: "center"
                     }}>
-                        <Typography variant="h5"  >Timeline</Typography>
+                        <Typography variant="h4"  >Timeline</Typography>
                     </Box>
-                    <Box sx={{
+
+                    <CommentTimeline
+                            comments={comments}
+                            videoLength={player ? player.getDuration() : 0}
+                            currentTime={currentTime}
+                            onSeek={(timestamp) => player && player.seekTo(timestamp)}
+                            tasks={tasks}
+                    />
+
+
+
+
+                    
+                    {/* <Box sx={{
                         display: "flex",
                         flexDirection: "row",
                         width: '100%'
@@ -480,15 +513,8 @@ export default function StudentPractical() {
 
                         </Box>
 
-                        <CommentTimeline
-                            comments={comments}
-                            videoLength={player ? player.getDuration() : 0}
-                            currentTime={currentTime}
-                            onSeek={(timestamp) => player && player.seekTo(timestamp)}
-                            tasks={tasks}
-                        />
-                    </Box>
 
+                    </Box> */}
 
                     <Box sx={{
                         display: "flex",
@@ -540,7 +566,7 @@ export default function StudentPractical() {
 
                             }}>
                                 <BarChart
-                                    xAxis={[{ scaleType: 'band', data: ["Red", "Yellow", "Green"], colorMap: { type: "ordinal", colors: ["red", "yellow", "green"] } }]}
+                                    xAxis={[{ scaleType: 'band', data: ["Red", "Yellow", "Green"], colorMap: { type: "ordinal", colors: ['#f94144', "#FFE14D", "#84C453"] } }]}
                                     series={[{ data: [redCount, yellowCount, greenCount] }]}
                                     width={600}
                                     height={300} />

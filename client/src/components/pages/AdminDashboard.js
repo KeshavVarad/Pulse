@@ -512,7 +512,7 @@ export default function AdminDashboard() {
                         justifyContent: "center"
                     }}>
                         <Typography id="modal-modal-title" variant="h6" component="h2">
-                            Invite {registerType}
+                            Invite {registerType.charAt(0).toUpperCase() + registerType.slice(1)}
                         </Typography>
 
                         <form onSubmit={handleFormSubmit}>
@@ -522,9 +522,10 @@ export default function AdminDashboard() {
                                 variant="outlined"
                                 color="secondary"
                                 type="email"
-                                sx={{ mb: 3 }}
+                                sx={{ my: 3 }}
                                 fullWidth
-                                value={email} />
+                                value={email}
+                                 />
 
                             <Box sx={{
                                 display: "flex",
