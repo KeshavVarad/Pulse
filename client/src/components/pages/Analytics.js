@@ -226,7 +226,7 @@ export default function Analytics() {
                 <Box sx={{
                     py: 5
                 }}>
-                    <Typography variant="h2"> Analytics Dashboard </Typography>
+                    <Typography variant="h3"> Analytics Dashboard </Typography>
                 </Box>
 
                 <Box sx={{
@@ -239,7 +239,7 @@ export default function Analytics() {
                         alignItems: "center"
                     }}>
                         <Box>
-                            <center><h2>Cohort Information</h2></center>
+                            <Typography variant="h4">Cohort Information</Typography>
                         </Box>
 
                         <TableContainer component={Paper}>
