@@ -87,6 +87,7 @@ export default function SideBar() {
                 width: 2 / 12,
                 boxSizing: 'border-box',
             },
+            
         }}
             variant="permanent"
             anchor="left">

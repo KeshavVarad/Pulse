@@ -8,6 +8,7 @@ const theme = createTheme({
       main: '#27A599',
       light: '#cbf3f0',
       dark: '#239589',
+      grey: '#F4F4F4',
       contrastText: '#fff',
     },
     secondary:{
@@ -17,10 +18,10 @@ const theme = createTheme({
         main:'#f94144',
     },
     green:{
-        main:'#90be6d',
+        main:'#84C453',
     },
     yellow:{
-        main:'#f9c74f',
+        main:'#FFE14D',
     }
   },
   typography:{
@@ -58,8 +59,8 @@ const theme = createTheme({
     },
     h7: {
       fontFamily: '"Lato", sans-serif;',
-      fontWeight: 400,
-      fontSize: '1rem',
+      fontWeight: 300,
+      fontSize: '0.75rem',
       
     },
   }
