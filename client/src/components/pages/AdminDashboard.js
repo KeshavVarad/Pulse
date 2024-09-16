@@ -285,7 +285,7 @@ export default function AdminDashboard() {
                 <Box sx={{
                     py: 5
                 }}>
-                    <Typography variant="h2"> Admin Dashboard </Typography>
+                    <Typography variant="h3"> Admin Dashboard </Typography>
                 </Box>
 
                 <Box sx={{
@@ -299,7 +299,7 @@ export default function AdminDashboard() {
                         alignItems: "center"
                     }}>
                         <Box>
-                            <center><h2>Students</h2></center>
+                        <Typography variant="h4">Students</Typography>
                         </Box>
 
                         <TableContainer component={Paper}>
@@ -362,7 +362,7 @@ export default function AdminDashboard() {
                         alignItems: "center"
                     }}>
                         <Box>
-                            <center><h2>Instructors</h2></center>
+                        <Typography variant="h4">Instructors</Typography>
                         </Box>
 
                         <TableContainer component={Paper}>
@@ -427,7 +427,7 @@ export default function AdminDashboard() {
                         alignItems: "center"
                     }}>
                         <Box>
-                            <center><h2>Admins</h2></center>
+                            <Typography variant="h4">Admins</Typography>
                         </Box>
 
                         <TableContainer component={Paper}>
