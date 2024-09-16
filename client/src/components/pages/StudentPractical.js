@@ -239,7 +239,7 @@ export default function StudentPractical() {
                                 <TableRow sx={{
                                 }}>
                                      <TableCell sx={{
-                                        maxWidth:"120px"
+                                        maxWidth:"150px"
                                      }}>
                                             <Typography variant="h7" sx={{
                                                 textOverflow: "ellipsis",
@@ -272,8 +272,21 @@ export default function StudentPractical() {
                                                     index={comments.indexOf(comment)}
                                                 />
                                             ))}
+                                            <Box
+                                         sx={{
+                                             position: 'absolute',
+                                             left: `${(currentTime / videoLength) * 50}%`,
+                                             top: 0,
+                                             width: `${(currentTime / videoLength) * 100}%`,
+                                             height: '100%',
+                                             backgroundColor: 'primary.light',
+                                             transform: 'translateX(-50%)',
+                                             zIndex: 1,
+                                         }}
+                                     />
 
                                     </Box>
+                                    
                                         
                                     </TableCell>
                                 </TableRow>
@@ -464,9 +477,9 @@ export default function StudentPractical() {
                 }}>
 
                     <Box sx={{
-                        
+                        display:"flex",
                         flexDirection: "column",
-                        py: 3,
+                        py: 5,
                         width: "100%",
                         justifyContent: 'center',
                         alignItems: "center"
@@ -557,7 +570,7 @@ export default function StudentPractical() {
                             pt: 3
 
                         }}>
-                            <center><Typography variant="h5">Statistics</Typography></center>
+                            <center><Typography variant="h4">Statistics</Typography></center>
 
 
                             <Box sx={{
@@ -583,8 +596,8 @@ export default function StudentPractical() {
                         }}>
                             <center>
                                 {currentTaskDiscussion ?
-                                    <Typography variant="h5">{currentTaskDiscussion.name} Discussion</Typography> :
-                                    <Typography variant="h5">No Task Selected</Typography>
+                                    <Typography variant="h4">{currentTaskDiscussion.name} Discussion</Typography> :
+                                    <Typography variant="h4">No Task Selected</Typography>
                                 }
                             </center>
 
@@ -598,7 +611,7 @@ export default function StudentPractical() {
                                         width: "100%",
                                         alignItems: "center",
                                         justifyContent: "center",
-                                        border: '5px solid #ccc',
+                                        backgroundColor: "primary.grey",
                                         borderRadius: 2,
                                     }}>
                                         <Grid item sx={{

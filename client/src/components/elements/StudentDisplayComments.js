@@ -24,11 +24,11 @@ export default function StudentDisplayComments({ comments, currentIndex, onNext,
             justifyContent: "space-evenly",
         }}>
 
-            <Typography variant="h6" >Current Feedback ({currentIndex + 1}/{comments.length})</Typography>
-            <Typography variant="h7"><strong>Task:</strong> {comment.task}</Typography>
-            <Typography variant="h7"><strong>Rating:</strong> {comment.rating}</Typography>
-            <Typography variant="h7"><strong>Feedback:</strong> {comment.feedback}</Typography>
-            <Typography variant="h7"><strong>Timestamp:</strong> {new Date(comment.timestamp * 1000).toISOString().substring(14, 19)}</Typography>
+            <Typography variant="h5" >Current Feedback ({currentIndex + 1}/{comments.length})</Typography>
+            <Typography variant="h6"><strong>Task:</strong> {comment.task}</Typography>
+            <Typography variant="h6"><strong>Rating:</strong> {comment.rating}</Typography>
+            <Typography variant="h6"><strong>Feedback:</strong> {comment.feedback}</Typography>
+            <Typography variant="h6"><strong>Timestamp:</strong> {new Date(comment.timestamp * 1000).toISOString().substring(14, 19)}</Typography>
             <Box sx={{ mt: 2, display: 'flex', justifyContent: 'space-between' }}>
                 <Button onClick={onPrevious} disabled={currentIndex === 0}>Previous</Button>
                 <Button onClick={onNext} disabled={currentIndex === comments.length - 1}>Next</Button>
