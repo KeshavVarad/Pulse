@@ -25,7 +25,7 @@ export default function MakePractical() {
     const { currentUser, login, setError } = useAuth();
     const [loading, setLoading] = useState(false);
 
-    const [makePracticalTutorial, setMakePracticalTutorial] = useState(false)
+    const [makePracticalTutorial, setMakePracticalTutorial] = useState(true)
     const [isMakePracticalMounted, setMakePracticalMounted] = useState(false);
 
     const [schoolStudents, setSchoolStudents] = useState([])

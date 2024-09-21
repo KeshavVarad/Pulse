@@ -3,9 +3,235 @@ import React, { useEffect, useState } from 'react'
 import auth from '../../config/firebase'
 import InfoIcon from '@mui/icons-material/Info';
 import { Radar } from 'react-chartjs-2';
-import { Chart as ChartJS, RadialLinearScale, PointElement, LineElement, Filler, Tooltip, Legend } from 'chart.js';
+import { Chart as ChartJS, CategoryScale, LinearScale, Title, RadialLinearScale, PointElement, LineElement, Filler, Tooltip, Legend } from 'chart.js';
+import { Line } from "react-chartjs-2";
+import { Select, MenuItem, FormControl, InputLabel, Checkbox, ListItemText } from "@mui/material";
 
-ChartJS.register(RadialLinearScale, PointElement, LineElement, Filler, Tooltip, Legend);
+
+ChartJS.register(RadialLinearScale, CategoryScale, LinearScale, Title, PointElement, LineElement, Filler, Tooltip, Legend);
+
+const LineChartComponent = ({ data, isDemo }) => {
+
+    if (isDemo) {
+        data = [
+            {
+                cohort_year: 2027,
+                data: [
+                    {
+                        year: 2021,
+                        data: [
+                            { name: "Patient-centeredness", avg_rating: 3.2 },
+                            { name: "Effectiveness", avg_rating: 4.1 },
+                            { name: "Efficiency", avg_rating: 3.8 },
+                            { name: "Safety", avg_rating: 4.0 },
+                        ],
+                    },
+                    {
+                        year: 2022,
+                        data: [
+                            { name: "Patient-centeredness", avg_rating: 3.5 },
+                            { name: "Effectiveness", avg_rating: 4.3 },
+                            { name: "Efficiency", avg_rating: 3.9 },
+                            { name: "Safety", avg_rating: 4.2 },
+                        ],
+                    },
+                    {
+                        year: 2023,
+                        data: [
+                            { name: "Patient-centeredness", avg_rating: 3.8 },
+                            { name: "Effectiveness", avg_rating: 4.5 },
+                            { name: "Efficiency", avg_rating: 4.1 },
+                            { name: "Safety", avg_rating: 4.3 },
+                        ],
+                    },
+                    {
+                        year: 2024,
+                        data: [
+                            { name: "Patient-centeredness", avg_rating: 4.0 },
+                            { name: "Effectiveness", avg_rating: 4.7 },
+                            { name: "Efficiency", avg_rating: 4.2 },
+                            { name: "Safety", avg_rating: 4.4 },
+                        ],
+                    },
+                ],
+            },
+            {
+                cohort_year: 2028,
+                data: [
+                    {
+                        year: 2021,
+                        data: [
+                            { name: "Patient-centeredness", avg_rating: 3.0 },
+                            { name: "Effectiveness", avg_rating: 3.9 },
+                            { name: "Efficiency", avg_rating: 3.5 },
+                            { name: "Safety", avg_rating: 3.7 },
+                        ],
+                    },
+                    {
+                        year: 2022,
+                        data: [
+                            { name: "Patient-centeredness", avg_rating: 3.3 },
+                            { name: "Effectiveness", avg_rating: 4.0 },
+                            { name: "Efficiency", avg_rating: 3.7 },
+                            { name: "Safety", avg_rating: 3.8 },
+                        ],
+                    },
+                    {
+                        year: 2023,
+                        data: [
+                            { name: "Patient-centeredness", avg_rating: 3.5 },
+                            { name: "Effectiveness", avg_rating: 4.1 },
+                            { name: "Efficiency", avg_rating: 3.8 },
+                            { name: "Safety", avg_rating: 3.9 },
+                        ],
+                    },
+                    {
+                        year: 2024,
+                        data: [
+                            { name: "Patient-centeredness", avg_rating: 3.7 },
+                            { name: "Effectiveness", avg_rating: 4.3 },
+                            { name: "Efficiency", avg_rating: 3.9 },
+                            { name: "Safety", avg_rating: 4.0 },
+                        ],
+                    },
+                ],
+            },
+        ];
+    }
+
+    const [selectedTasks, setSelectedTasks] = useState([]);
+    const [selectedCohortYears, setSelectedCohortYears] = useState([]);
+
+    const [chartData, setChartData] = useState({
+        labels: [], // No labels initially
+        datasets: [] // No datasets initially
+    });
+
+
+    useEffect(() => {
+        if (data.length > 0) {
+            // Prepare chart data for selected tasks
+            const datasets = selectedCohortYears.flatMap((cohortYear) => {
+                const cohort = data.find((cohort) => cohort.cohort_year === cohortYear);
+                if (!cohort) return []; // Skip if cohort is not found
+
+                return selectedTasks.map((task, index) => {
+                    const taskRatings = cohort.data.map((yearData) =>
+                        yearData.data.find((t) => t.name === task)?.avg_rating || 0
+                    );
+
+                    return {
+                        label: `${task} - Cohort ${cohortYear}`,
+                        data: taskRatings,
+                        fill: false,
+                        backgroundColor: ["rgb(255, 99, 132)", "rgb(77, 255, 156)"][index % 2],
+                        borderColor: ["rgba(255, 99, 132, 0.2)", "rgba(77, 255, 156, 0.73)"][index % 2],
+                    };
+                });
+            });
+
+            const chartLabels = selectedCohortYears.length > 0
+                ? data
+                    .filter(cohort => selectedCohortYears.includes(cohort.cohort_year))
+                    .flatMap(cohort => cohort.data.map(yearData => yearData.year))
+                : ['No Data'];
+
+            const chart_data = {
+                labels: [...new Set(chartLabels)], // Unique years for the x-axis
+                datasets: datasets.length ? datasets : [], // Ensure datasets exist
+            };
+
+            setChartData(chart_data)
+        }
+
+
+    }, [selectedTasks, selectedCohortYears])
+
+    if (data.length == 0) {
+        return <Box>No Data</Box>
+    }
+
+
+
+    const chartOptions = {
+        responsive: true,
+        plugins: {
+            legend: {
+                display: true,
+                position: "right", // Customize legend position
+                align: "start",
+                labels: {
+                    usePointStyle: true,
+                },
+            },
+        },
+    };
+
+    return (
+        <Box>
+            {/* Title */}
+            <Typography variant="h6" gutterBottom>
+                Average Task Ratings Over Time
+            </Typography>
+
+            {/* Cohort Year Select */}
+            <FormControl fullWidth>
+                <InputLabel
+                    id="cohort-year-select-label"
+                    shrink={selectedCohortYears.length > 0}
+                >
+                    Select Cohort Year(s)
+                </InputLabel>
+                <Select
+                    labelId="cohort-year-select-label"
+                    multiple
+                    value={selectedCohortYears}
+                    onChange={(e) => setSelectedCohortYears(e.target.value)}
+                    renderValue={(selected) => selected.join(", ")}
+                >
+                    {data.map((cohort) => (
+                        <MenuItem key={cohort.cohort_year} value={cohort.cohort_year}>
+                            <Checkbox checked={selectedCohortYears.indexOf(cohort.cohort_year) > -1} />
+                            <ListItemText primary={cohort.cohort_year} />
+                        </MenuItem>
+                    ))}
+                </Select>
+            </FormControl>
+
+            {/* Task Select */}
+            <FormControl fullWidth margin="normal">
+                <InputLabel
+                    id="task-select-label"
+                    shrink={selectedTasks.length > 0}
+                >
+                    Select Tasks
+                </InputLabel>
+                <Select
+                    labelId="task-select-label"
+                    multiple
+                    value={selectedTasks}
+                    onChange={(e) => setSelectedTasks(e.target.value)}
+                    renderValue={(selected) => selected.join(", ")}
+                >
+                    {data[0]?.data[0]?.data.map((task) => (
+                        <MenuItem key={task.name} value={task.name}>
+                            <Checkbox checked={selectedTasks.indexOf(task.name) > -1} />
+                            <ListItemText primary={task.name} />
+                        </MenuItem>
+                    ))}
+                </Select>
+            </FormControl>
+
+            {/* Line Chart */}
+            <Box sx={{ mt: 4 }}>
+                <Line data={chartData} options={chartOptions} />
+            </Box>
+        </Box>
+
+
+    )
+
+}
 
 
 export default function Analytics() {
@@ -22,6 +248,7 @@ export default function Analytics() {
     const [selectedCohort, setSelectedCohort] = useState()
     const [selectedCohortInd, setSelectedCohortInd] = useState(-1)
     const [cohortPlotData, setCohortPlotData] = useState([])
+
 
     const testCohortPlotData = [[{
         labels: ["Integrity", "Teamwork", "Communication"],
@@ -69,11 +296,6 @@ export default function Analytics() {
         setSelectedCohortInd(-1)
         setSelectedCohort()
     }
-
-    useEffect(() => {
-        console.log(selectedCohortInd)
-        console.log(cohortPlotData[selectedCohortInd])
-    }, [selectedCohortInd])
 
     useEffect(() => {
         async function getUserData() {
@@ -134,6 +356,7 @@ export default function Analytics() {
                 school_data.task_data.map((data) => {
                     task_data.push(data)
                 })
+                setTaskData(task_data)
 
                 let cohort_data = []
                 let cohort_years = []
@@ -195,7 +418,6 @@ export default function Analytics() {
 
                 setCohortYears(cohort_years)
                 setCohortAvgs(cohort_data)
-                setTaskData(task_data)
                 setLoading(false)
 
 
@@ -230,113 +452,14 @@ export default function Analytics() {
                 </Box>
 
                 <Box sx={{
-                    display: "flex",
-                    width: "100%",
+                    width: "75%",
+                    height: "100%",
+                    py: 5
                 }}>
-                    <Container className="cohort_info" sx={{
-                        display: "flex",
-                        flexDirection: "column",
-                        alignItems: "center"
-                    }}>
-                        <Box>
-                            <Typography variant="h4">Cohort Information</Typography>
-                        </Box>
-
-                        <TableContainer component={Paper}>
-                            <Table>
-                                <TableHead>
-                                    <TableRow>
-                                        <TableCell style={{ minWidth: 10 }}>Cohort Year</TableCell>
-                                        <TableCell align="right">Average Score</TableCell>
-                                        <TableCell align="right">More Info</TableCell>
-                                    </TableRow>
-                                </TableHead>
-                                <TableBody>
-                                    {cohortAvgs.map((cohort_avg, idx) => (
-                                        <TableRow
-                                            key={idx}
-                                        >
-                                            <TableCell component="th" scope="row">
-                                                {cohortYears[idx]}
-                                            </TableCell>
-                                            <TableCell align="right">
-                                                {Math.round((cohort_avg + Number.EPSILON) * 100) / 100}
-                                            </TableCell>
-                                            <TableCell align="right">
-                                                <Button onClick={() => handleCohortGraphButton(cohortYears[idx], idx)}>
-                                                    <InfoIcon />
-                                                </Button>
-                                            </TableCell>
-                                        </TableRow>
-                                    ))}
-                                </TableBody>
-
-                            </Table>
-                        </TableContainer>
-
-                    </Container>
-
+                    <LineChartComponent data={taskData} isDemo={false} />
                 </Box>
             </Box>
 
-            <Modal
-                open={cohortGraphOpen}
-                onClose={handleCohortGraphClose}
-                aria-labelledby="modal-modal-title"
-                aria-describedby="modal-modal-description"
-            >
-                <Box sx={{
-                    position: "absolute",
-                    top: "50%",
-                    left: "50%",
-                    transform: "translate(-50%, -50%)",
-                    width: 800,
-                    bgcolor: "background.paper",
-                    border: "2px solid #000",
-                    boxShadow: 24,
-                    p: 4,
-                }}>
-                    <Box sx={{
-                        display: "flex",
-                        flexDirection: "column",
-                        width: "100%",
-                        alignItems: "center",
-                        justifyContent: "center"
-                    }}>
-                        <Typography id="modal-modal-title" variant="h6" component="h2">
-                            {selectedCohort ? "Cohort " + selectedCohort : "No Cohort Selected"}
-                        </Typography>
-
-
-                        <Box sx={{
-                            display: "flex"
-                        }}>
-                            {
-                                cohortPlotData[selectedCohortInd] ? cohortPlotData[selectedCohortInd].map(cohort_data => (
-                                    <Card sx={{
-                                        display: "flex",
-                                        flexDirection: "column",
-                                        width: "100%",
-                                    }}>
-                                        <CardContent>
-                                            <Typography variant="h5" component="div" gutterBottom>
-                                                {cohort_data.datasets.label}
-                                            </Typography>
-                                            <Radar data={cohort_data} options={options} />
-                                        </CardContent>
-                                    </Card>
-                                )) : (<Box>No Data</Box>)
-                            }
-
-                        </Box>
-
-
-
-
-                    </Box>
-
-                </Box>
-            </Modal >
         </Box>
     )
 }

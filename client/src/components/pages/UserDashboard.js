@@ -27,7 +27,7 @@ export default function UserDashboard() {
     const [practicalSettingsOpen, setPracticalSettingsOpen] = useState(false);
     const [practicalSettingsId, setPracticalSettingsId] = useState(null);
 
-    const [dashTutorial, setDashTutorial] = useState(false)
+    const [dashTutorial, setDashTutorial] = useState(true)
     const [isDashboardMounted, setDashboardMounted] = useState(false);
     const [isInstructor, setIsInstructor] = useState(false)
     const handleDashJoyrideCallback = async (data) => {
@@ -253,7 +253,7 @@ export default function UserDashboard() {
         <Box sx={{
             minHeight: "100%",
             minWidth: "100%",
-            
+
 
         }}>
 
