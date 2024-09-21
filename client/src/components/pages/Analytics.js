@@ -5,7 +5,7 @@ import InfoIcon from '@mui/icons-material/Info';
 import { Radar } from 'react-chartjs-2';
 import { Chart as ChartJS, CategoryScale, LinearScale, Title, RadialLinearScale, PointElement, LineElement, Filler, Tooltip, Legend } from 'chart.js';
 import { Line } from "react-chartjs-2";
-import { Select, MenuItem, FormControl, InputLabel, Checkbox, ListItemText } from "@mui/material";
+import { Switch, Select, MenuItem, FormControl, InputLabel, Checkbox, ListItemText } from "@mui/material";
 
 
 ChartJS.register(RadialLinearScale, CategoryScale, LinearScale, Title, PointElement, LineElement, Filler, Tooltip, Legend);
@@ -249,6 +249,8 @@ export default function Analytics() {
     const [selectedCohortInd, setSelectedCohortInd] = useState(-1)
     const [cohortPlotData, setCohortPlotData] = useState([])
 
+    const [isDemo, setDemo] = useState(false);
+
 
     const testCohortPlotData = [[{
         labels: ["Integrity", "Teamwork", "Communication"],
@@ -295,6 +297,10 @@ export default function Analytics() {
         setCohortGraphOpen(false)
         setSelectedCohortInd(-1)
         setSelectedCohort()
+    }
+
+    const handleDemoSwitch = () => {
+        setDemo(!isDemo);
     }
 
     useEffect(() => {
@@ -452,11 +458,25 @@ export default function Analytics() {
                 </Box>
 
                 <Box sx={{
+                    display: "flex",
+                    alignItems: "center",
+                    py: 5
+                }}>
+                    <Typography variant='h5'>Demo Switch</Typography>
+
+                    <Switch
+                        checked={isDemo}
+                        onChange={handleDemoSwitch}
+                        color="primary"
+                    />
+                </Box>
+
+                <Box sx={{
                     width: "75%",
                     height: "100%",
                     py: 5
                 }}>
-                    <LineChartComponent data={taskData} isDemo={false} />
+                    <LineChartComponent data={taskData} isDemo={isDemo} />
                 </Box>
             </Box>
 
