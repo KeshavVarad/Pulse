@@ -12,7 +12,8 @@ class User {
         role,
         school_name,
         school_id,
-        grad_year
+        grad_year,
+        shortcuts
     ) {
         (this.id = id),
             (this.username = username),
@@ -27,7 +28,8 @@ class User {
             (this.role = role),
             (this.school_name = school_name),
             (this.school_id = school_id),
-            (this.grad_year = grad_year);
+            (this.grad_year = grad_year),
+            (this.shortcuts = shortcuts);
     }
 }
 

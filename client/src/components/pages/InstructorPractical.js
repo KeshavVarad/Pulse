@@ -45,6 +45,7 @@ export default function InstructorPractical() {
     const [comments, setComments] = useState([])
     const [editableCommentIdx, setEditableCommentIdx] = useState(-1)
     const [commentEdit, setCommentEdit] = useState("")
+    const [shortcuts, setShortcuts] = useState({});
 
     const [taskChatOpen, setTaskChatOpen] = useState(false)
     const [taskToDisplay, setTaskToDisplay] = useState()
@@ -434,6 +435,17 @@ export default function InstructorPractical() {
 
     // handle what happens on key press
     const handleKeyPress = useCallback((event) => {
+        if (event.key === " " || event.key === "Enter") {
+            const words = commentEdit.split(" ");
+            const lastWord = words[words.length - 1];
+
+            // Replace shortcut with full phrase
+            if (shortcuts[lastWord]) {
+                words[words.length - 1] = shortcuts[lastWord];
+                setCommentEdit(words.join(" "));
+            }
+        }
+
         if (event.key == "Enter" & editableCommentIdx != -1) {
             handleSubmitButton(editableCommentIdx)
             setEditableCommentIdx(-1)
@@ -456,6 +468,38 @@ export default function InstructorPractical() {
             document.removeEventListener('keydown', handleKeyPress);
         };
     }, [handleKeyPress]);
+
+    useEffect(() => {
+        async function fetchInstructorData() {
+            try {
+                const auth_user = auth.currentUser;
+                const token = auth_user && (await auth_user.getIdToken());
+
+                const userId = currentUser.uid
+
+                const requestOptions = {
+                    method: "GET",
+                    mode: "cors",
+                    headers: {
+                        "Content-Type": "application/json",
+                        Authorization: `Bearer ${token}`,
+                    },
+                }
+
+                const user_res = await fetch(`${process.env.REACT_APP_API_HOST}/api/user/${userId}`, requestOptions);
+                const userData = await user_res.json()
+                if (userData.shortcuts) {
+                    setShortcuts(userData.shortcuts)
+                }
+
+
+            } catch (e) {
+                console.log(e);
+            }
+        }
+
+        fetchInstructorData()
+    }, [currentUser])
 
     useEffect(() => {
         async function fetchSchoolData() {
@@ -678,7 +722,7 @@ export default function InstructorPractical() {
         <Box sx={{
             minHeight: "100%",
             minWidth: "100%",
-            
+
         }}>
             <Box sx={{
                 minHeight: "100%",
@@ -688,14 +732,14 @@ export default function InstructorPractical() {
                 py: 8,
                 px: 4,
                 flexDirection: "column",
-                
+
             }}>
                 <Box sx={{
                     display: "flex",
                     flexDirection: "column",
                     alignItems: "center",
                     py: 5,
-                    
+
                 }}>
                     <Typography variant="h3"> {practicalName} </Typography>
                 </Box>
@@ -706,116 +750,116 @@ export default function InstructorPractical() {
                     alignContent: "center",
                     alignSelf: "center",
                     justifyContent: "center",
-                    
-                }}>
 
-                <Box sx={{
-                    display: "flex",
-                    width: "100%",
-                    
-                    
                 }}>
-                    <Box sx={{
-                        display:"absolute",
-                        width:"65%"
-
-                    }}>
-                        <YouTube videoId={videoId} onStateChange={handleVideoChange} opts={video_opts} ref={videoRef} onReady={(event) => { setPlayer(event.target); }} />
-                    </Box>
 
                     <Box sx={{
                         display: "flex",
-                        flexDirection: "column",
-                        maxWidth: "35%",
-                        justifyContent: "space-between",
-                        alignItems: "center",
+                        width: "100%",
+
 
                     }}>
-                        <Typography variant="h4">
-                            Make Ratings
-                        </Typography>
+                        <Box sx={{
+                            display: "absolute",
+                            width: "65%"
 
-                        {tasks.map(task => (
-                            <Box sx={{
-                                width:"100%",
-                                display: "absolute",
-                                flexDirection: "row",
-                                justifyContent: "space-between",
-                                alignItems: "center",
-                                pt: 1,
-
-                            }}>
-                                <Box sx={{
-                                    display:"flex",
-                                    flexDirection: "row",
-                                    width:"100%",
-                                    alignItems: "center",
-                                }}>
-
-                                <Box sx={{
-                                     width:"200px", display:"absolute"
-                                }}>
-                                    <Typography variant="h7">{task.name}</Typography>
-                                </Box>
-                                <Box sx={{ width:"180px", display:"absolute"}}>
-                                    <ButtonGroup variant="contained" aria-label="Basic button group" >
-                                        <Button onClick={() => { handleRating(task, 1) }} variant="contained" color="red" size="small" disableElevation>Red</Button>
-                                        <Button onClick={() => { handleRating(task, 3) }} variant="contained" color="yellow" size="small" disableElevation>Yellow</Button>
-                                        <Button onClick={() => { handleRating(task, 5) }} variant="contained" color="green" size="small" disableElevation>Green</Button>
-                                    </ButtonGroup>
-                                </Box>
-
-                                <Box sx={{ width:"10%"}}>
-                                    <Button onClick={() => handleTaskChatButton(task)}>
-                                        <InsertCommentIcon />
-                                    </Button>
-                                </Box>
-                                </Box>
-
-                            </Box>
-                        ))}
-
+                        }}>
+                            <YouTube videoId={videoId} onStateChange={handleVideoChange} opts={video_opts} ref={videoRef} onReady={(event) => { setPlayer(event.target); }} />
+                        </Box>
 
                         <Box sx={{
                             display: "flex",
-                            justifyContent: "center",
+                            flexDirection: "column",
+                            maxWidth: "35%",
+                            justifyContent: "space-between",
                             alignItems: "center",
-                            width: "100%",
+
                         }}>
+                            <Typography variant="h4">
+                                Make Ratings
+                            </Typography>
 
-                            <Autocomplete
-                                sx={{
-                                    width: "50%",
-                                    size: "small"
-                                }}
-                                id="free-solo-demo"
-                                freeSolo
-                                options={schoolTaskPool}
-                                value={newTask}
-                                onInputChange={(event, newInputValue) => {
-                                    setNewTask(newInputValue);
-                                }}
-                                renderInput={(params) => (<TextField
-                                    {...params}
-                                    label="New Task"
-                                    variant="outlined"
-                                    color="secondary"
+                            {tasks.map(task => (
+                                <Box sx={{
+                                    width: "100%",
+                                    display: "absolute",
+                                    flexDirection: "row",
+                                    justifyContent: "space-between",
+                                    alignItems: "center",
+                                    pt: 1,
+
+                                }}>
+                                    <Box sx={{
+                                        display: "flex",
+                                        flexDirection: "row",
+                                        width: "100%",
+                                        alignItems: "center",
+                                    }}>
+
+                                        <Box sx={{
+                                            width: "200px", display: "absolute"
+                                        }}>
+                                            <Typography variant="h7">{task.name}</Typography>
+                                        </Box>
+                                        <Box sx={{ width: "180px", display: "absolute" }}>
+                                            <ButtonGroup variant="contained" aria-label="Basic button group" >
+                                                <Button onClick={() => { handleRating(task, 1) }} variant="contained" color="red" size="small" disableElevation>Red</Button>
+                                                <Button onClick={() => { handleRating(task, 3) }} variant="contained" color="yellow" size="small" disableElevation>Yellow</Button>
+                                                <Button onClick={() => { handleRating(task, 5) }} variant="contained" color="green" size="small" disableElevation>Green</Button>
+                                            </ButtonGroup>
+                                        </Box>
+
+                                        <Box sx={{ width: "10%" }}>
+                                            <Button onClick={() => handleTaskChatButton(task)}>
+                                                <InsertCommentIcon />
+                                            </Button>
+                                        </Box>
+                                    </Box>
+
+                                </Box>
+                            ))}
+
+
+                            <Box sx={{
+                                display: "flex",
+                                justifyContent: "center",
+                                alignItems: "center",
+                                width: "100%",
+                            }}>
+
+                                <Autocomplete
                                     sx={{
-                                       
+                                        width: "50%",
+                                        size: "small"
                                     }}
-                                    
-                                    value={newTask} />)}
-                            />
+                                    id="free-solo-demo"
+                                    freeSolo
+                                    options={schoolTaskPool}
+                                    value={newTask}
+                                    onInputChange={(event, newInputValue) => {
+                                        setNewTask(newInputValue);
+                                    }}
+                                    renderInput={(params) => (<TextField
+                                        {...params}
+                                        label="New Task"
+                                        variant="outlined"
+                                        color="secondary"
+                                        sx={{
+
+                                        }}
+
+                                        value={newTask} />)}
+                                />
 
 
 
-                            <Button variant="contained" size="large" onClick={handleNewTaskChange}>Add Task</Button>
+                                <Button variant="contained" size="large" onClick={handleNewTaskChange}>Add Task</Button>
+                            </Box>
+
                         </Box>
 
+
                     </Box>
-
-
-                </Box>
                 </Box>
 
 

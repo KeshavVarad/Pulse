@@ -1,7 +1,181 @@
-import { Box, Container, Paper, Table, TableCell, TableContainer, TableHead, TableRow, TextField, Typography } from '@mui/material'
+import {
+    Box, Container, Paper, Table, TableCell, TableContainer, TableHead, TableRow, TextField, Typography, Button,
+    IconButton,
+    List,
+    ListItem,
+    ListItemText,
+    ListItemSecondaryAction,
+    Divider,
+} from '@mui/material'
 import React, { useCallback, useEffect, useState } from 'react'
 import auth from '../../config/firebase';
 import { useAuth } from '../../contexts/AuthContext';
+import DeleteIcon from "@mui/icons-material/Delete";
+
+const ShortcutManager = () => {
+    const [shortcut, setShortcut] = useState("");
+    const [phrase, setPhrase] = useState("");
+    const [shortcuts, setShortcuts] = useState({});
+    const { currentUser } = useAuth()
+
+
+
+    const addShortcut = async () => {
+        if (shortcut && phrase) {
+            const newShortcuts = { ...shortcuts, [shortcut]: phrase };
+
+            try {
+                const auth_user = auth.currentUser;
+                const token = auth_user && (await auth_user.getIdToken());
+                const userId = currentUser.uid
+
+                const requestOptions = {
+                    method: "PUT",
+                    mode: "cors",
+                    headers: {
+                        "Content-Type": "application/json",
+                        Authorization: `Bearer ${token}`,
+                    },
+                    body: JSON.stringify({ shortcuts: newShortcuts })
+
+                }
+                await fetch(`${process.env.REACT_APP_API_HOST}/api/updateUser/${userId}`, requestOptions);
+
+
+            } catch (e) {
+                console.log(e);
+            }
+            setShortcuts(newShortcuts);
+            setShortcut("");
+            setPhrase("");
+        }
+    };
+
+    const deleteShortcut = async (key) => {
+        const newShortcuts = { ...shortcuts };
+        delete newShortcuts[key];
+        setShortcuts(newShortcuts);
+
+        try {
+            const auth_user = auth.currentUser;
+            const token = auth_user && (await auth_user.getIdToken());
+            const userId = currentUser.uid
+
+            const requestOptions = {
+                method: "PUT",
+                mode: "cors",
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${token}`,
+                },
+                body: JSON.stringify({ shortcuts: newShortcuts })
+
+            }
+            await fetch(`${process.env.REACT_APP_API_HOST}/api/updateUser/${userId}`, requestOptions);
+
+
+        } catch (e) {
+            console.log(e);
+        }
+    };
+
+    useEffect(() => {
+        async function fetchShortcuts() {
+            try {
+                const auth_user = auth.currentUser;
+                const token = auth_user && (await auth_user.getIdToken());
+
+                const userId = currentUser.uid
+
+                const requestOptions = {
+                    method: "GET",
+                    mode: "cors",
+                    headers: {
+                        "Content-Type": "application/json",
+                        Authorization: `Bearer ${token}`,
+                    },
+                }
+
+                const user_res = await fetch(`${process.env.REACT_APP_API_HOST}/api/user/${userId}`, requestOptions);
+                const userData = await user_res.json()
+                if (userData.shortcuts) {
+                    setShortcuts(userData.shortcuts)
+                }
+
+
+            } catch (e) {
+                console.log(e);
+            }
+        }
+
+        fetchShortcuts()
+
+    }, [currentUser])
+
+    return (
+        <Box p={3} sx={{ maxWidth: "600px", margin: "auto" }}>
+            <Typography variant="h5" gutterBottom>
+                Manage Comment Shortcuts
+            </Typography>
+
+            <Box display="flex" gap={2} alignItems="center" mb={2}>
+                <TextField
+                    label="Shortcut"
+                    variant="outlined"
+                    value={shortcut}
+                    onChange={(e) => setShortcut(e.target.value)}
+                    fullWidth
+                />
+                <TextField
+                    label="Phrase"
+                    variant="outlined"
+                    value={phrase}
+                    onChange={(e) => setPhrase(e.target.value)}
+                    fullWidth
+                />
+                <Button variant="contained" color="primary" onClick={addShortcut}>
+                    Add
+                </Button>
+            </Box>
+
+            <Paper elevation={3} sx={{ maxHeight: "300px", overflow: "auto" }}>
+                <List>
+                    {(Object.keys(shortcuts).length > 0) ?
+                        (
+                            <>
+                                {Object.keys(shortcuts).map((key) => (
+                                    <React.Fragment key={key}>
+                                        <ListItem>
+                                            <ListItemText
+                                                primary={key}
+                                                secondary={shortcuts[key]}
+                                            />
+                                            <ListItemSecondaryAction>
+                                                <IconButton
+                                                    edge="end"
+                                                    aria-label="delete"
+                                                    onClick={() => deleteShortcut(key)}
+                                                >
+                                                    <DeleteIcon />
+                                                </IconButton>
+                                            </ListItemSecondaryAction>
+                                        </ListItem>
+                                        <Divider />
+                                    </React.Fragment>
+                                ))}
+                            </>
+                        ) :
+                        <ListItem>
+                            <ListItemText>
+                                No Shortcuts
+                            </ListItemText>
+                        </ListItem>}
+
+                </List>
+            </Paper>
+        </Box>
+    );
+};
 
 export default function Account() {
 
@@ -12,6 +186,7 @@ export default function Account() {
     const [username, setUsername] = useState("");
     const [email, setEmail] = useState("");
     const [schoolName, setSchoolName] = useState("");
+    const [role, setRole] = useState("");
 
     const [editableSetting, setEditableSetting] = useState("");
     const [setting, setSetting] = useState("");
@@ -134,7 +309,7 @@ export default function Account() {
                 setEmail(userData.email)
                 setSchoolName(userData.school_name)
                 setUsername(userData.username)
-
+                setRole(userData.role)
 
 
 
@@ -196,7 +371,7 @@ export default function Account() {
                                                     sx={{
 
                                                         width: "50%",
-                                                        
+
                                                     }}
 
                                                     value={setting}
@@ -264,11 +439,36 @@ export default function Account() {
                                     <TableCell align="right">{schoolName}</TableCell>
 
                                 </TableRow>
+                                <TableRow>
+                                    <TableCell component="th"><Typography variant='h5' fontWeight='bold'>Role</Typography></TableCell>
+                                    <TableCell align="right">{role}</TableCell>
+
+                                </TableRow>
                             </Table>
                         </TableContainer>
                     </Container>
 
                 </Box>
+
+                {
+                    (role === "instructor") ?
+                        (
+                            <div>
+                                <Box sx={{
+                                    py: 5,
+                                    display: "flex",
+                                    alignItems: "center",
+                                    flexDirection: "column",
+                                }}>
+                                    <Typography variant="h3"> Shortcuts </Typography>
+                                </Box>
+
+                                <ShortcutManager />
+                            </div>
+                        ) :
+                        null
+                }
+
 
             </Box>
         </Box>
