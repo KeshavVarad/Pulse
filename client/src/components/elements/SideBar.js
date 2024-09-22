@@ -24,6 +24,7 @@ import Joyride from 'react-joyride';
 import { useState, useEffect } from 'react';
 import auth from "../../config/firebase.js";
 import { useAuth } from '../../contexts/AuthContext.js';
+import SmartToyIcon from '@mui/icons-material/SmartToy';
 
 const drawerWidth = 240;
 export default function SideBar() {
@@ -40,6 +41,7 @@ export default function SideBar() {
         }
     }
     const [isAdmin, setIsAdmin] = useState(false)
+    const [isStudent, setIsStudent] = useState(false)
 
     useEffect(() => {
 
@@ -67,6 +69,10 @@ export default function SideBar() {
                     setIsAdmin(true);
                 }
 
+                if (user_data.role === "student") {
+                    setIsStudent(true);
+                }
+
 
 
             } catch (e) {
@@ -87,7 +93,7 @@ export default function SideBar() {
                 width: 2 / 12,
                 boxSizing: 'border-box',
             },
-            
+
         }}
             variant="permanent"
             anchor="left">
@@ -114,6 +120,15 @@ export default function SideBar() {
                         <ListItemText primary={"Dashboard"} />
                     </ListItemButton>
                 </ListItem>
+
+                {isStudent ?
+                    <ListItem key={"AI Teaching Assistant"} disablePadding>
+                        <ListItemButton component={Link} to={"/aita"}
+                            variant="contained" color="secondary">
+                            <ListItemIcon><SmartToyIcon /></ListItemIcon>
+                            <ListItemText primary={"AI Teaching Assistant"} />
+                        </ListItemButton>
+                    </ListItem> : <Box></Box>}
 
                 {isAdmin ?
                     <ListItem key={"Make Practical"} disablePadding>

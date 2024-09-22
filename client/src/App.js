@@ -17,6 +17,7 @@ import { Box } from '@mui/material';
 import { ThemeProvider } from '@emotion/react';
 import theme from './theme';
 import CssBaseline from '@mui/material/CssBaseline';
+import TeachingAssistant from './components/pages/TeachingAssistant';
 
 
 function App() {
@@ -59,6 +60,12 @@ function App() {
                 <Route exact path="/analytics" element={
                   <WithPrivateRoute>
                     <Analytics />
+                  </WithPrivateRoute>
+                } />
+
+                <Route exact path="/aita" element={
+                  <WithPrivateRoute>
+                    <TeachingAssistant />
                   </WithPrivateRoute>
                 } />
 

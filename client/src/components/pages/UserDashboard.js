@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useRef } from 'react'
 import Box from '@mui/material/Box';
 import Container from '@mui/material/Container';
 import Table from '@mui/material/Table';
@@ -8,6 +8,7 @@ import TableContainer from '@mui/material/TableContainer';
 import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
 import Paper from '@mui/material/Paper';
+import { FormControl, InputLabel, Select, Chip, MenuItem } from "@mui/material"
 import { useState, useEffect } from 'react';
 import auth from "../../config/firebase.js";
 import { useAuth } from '../../contexts/AuthContext.js';
@@ -18,7 +19,122 @@ import SettingsIcon from '@mui/icons-material/Settings';
 import { Button, Typography } from '@mui/material';
 import PracticalSettingsModal from '../elements/PracticalSettingsModal.js';
 import Joyride from 'react-joyride';
+import { Line } from 'react-chartjs-2';
+import 'chartjs-adapter-date-fns';
+import 'chart.js/auto';
 
+const PracticalChart = ({ practicalData }) => {
+    const [selectedTasks, setSelectedTasks] = useState([]);
+    const [chartData, setChartData] = useState({
+        labels: [], // No labels initially
+        datasets: [] // No datasets initially
+    });
+
+
+    // Calculate the performance score
+    const calculatePerformance = (task) => {
+        if (task.red_count + task.yellow_count + task.green_count == 0) {
+            return -1
+        }
+        return (task.red_count + 3 * task.yellow_count + 5 * task.green_count) / (task.red_count + task.yellow_count + task.green_count);
+    };
+
+    // Prepare chart data
+    const prepareChartData = (tasksToDisplay) => {
+        const datasets = [];
+
+        tasksToDisplay.forEach((taskName) => {
+            const taskData = practicalData
+                .map((practical) => {
+                    const task = practical.tasks.find((t) => t.name === taskName);
+                    if (task) {
+                        if (calculatePerformance(task) == -1) {
+                            return null;
+                        }
+                        return {
+                            x: new Date(practical.creation_date), // Using Date object for x-axis
+                            y: calculatePerformance(task),
+                        };
+                    }
+                    return null;
+                })
+                .filter((entry) => entry !== null);
+
+            console.log(taskName, taskData)
+
+            datasets.push({
+                label: taskName,
+                data: taskData,
+                fill: false,
+                borderColor: `#${Math.floor(Math.random() * 16777215).toString(16)}`, // Random color
+                tension: 0.1,
+            });
+        });
+
+        setChartData({
+            datasets: datasets,
+        });
+    };
+
+    // Handle task selection
+    const handleTaskSelection = (event) => {
+        const value = event.target.value;
+        setSelectedTasks(value);
+        prepareChartData(value);
+    };
+
+    // Extract unique task names for dropdown options
+    const taskNames = Array.from(new Set(practicalData.flatMap((p) => p.tasks.map((t) => t.name))));
+
+    return (
+        <div>
+            <FormControl sx={{ m: 1, minWidth: 300 }}>
+                <InputLabel>Select Tasks</InputLabel>
+                <Select
+                    multiple
+                    value={selectedTasks}
+                    onChange={handleTaskSelection}
+                    renderValue={(selected) => (
+                        <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
+                            {selected.map((value) => (
+                                <Chip key={value} label={value} />
+                            ))}
+                        </Box>
+                    )}
+                >
+                    {taskNames.map((taskName) => (
+                        <MenuItem key={taskName} value={taskName}>
+                            {taskName}
+                        </MenuItem>
+                    ))}
+                </Select>
+            </FormControl>
+
+            {/* Chart component */}
+            <Line
+                data={chartData}
+                options={{
+                    responsive: true,
+                    scales: {
+                        x: {
+                            type: 'time', // Time-based x-axis
+                            title: {
+                                display: true,
+                                text: 'Date',
+                            },
+                        },
+                        y: {
+                            title: {
+                                display: true,
+                                text: 'Performance',
+                            },
+                        },
+                    },
+                }}
+            />
+        </div>
+    );
+};
 export default function UserDashboard() {
     const { currentUser } = useAuth()
 
@@ -30,6 +146,10 @@ export default function UserDashboard() {
     const [dashTutorial, setDashTutorial] = useState(true)
     const [isDashboardMounted, setDashboardMounted] = useState(false);
     const [isInstructor, setIsInstructor] = useState(false)
+
+    const [practicalPerformanceData, setPracticalPerformanceData] = useState([]);
+
+
     const handleDashJoyrideCallback = async (data) => {
         const { action, index, origin, status, type } = data;
 
@@ -77,9 +197,6 @@ export default function UserDashboard() {
 
                 const userId = user.uid;
 
-
-
-
                 const requestOptions = {
                     method: "GET",
                     mode: "cors",
@@ -113,6 +230,10 @@ export default function UserDashboard() {
                 if (userData) {
                     const practical_res = await fetch(`${process.env.REACT_APP_API_HOST}/api/practical/student/${userData.id}`, requestOptions);
                     practicalData = await practical_res.json()
+                }
+
+                if (!isInstructor) {
+                    setPracticalPerformanceData(practicalData)
                 }
 
                 const displayData = []
@@ -172,6 +293,10 @@ export default function UserDashboard() {
                     practicalData = await practical_res.json()
                 }
 
+                if (userData.role === "instructor") {
+                    setPracticalPerformanceData(practicalData)
+                    console.log(practicalData)
+                }
 
                 const displayData = []
 
@@ -192,7 +317,7 @@ export default function UserDashboard() {
         }
 
         fetchPracticals()
-    }, [])
+    }, [isInstructor])
 
     useEffect(() => {
         async function fetchUser() {
@@ -371,6 +496,20 @@ export default function UserDashboard() {
 
 
 
+                </Box>
+
+                <Box sx={{
+                    py: 5
+                }}>
+                    <Typography variant="h3"> Task Performance </Typography>
+                </Box>
+
+                <Box sx={{
+                    width: "75%",
+                    height: "100%",
+                    py: 5
+                }}>
+                    <PracticalChart practicalData={practicalPerformanceData} />
                 </Box>
 
 

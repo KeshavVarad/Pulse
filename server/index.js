@@ -4,6 +4,7 @@ import dotenv from "dotenv"
 import { fileURLToPath } from 'url';
 import { dirname } from 'path';
 import path from "path"
+import axios from "axios"
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -21,6 +22,8 @@ import inviteRoute from "./routes/inviteRoutes.js"
 dotenv.config();
 
 const PORT = process.env.PORT || 8080;
+const OPENAI_API_KEY = process.env.OPEN_AI_API_KEY;
+
 
 const app = express();
 
@@ -49,6 +52,27 @@ app.use('/api', commentRoute);
 app.use('/api', adminRoute);
 app.use('/api', schoolRoute);
 app.use('/api', inviteRoute);
+
+app.post('/api/chat', async (req, res) => {
+    const { messages } = req.body;
+
+    try {
+        const response = await axios.post('https://api.openai.com/v1/chat/completions', {
+            model: 'gpt-4o-mini',
+            messages,
+        }, {
+            headers: {
+                'Authorization': `Bearer ${OPENAI_API_KEY}`,
+                'Content-Type': 'application/json',
+            },
+        });
+
+        res.json(response.data);
+    } catch (error) {
+        console.error('Error calling OpenAI API:', error);
+        res.status(500).send('Error calling OpenAI API');
+    }
+});
 
 
 if (process.env.MODE != "dev") {
