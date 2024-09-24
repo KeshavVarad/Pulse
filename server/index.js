@@ -74,6 +74,56 @@ app.post('/api/chat', async (req, res) => {
     }
 });
 
+const GITHUB_TOKEN = process.env.GITHUB_TOKEN; // Store the GitHub token in environment variables
+const REPO_OWNER = process.env.GITHUB_REPO_OWNER; // Change to the owner of the repo
+const REPO_NAME = process.env.GITHUB_REPO_NAME;   // Change to the name of the repo
+
+
+app.post('/api/report-bug', async (req, res) => {
+    const { description, cause, steps, category } = req.body;
+
+    // Prepare the issue title and body for GitHub
+    const issueTitle = `[${category}] Bug Report: ${description.slice(0, 50)}`;
+    const issueBody = `
+### Bug Description
+${description}
+
+### What caused the bug
+${cause}
+
+### Steps to reproduce
+${steps}
+
+### Bug Category
+${category}
+    `;
+
+    try {
+        // Send the bug report to GitHub Issues API
+        const response = await axios.post(
+            `https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/issues`,
+            {
+                title: issueTitle,
+                body: issueBody,
+                labels: ['bug'],
+            },
+            {
+                headers: {
+                    Authorization: `token ${GITHUB_TOKEN}`,
+                    Accept: 'application/vnd.github.v3+json',
+                },
+            }
+        );
+
+        res.status(200).json({ message: 'Bug reported successfully', issueUrl: response.data.html_url });
+    } catch (error) {
+        console.error('Error creating GitHub issue:', error.response ? error.response.data : error.message);
+        res.status(500).json({ message: 'Failed to report bug', error: error.message });
+    }
+});
+
+
+
 
 if (process.env.MODE != "dev") {
     app.get("*", (req, res, next) => {
