@@ -28,9 +28,263 @@ import SmartToyIcon from '@mui/icons-material/SmartToy';
 import BugReportIcon from '@mui/icons-material/BugReport';
 import { CircularProgress, FormControl, InputLabel, Select, MenuItem } from '@mui/material';
 import axios from "axios"
+import LightbulbOutlinedIcon from '@mui/icons-material/LightbulbOutlined';
 
 
-const drawerWidth = 240;
+const BugReportModal = ({ openModal, setOpenModal }) => {
+    const [bugDescription, setBugDescription] = useState('');
+    const [bugCause, setBugCause] = useState('');
+    const [bugSteps, setBugSteps] = useState('');
+    const [bugCategory, setBugCategory] = useState('');
+    const [submitting, setSubmitting] = useState(false);
+
+    const handleBugReportSubmit = async () => {
+        setSubmitting(true);
+
+        const bugReport = {
+            description: bugDescription,
+            cause: bugCause,
+            steps: bugSteps,
+            category: bugCategory,
+        };
+
+        try {
+            // Send the bug data to your backend
+            const response = await axios.post('/api/report-bug', bugReport);
+
+            // Clear the form and close modal on success
+            setBugDescription('');
+            setBugCause('');
+            setBugSteps('');
+            setBugCategory('');
+            setOpenModal(false);
+            alert('Bug reported successfully.');
+        } catch (error) {
+            console.error('Error reporting bug:', error);
+            alert('Failed to report bug.');
+        } finally {
+            setSubmitting(false);
+        }
+    };
+
+    return (
+        <Modal
+            open={openModal}
+            onClose={() => setOpenModal(false)}
+            aria-labelledby="bug-report-modal"
+            aria-describedby="report-bug-description"
+        >
+            <Box sx={{
+                position: 'absolute',
+                top: '50%',
+                left: '50%',
+                transform: 'translate(-50%, -50%)',
+                bgcolor: 'background.paper',
+                boxShadow: 24,
+                p: 4,
+                borderRadius: 2,
+                minWidth: 400,
+            }}>
+                <Typography variant="h5" id="bug-report-modal" sx={{ mb: 2 }}>
+                    Report a Bug
+                </Typography>
+
+                {/* Describe the issue */}
+                <TextField
+                    multiline
+                    rows={3}
+                    label="Describe the issue"
+                    variant="outlined"
+                    fullWidth
+                    value={bugDescription}
+                    onChange={(e) => setBugDescription(e.target.value)}
+                    sx={{ mb: 2 }}
+                />
+
+                {/* What caused the bug */}
+                <TextField
+                    multiline
+                    rows={2}
+                    label="What were you doing when the bug occurred?"
+                    variant="outlined"
+                    fullWidth
+                    value={bugCause}
+                    onChange={(e) => setBugCause(e.target.value)}
+                    sx={{ mb: 2 }}
+                />
+
+                {/* Steps to recreate the issue */}
+                <TextField
+                    multiline
+                    rows={3}
+                    label="Steps to recreate the issue"
+                    variant="outlined"
+                    fullWidth
+                    value={bugSteps}
+                    onChange={(e) => setBugSteps(e.target.value)}
+                    sx={{ mb: 2 }}
+                />
+
+                {/* Bug category */}
+                <FormControl fullWidth sx={{ mb: 2 }}>
+                    <InputLabel id="bug-category-label">Bug Category</InputLabel>
+                    <Select
+                        labelId="bug-category-label"
+                        value={bugCategory}
+                        label="Bug Category"
+                        onChange={(e) => setBugCategory(e.target.value)}
+                    >
+                        <MenuItem value="UI Issue">UI Issue</MenuItem>
+                        <MenuItem value="Performance Issue">Performance Issue</MenuItem>
+                        <MenuItem value="Crash/Error">Crash/Error</MenuItem>
+                        <MenuItem value="Other">Other</MenuItem>
+                    </Select>
+                </FormControl>
+
+                {/* Submit button */}
+                <Button
+                    onClick={handleBugReportSubmit}
+                    variant="contained"
+                    disabled={submitting}
+                    sx={{ mt: 2 }}
+                >
+                    {submitting ? <CircularProgress size={24} /> : 'Submit'}
+                </Button>
+            </Box>
+        </Modal>
+    );
+};
+
+const FeatureSuggestionModal = ({ openModal, setOpenModal }) => {
+    const [featureTitle, setFeatureTitle] = useState('');
+    const [featureDescription, setFeatureDescription] = useState('');
+    const [additionalComments, setAdditionalComments] = useState('');
+    const [category, setCategory] = useState('');
+    const [submitting, setSubmitting] = useState(false);
+
+    const categories = [
+        'User Interface',
+        'Performance',
+        'Accessibility',
+        'Integrations',
+        'Other',
+    ];
+
+    const handleFeatureSubmit = async () => {
+        setSubmitting(true);
+
+        const featureSuggestion = {
+            title: featureTitle,
+            description: featureDescription,
+            comments: additionalComments,
+            category: category, // Include the selected category
+        };
+
+        try {
+            // Send the feature suggestion data to your backend
+            const response = await axios.post(`${process.env.REACT_APP_API_HOST}/api/suggest-feature`, featureSuggestion);
+
+            // Clear the form and close the modal on success
+            setFeatureTitle('');
+            setFeatureDescription('');
+            setAdditionalComments('');
+            setCategory('');
+            setOpenModal(false);
+            alert('Feature suggestion submitted successfully.');
+        } catch (error) {
+            console.error('Error submitting feature suggestion:', error);
+            alert('Failed to submit feature suggestion.');
+        } finally {
+            setSubmitting(false);
+        }
+    };
+
+    return (
+        <Modal
+            open={openModal}
+            onClose={() => setOpenModal(false)}
+            aria-labelledby="feature-suggestion-modal"
+            aria-describedby="suggest-feature-description"
+        >
+            <Box sx={{
+                position: 'absolute',
+                top: '50%',
+                left: '50%',
+                transform: 'translate(-50%, -50%)',
+                bgcolor: 'background.paper',
+                boxShadow: 24,
+                p: 4,
+                borderRadius: 2,
+                minWidth: 400,
+            }}>
+                <Typography variant="h5" id="feature-suggestion-modal" sx={{ mb: 2 }}>
+                    Suggest a Feature
+                </Typography>
+
+                {/* Title of the feature */}
+                <TextField
+                    label="Feature Title"
+                    variant="outlined"
+                    fullWidth
+                    value={featureTitle}
+                    onChange={(e) => setFeatureTitle(e.target.value)}
+                    sx={{ mb: 2 }}
+                />
+
+                {/* Describe the feature */}
+                <TextField
+                    multiline
+                    rows={3}
+                    label="Describe the feature"
+                    variant="outlined"
+                    fullWidth
+                    value={featureDescription}
+                    onChange={(e) => setFeatureDescription(e.target.value)}
+                    sx={{ mb: 2 }}
+                />
+
+                {/* Category selection */}
+                <FormControl fullWidth sx={{ mb: 2 }}>
+                    <InputLabel id="feature-category-label">Category</InputLabel>
+                    <Select
+                        labelId="feature-category-label"
+                        value={category}
+                        onChange={(e) => setCategory(e.target.value)}
+                        label="Category"
+                    >
+                        {categories.map((cat, index) => (
+                            <MenuItem key={index} value={cat}>{cat}</MenuItem>
+                        ))}
+                    </Select>
+                </FormControl>
+
+                {/* Additional comments */}
+                <TextField
+                    multiline
+                    rows={3}
+                    label="Any additional comments?"
+                    variant="outlined"
+                    fullWidth
+                    value={additionalComments}
+                    onChange={(e) => setAdditionalComments(e.target.value)}
+                    sx={{ mb: 2 }}
+                />
+
+                {/* Submit button */}
+                <Button
+                    onClick={handleFeatureSubmit}
+                    variant="contained"
+                    disabled={submitting}
+                    sx={{ mt: 2 }}
+                >
+                    {submitting ? <CircularProgress size={24} /> : 'Submit'}
+                </Button>
+            </Box>
+        </Modal>
+    );
+};
+
+
 export default function SideBar() {
     const { currentUser, logout, setError } = useAuth();
 
@@ -47,42 +301,9 @@ export default function SideBar() {
     const [isAdmin, setIsAdmin] = useState(false)
     const [isStudent, setIsStudent] = useState(false)
 
-    const [openModal, setOpenModal] = useState(false);
-    const [bugDescription, setBugDescription] = useState('');
-    const [bugCause, setBugCause] = useState('');
-    const [bugSteps, setBugSteps] = useState('');
-    const [bugCategory, setBugCategory] = useState('');
+    const [openBugModal, setBugOpenModal] = useState(false);
+    const [openFeatureModal, setOpenFeatureModal] = useState(false);
 
-    const [submitting, setSubmitting] = useState(false);
-
-    const handleBugReportSubmit = async () => {
-        setSubmitting(true);
-
-        const bugReport = {
-            description: bugDescription,
-            cause: bugCause,
-            steps: bugSteps,
-            category: bugCategory,
-        };
-
-        try {
-            // Send the bug data to your backend
-            await axios.post(`${process.env.REACT_APP_API_HOST}/api/report-bug`, bugReport);
-
-            // Clear the form and close modal on success
-            setBugDescription('');
-            setBugCause('');
-            setBugSteps('');
-            setBugCategory('');
-            setOpenModal(false);
-            alert('Bug reported successfully.');
-        } catch (error) {
-            console.error('Error reporting bug:', error);
-            alert('Failed to report bug.');
-        } finally {
-            setSubmitting(false);
-        }
-    };
 
     useEffect(() => {
 
@@ -227,96 +448,29 @@ export default function SideBar() {
                     right: 16,
                 }}
 
-                onClick={() => setOpenModal(true)}
+                onClick={() => setBugOpenModal(true)}
             >
                 <BugReportIcon />
             </Fab>
 
-            {/* Bug Reporting Modal */}
-            <Modal
-                open={openModal}
-                onClose={() => setOpenModal(false)}
-                aria-labelledby="bug-report-modal"
-                aria-describedby="report-bug-description"
+            <Fab
+                color="primary"
+                aria-label="suggest feature"
+                sx={{
+                    position: 'absolute',  // Change to 'absolute' for testing
+                    bottom: 16,
+                    left: 16,
+                }}
+
+                onClick={() => setOpenFeatureModal(true)}
             >
-                <Box sx={{
-                    position: 'absolute',
-                    top: '50%',
-                    left: '50%',
-                    transform: 'translate(-50%, -50%)',
-                    bgcolor: 'background.paper',
-                    boxShadow: 24,
-                    p: 4,
-                    borderRadius: 2,
-                    minWidth: 400,
-                }}>
-                    <Typography variant="h5" id="bug-report-modal" sx={{ mb: 2 }}>
-                        Report a Bug
-                    </Typography>
+                <LightbulbOutlinedIcon />
+            </Fab>
 
-                    {/* Describe the issue */}
-                    <TextField
-                        multiline
-                        rows={3}
-                        label="Describe the issue"
-                        variant="outlined"
-                        fullWidth
-                        value={bugDescription}
-                        onChange={(e) => setBugDescription(e.target.value)}
-                        sx={{ mb: 2 }}
-                    />
+            {/* Bug Reporting Modal */}
+            <BugReportModal openModal={openBugModal} setOpenModal={setBugOpenModal} />
 
-                    {/* What caused the bug */}
-                    <TextField
-                        multiline
-                        rows={2}
-                        label="What were you doing when the bug occurred?"
-                        variant="outlined"
-                        fullWidth
-                        value={bugCause}
-                        onChange={(e) => setBugCause(e.target.value)}
-                        sx={{ mb: 2 }}
-                    />
-
-                    {/* Steps to recreate the issue */}
-                    <TextField
-                        multiline
-                        rows={3}
-                        label="Steps to recreate the issue"
-                        variant="outlined"
-                        fullWidth
-                        value={bugSteps}
-                        onChange={(e) => setBugSteps(e.target.value)}
-                        sx={{ mb: 2 }}
-                    />
-
-                    {/* Bug category */}
-                    <FormControl fullWidth sx={{ mb: 2 }}>
-                        <InputLabel id="bug-category-label">Bug Category</InputLabel>
-                        <Select
-                            labelId="bug-category-label"
-                            value={bugCategory}
-                            label="Bug Category"
-                            onChange={(e) => setBugCategory(e.target.value)}
-                        >
-                            <MenuItem value="UI Issue">UI Issue</MenuItem>
-                            <MenuItem value="Performance Issue">Performance Issue</MenuItem>
-                            <MenuItem value="Crash/Error">Crash/Error</MenuItem>
-                            <MenuItem value="Other">Other</MenuItem>
-                        </Select>
-                    </FormControl>
-
-                    {/* Submit button */}
-                    <Button
-                        onClick={handleBugReportSubmit}
-                        variant="contained"
-                        disabled={submitting}
-                        sx={{ mt: 2 }}
-                    >
-                        {submitting ? <CircularProgress size={24} /> : 'Submit'}
-                    </Button>
-                </Box>
-            </Modal>
+            <FeatureSuggestionModal openModal={openFeatureModal} setOpenModal={setOpenFeatureModal} />
 
         </Drawer>
     )

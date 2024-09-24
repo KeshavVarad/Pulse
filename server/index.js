@@ -122,6 +122,43 @@ ${category}
     }
 });
 
+app.post('/api/suggest-feature', async (req, res) => {
+    const { title, description, comments } = req.body;
+
+    // Prepare the issue title and body for GitHub
+    const issueTitle = `Feature Suggestion: ${title}`;
+    const issueBody = `
+### Feature Description
+${description}
+
+### Additional Comments
+${comments}
+    `;
+
+    try {
+        // Send the feature suggestion to GitHub Issues API
+        const response = await axios.post(
+            `https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/issues`,
+            {
+                title: issueTitle,
+                body: issueBody,
+                labels: ['enhancement'],
+            },
+            {
+                headers: {
+                    Authorization: `token ${GITHUB_TOKEN}`,
+                    Accept: 'application/vnd.github.v3+json',
+                },
+            }
+        );
+
+        res.status(200).json({ message: 'Feature suggestion submitted successfully', issueUrl: response.data.html_url });
+    } catch (error) {
+        console.error('Error creating GitHub issue:', error.response ? error.response.data : error.message);
+        res.status(500).json({ message: 'Failed to submit feature suggestion', error: error.message });
+    }
+});
+
 
 
 
