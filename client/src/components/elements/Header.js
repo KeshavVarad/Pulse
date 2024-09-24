@@ -22,15 +22,19 @@ export default function Header() {
     return (
         <div>
             <AppBar position='fixed'>
-                <Toolbar sx={{ height: 6}}>
+                <Toolbar sx={{ height: 6 }}>
                     {
                         !currentUser ? (
-                            <MonitorHeartIcon fontSize='large' />
+                            <Link to="/" style={{ textDecoration: 'none', color: 'inherit' }}>
+                                <MonitorHeartIcon fontSize='large' />
+                            </Link>
                         ) : (<Box></Box>)
                     }
                     {
                         !currentUser ? (
-                            <h1> Pulse</h1>
+                            <Link to="/" style={{ textDecoration: 'none', color: 'inherit' }}>
+                                <h1> Pulse</h1>
+                            </Link>
                         ) : (<Box></Box>)
                     }
 

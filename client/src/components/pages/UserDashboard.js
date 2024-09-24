@@ -39,7 +39,6 @@ const PracticalChart = ({ practicalData }) => {
         return (task.red_count + 3 * task.yellow_count + 5 * task.green_count) / (task.red_count + task.yellow_count + task.green_count);
     };
 
-    // Prepare chart data
     const prepareChartData = (tasksToDisplay) => {
         const datasets = [];
 
@@ -48,23 +47,39 @@ const PracticalChart = ({ practicalData }) => {
                 .map((practical) => {
                     const task = practical.tasks.find((t) => t.name === taskName);
                     if (task) {
-                        if (calculatePerformance(task) == -1) {
+                        if (calculatePerformance(task) === -1) {
                             return null;
                         }
+
+                        // Round the date to the nearest day
+                        const roundedDate = new Date(practical.creation_date);
+                        roundedDate.setHours(0, 0, 0, 0); // Zero out the time part
+
                         return {
-                            x: new Date(practical.creation_date), // Using Date object for x-axis
+                            x: roundedDate, // Using rounded Date object for x-axis
                             y: calculatePerformance(task),
                         };
                     }
                     return null;
                 })
-                .filter((entry) => entry !== null);
+                .filter((entry) => entry !== null)
+                .sort((a, b) => a.x - b.x);
 
-            console.log(taskName, taskData)
+            // Aggregate points with the same day (x value)
+            const aggregatedTaskData = taskData.reduce((acc, curr) => {
+                const last = acc[acc.length - 1];
+                if (last && last.x.getTime() === curr.x.getTime()) {
+                    // If the current point has the same x (day) as the last one, average the y values
+                    last.y = (last.y + curr.y) / 2;
+                } else {
+                    acc.push(curr);
+                }
+                return acc;
+            }, []);
 
             datasets.push({
                 label: taskName,
-                data: taskData,
+                data: aggregatedTaskData,
                 fill: false,
                 borderColor: `#${Math.floor(Math.random() * 16777215).toString(16)}`, // Random color
                 tension: 0.1,
@@ -75,6 +90,7 @@ const PracticalChart = ({ practicalData }) => {
             datasets: datasets,
         });
     };
+
 
     // Handle task selection
     const handleTaskSelection = (event) => {

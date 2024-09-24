@@ -109,7 +109,7 @@ export default function Layout({ children }) {
 
 
     useEffect(() => {
-        
+
         async function fetchUser() {
             const auth_user = auth.currentUser;
             const token = auth_user && (await auth_user.getIdToken());
@@ -257,15 +257,6 @@ export default function Layout({ children }) {
             display: "flex",
             minHeight: "100%",
         }}>
-
-
-
-
-
-
-
-
-
             {currentUser ?
                 (
                     <Box sx={{
