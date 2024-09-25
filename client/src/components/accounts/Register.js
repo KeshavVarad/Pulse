@@ -67,63 +67,63 @@ export default function Register() {
 
 
                 }}>
-                    <Typography variant='h3'>
+                    <center><Typography variant='h2'>
                         Register School
-                    </Typography>
+                    </Typography></center>
                 </Box>
 
                 <form onSubmit={handleFormSubmit}>
                     <TextField label="School Name"
                         onChange={e => setSchoolName(e.target.value)}
                         required
-                        variant="outlined"
+                        variant="standard"
                         color="secondary"
-                        sx={{ mb: 2 }}
+                        sx={{ mb: 1.2 }}
                         fullWidth
                         value={school_name} />
                     <TextField label="Admin Username"
                         onChange={e => setUsername(e.target.value)}
                         required
-                        variant="outlined"
+                        variant="standard"
                         color="secondary"
-                        sx={{ mb: 2 }}
+                        sx={{ mb: 1.2 }}
                         fullWidth
                         value={username} />
                     <TextField label="Admin Full Name"
                         onChange={e => setRealName(e.target.value)}
                         required
-                        variant="outlined"
+                        variant="standard"
                         color="secondary"
-                        sx={{ mb: 2 }}
+                        sx={{ mb: 1.2 }}
                         fullWidth
                         value={real_name} />
                     <TextField label="Admin Email"
                         onChange={e => setEmail(e.target.value)}
                         required
-                        variant="outlined"
+                        variant="standard"
                         color="secondary"
                         type="email"
-                        sx={{ mb: 2 }}
+                        sx={{ mb: 1.2 }}
                         fullWidth
                         value={email} />
 
                     <TextField label="Admin Password"
                         onChange={e => setPassword(e.target.value)}
                         required
-                        variant="outlined"
+                        variant="standard"
                         color="secondary"
                         type="password"
-                        sx={{ mb: 2 }}
+                        sx={{ mb: 1.2 }}
                         fullWidth
                         value={password} />
 
                     <TextField label="Confirm Password"
                         onChange={e => setConfirmPassword(e.target.value)}
                         required
-                        variant="outlined"
+                        variant="standard"
                         color="secondary"
                         type="password"
-                        sx={{ mb: 2 }}
+                        sx={{ mb: 1.2 }}
                         fullWidth
                         value={confirmPassword}
                         error={password !== confirmPassword} />
@@ -133,13 +133,14 @@ export default function Register() {
                         flexDirection: "row",
                         justifyContent: "center",
                         alignItems: "center",
+                        mt:2
                     }}>
                         <Button variant='contained' type='submit' disabled={loading} sx={{ mx: 1 }}>
                             Register
                         </Button>
 
-                        <Button component={Link} to="/login" sx={{ mx: 1 }}>
-                            Already have an account? Login
+                        <Button component={Link} to="/login" sx={{ mx: 1, textTransform:'none'}}>
+                            Already have an Account? Login
                         </Button>
                     </Box>
 
