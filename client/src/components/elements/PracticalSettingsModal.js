@@ -305,11 +305,11 @@ export default function PracticalSettingsModal({ openState, handleClose, practic
                 top: "50%",
                 left: "50%",
                 transform: "translate(-50%, -50%)",
-                width: 800,
+                width: 600,
                 bgcolor: "background.paper",
-                border: "2px solid #000",
                 boxShadow: 24,
                 p: 4,
+                borderRadius:"10px"
             }}>
                 <Box sx={{
                     display: "flex",
@@ -318,20 +318,17 @@ export default function PracticalSettingsModal({ openState, handleClose, practic
                     alignItems: "center",
                     justifyContent: "center"
                 }}>
-                    <Typography id="modal-modal-title" variant="h4" component="h2">
+                    <Typography id="modal-modal-title" variant="h4" fontWeight={400}>
                         {practicalName}
-                    </Typography>
-                    <Typography id="modal-modal-description" sx={{ mt: 2 }}>
-                        Instructor: {instructorName}
                     </Typography>
 
                     <Typography variant="h6" sx={{ mt: 2 }}>
-                        Participants
+                        Students:
                     </Typography>
 
                     {participantEmails.map((email, idx) => (
-                        <Box key={idx} sx={{ display: "flex", mt: 2, justifyContent: "center", alignItems: "center" }}>
-                            <Typography variant='text' key={idx}>
+                        <Box key={idx} sx={{ display: "flex", mt: 1, justifyContent: "center", alignItems: "center" }}>
+                            <Typography variant='h7' key={idx}>
                                 {email}
                             </Typography>
                             {
@@ -349,8 +346,9 @@ export default function PracticalSettingsModal({ openState, handleClose, practic
                                         <Button
                                             variant="contained"
                                             color="error"
-                                            sx={{ mx: 2 }}
+                                            sx={{ mx: 2}}
                                             onClick={() => handleRemoveParticipant(idx)}
+                                            
                                         >
                                             <DeleteIcon />
                                         </Button>
@@ -365,12 +363,14 @@ export default function PracticalSettingsModal({ openState, handleClose, practic
                         mt: 2,
                     }}>
 
-                        <TextField label="Add Participant"
+                        <TextField label="Add Student"
                             onChange={e => setCurParticipant(e.target.value)}
-                            variant="outlined"
+                            variant="filled"
+
                             color="secondary"
                             value={curParticipant}
-                            sx={{ height: "100%" }} />
+                            sx={{ height: "100%" }} 
+                            size='small'/>
 
                         <Button onClick={handleAddParticipantButton} variant="contianed" size="small">
                             <AddIcon />
@@ -384,7 +384,7 @@ export default function PracticalSettingsModal({ openState, handleClose, practic
                             variant="contained"
                             onClick={handleUpdatePracticalButton}
                             sx={{
-                                mt: 10
+                                mt: 5
                             }}>
                             Update Practical
                         </Button>
@@ -394,7 +394,7 @@ export default function PracticalSettingsModal({ openState, handleClose, practic
                             color="error"
                             onClick={handleDeleteButton}
                             sx={{
-                                mt: 10
+                                mt: 5
                             }}>
                             Delete Practical
                         </Button>

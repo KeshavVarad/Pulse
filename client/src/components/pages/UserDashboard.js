@@ -443,7 +443,7 @@ export default function UserDashboard() {
                                                 sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
                                             >
                                                 <TableCell component="th" scope="row">
-                                                    <Link href={practical.path} underline="hover" variant="h6" fontWeight={500}>
+                                                    <Link href={practical.path} underline="hover" variant="h7" fontWeight={500}>
                                                         {practical.practical_name}
                                                     </Link>
 
@@ -486,7 +486,7 @@ export default function UserDashboard() {
                                                 sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
                                             >
                                                 <TableCell component="th" scope="row">
-                                                    <Link href={practical.path} underline="hover" variant="h6" fontWeight={500}>
+                                                    <Link href={practical.path} underline="hover" variant="h7" fontWeight={500}>
                                                         {practical.practical_name}
                                                     </Link>
 
@@ -514,19 +514,6 @@ export default function UserDashboard() {
 
                 </Box>
 
-                <Box sx={{
-                    py: 5
-                }}>
-                    <Typography variant="h3"> Task Performance </Typography>
-                </Box>
-
-                <Box sx={{
-                    width: "75%",
-                    height: "100%",
-                    py: 5
-                }}>
-                    <PracticalChart practicalData={practicalPerformanceData} />
-                </Box>
 
 
                 <PracticalSettingsModal openState={practicalSettingsOpen} handleClose={handleSettingsClose} practicalId={practicalSettingsId} />

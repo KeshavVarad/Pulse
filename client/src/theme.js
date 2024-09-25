@@ -54,10 +54,16 @@ const theme = createTheme({
     h6: {
       fontFamily: '"Lato", sans-serif;',
       fontWeight: 400,
-      fontSize: '1rem',
+      fontSize: '1.25rem',
       
     },
     h7: {
+      fontFamily: '"Lato", sans-serif;',
+      fontWeight: 400,
+      fontSize: '1rem',
+      
+    },
+    h8: {
       fontFamily: '"Lato", sans-serif;',
       fontWeight: 400,
       fontSize: '0.8rem',
