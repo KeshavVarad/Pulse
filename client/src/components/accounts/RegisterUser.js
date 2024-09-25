@@ -95,7 +95,7 @@ export default function RegisterUser() {
             <Box sx={{
                 justifyContent: "center",
                 alignItems: "center",
-                mt: 5,
+                mt: 4,
                 width: '32%',
 
             }}>
