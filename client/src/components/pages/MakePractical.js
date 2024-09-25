@@ -19,6 +19,7 @@ export default function MakePractical() {
     const [curParticipant, setCurParticipant] = useState("");
 
     const [instructor, setInstructor] = useState("");
+    const [isInstructor, setIsInstructor] = useState(true);
 
 
     const navigate = useNavigate();
@@ -239,7 +240,14 @@ export default function MakePractical() {
                     const userData = await user_res.json()
 
                     setMakePracticalTutorial(userData.make_practical_tutorial)
+
+                    if (userData.role === "instructor") {
+                        setInstructor(userData.email);
+                        setIsInstructor(true);
+                    }
                 }
+
+
 
             }
 
@@ -428,7 +436,7 @@ export default function MakePractical() {
                         ))}
                     </Box>
 
-                    <TextField
+                    {!isInstructor ? <TextField
                         className='new_practical_instructor'
                         label="Instructor"
                         onChange={e => setInstructor(e.target.value)}
@@ -437,7 +445,8 @@ export default function MakePractical() {
                         color="secondary"
                         sx={{ mb: 3 }}
                         fullWidth
-                        value={instructor} />
+                        value={instructor} /> : null}
+
 
                     <Box
                         className='new_practical_submit'
