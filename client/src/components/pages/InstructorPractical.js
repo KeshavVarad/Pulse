@@ -812,7 +812,7 @@ export default function InstructorPractical() {
 
                         }}>
                             <Typography variant="h4">
-                                Make Ratings
+                                Make Comments
                             </Typography>
 
                             {tasks.map(task => (
