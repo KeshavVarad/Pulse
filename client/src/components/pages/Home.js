@@ -1,84 +1,75 @@
 import React from 'react';
-import { Container, Typography, Paper, Button } from '@mui/material';
-import { Assessment, School, People, Chat, Build } from '@mui/icons-material';
+import { Container, Typography, Paper, Button, Box } from '@mui/material';
+import { Assessment, People, Chat, Insights } from '@mui/icons-material';
 import { Link } from 'react-router-dom';
 
 const Home = () => {
     return (
-        <Container maxWidth="lg" sx={{ marginTop: '80px', padding: '2rem', height: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+        <Container maxWidth="lg" sx={{ marginTop: '80px', padding: '2rem' }}>
+
             {/* Header Section */}
-            <Paper elevation={5} sx={{ padding: '2rem', marginBottom: '2rem', backgroundColor: '#fff', borderRadius: '8px' }}>
-                <Typography variant="h2" align="center" gutterBottom sx={{ fontWeight: 'bold', color: '#333' }}>
-                    Welcome to Pulse
+            <Paper elevation={5} sx={{ padding: '2rem', marginBottom: '3rem', backgroundColor: '#fff', borderRadius: '8px' }}>
+                <Typography variant="h3" align="center" gutterBottom sx={{ fontWeight: 'bold', color: '#333' }}>
+                    Pulse: Feedback, Simplified
                 </Typography>
                 <Typography variant="h6" align="center" gutterBottom sx={{ color: '#555' }}>
-                    Empowering Medical Schools Through Feedback
+                    Clear, Honest, and Efficient Feedback for Practical Medical Education.
                 </Typography>
-                <Typography variant="body1" align="center" gutterBottom sx={{ color: '#777', lineHeight: 1.5 }}>
-                    Pulse provides a robust mechanism for gathering and analyzing feedback from practical demonstrations, allowing medical schools to enhance their curricula and improve student learning outcomes.
-                </Typography>
-                <Button variant="contained" color="primary" sx={{ display: 'block', margin: '1rem auto', padding: '0.75rem 2rem' }} component={Link} to="/learn_more">
-                    Learn More
+                <Button variant="contained" color="primary" sx={{ display: 'block', margin: '1.5rem auto', padding: '0.75rem 2.5rem' }} component={Link} to="/user_guides">
+                    Get Started
                 </Button>
             </Paper>
 
-            {/* Section 1: Data-Driven Curriculum Improvement */}
-            <Paper elevation={2} sx={{ padding: '1.5rem', marginBottom: '2rem', backgroundColor: '#ffffff', borderRadius: '8px' }}>
+            {/* Section 1: Efficient Platform for Instructors */}
+            <Paper elevation={3} sx={{ padding: '2rem', marginBottom: '3rem', backgroundColor: '#f9f9f9', borderRadius: '8px', textAlign: 'center' }}>
                 <Typography variant="h4" gutterBottom sx={{ fontWeight: 'bold', color: '#333' }}>
-                    <Assessment sx={{ verticalAlign: 'middle', marginRight: '0.5rem' }} />
-                    Data-Driven Curriculum Improvement
+                    Give Feedback in Just a Few Clicks
                 </Typography>
-                <Typography variant="body1" sx={{ color: '#555' }}>
-                    Utilizing feedback to identify strengths and weaknesses in training programs, fostering continuous improvement in medical education.
+                <Typography variant="body1" sx={{ color: '#555', marginBottom: '1.5rem' }}>
+                    Pulse enables instructors to provide feedback efficiently, with minimal effort. Streamlined workflows allow for fast, meaningful input without sacrificing quality.
                 </Typography>
+                {/* Placeholder for Demo Video or Animation */}
+                <Box sx={{ backgroundColor: '#ddd', height: '300px', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <Typography variant="h6" sx={{ color: '#555' }}>
+                        Instructor Demo Placeholder
+                    </Typography>
+                </Box>
             </Paper>
 
-            {/* Section 2: Enhancing Instructor Feedback */}
-            <Paper elevation={2} sx={{ padding: '1.5rem', marginBottom: '2rem', backgroundColor: '#ffffff', borderRadius: '8px' }}>
+            {/* Section 2: AI-Enhanced Feedback for Students */}
+            <Paper elevation={3} sx={{ padding: '2rem', marginBottom: '3rem', backgroundColor: '#fff', borderRadius: '8px', textAlign: 'center' }}>
                 <Typography variant="h4" gutterBottom sx={{ fontWeight: 'bold', color: '#333' }}>
-                    <People sx={{ verticalAlign: 'middle', marginRight: '0.5rem' }} />
-                    Enhancing Instructor Feedback
+                    AI-Enhanced Feedback for Students
                 </Typography>
-                <Typography variant="body1" sx={{ color: '#555' }}>
-                    Empowering instructors to provide meaningful, data-backed feedback without compromising rapport with students.
+                <Typography variant="body1" sx={{ color: '#555', marginBottom: '1.5rem' }}>
+                    Pulse’s AI-powered assistant breaks down complex feedback, providing students with clear, actionable insights into their performance.
                 </Typography>
+                {/* Placeholder for AI Feedback Demo */}
+                <Box sx={{ backgroundColor: '#ddd', height: '300px', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <Typography variant="h6" sx={{ color: '#555' }}>
+                        AI Feedback Demo Placeholder
+                    </Typography>
+                </Box>
             </Paper>
 
-            {/* Section 3: Effective Communication Skills */}
-            <Paper elevation={2} sx={{ padding: '1.5rem', marginBottom: '2rem', backgroundColor: '#ffffff', borderRadius: '8px' }}>
+            {/* Section 3: Data-Driven Insights for Administrators */}
+            <Paper elevation={3} sx={{ padding: '2rem', marginBottom: '3rem', backgroundColor: '#f9f9f9', borderRadius: '8px', textAlign: 'center' }}>
                 <Typography variant="h4" gutterBottom sx={{ fontWeight: 'bold', color: '#333' }}>
-                    <Chat sx={{ verticalAlign: 'middle', marginRight: '0.5rem' }} />
-                    Effective Communication Skills
+                    Data-Driven Insights for Administrators
                 </Typography>
-                <Typography variant="body1" sx={{ color: '#555' }}>
-                    Facilitating constructive dialogue between students and instructors to improve overall learning experiences.
+                <Typography variant="body1" sx={{ color: '#555', marginBottom: '1.5rem' }}>
+                    Administrators can make data-backed decisions to fine-tune curricula based on performance insights, helping optimize learning outcomes for cohorts.
                 </Typography>
-            </Paper>
-
-            {/* Section 4: Building Strong Educational Partnerships */}
-            <Paper elevation={2} sx={{ padding: '1.5rem', marginBottom: '2rem', backgroundColor: '#ffffff', borderRadius: '8px' }}>
-                <Typography variant="h4" gutterBottom sx={{ fontWeight: 'bold', color: '#333' }}>
-                    <Build sx={{ verticalAlign: 'middle', marginRight: '0.5rem' }} />
-                    Building Strong Educational Partnerships
-                </Typography>
-                <Typography variant="body1" sx={{ color: '#555' }}>
-                    Collaborating with medical schools to enhance curriculum delivery and student engagement through actionable feedback.
-                </Typography>
-            </Paper>
-
-            {/* Section 5: Technology-Enabled Feedback Systems */}
-            <Paper elevation={2} sx={{ padding: '1.5rem', marginBottom: '2rem', backgroundColor: '#ffffff', borderRadius: '8px' }}>
-                <Typography variant="h4" gutterBottom sx={{ fontWeight: 'bold', color: '#333' }}>
-                    <Assessment sx={{ verticalAlign: 'middle', marginRight: '0.5rem' }} />
-                    Technology-Enabled Feedback Systems
-                </Typography>
-                <Typography variant="body1" sx={{ color: '#555' }}>
-                    Streamlining the feedback process using technology to ensure timely and constructive insights for curriculum improvement.
-                </Typography>
+                {/* Placeholder for Analytics Demo */}
+                <Box sx={{ backgroundColor: '#ddd', height: '300px', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <Typography variant="h6" sx={{ color: '#555' }}>
+                        Admin Analytics Demo Placeholder
+                    </Typography>
+                </Box>
             </Paper>
 
             {/* Footer */}
-            <Paper elevation={5} sx={{ padding: '2rem', marginTop: '2rem', backgroundColor: '#fff', borderRadius: '8px' }}>
+            <Paper elevation={5} sx={{ padding: '2rem', marginTop: '3rem', backgroundColor: '#fff', borderRadius: '8px' }}>
                 <Typography variant="body2" align="center" sx={{ color: '#777' }}>
                     © 2024 Pulse. All rights reserved.
                 </Typography>
