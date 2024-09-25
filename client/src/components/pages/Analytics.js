@@ -5,7 +5,7 @@ import InfoIcon from '@mui/icons-material/Info';
 import { Radar } from 'react-chartjs-2';
 import { Chart as ChartJS, CategoryScale, LinearScale, Title, RadialLinearScale, PointElement, LineElement, Filler, Tooltip, Legend } from 'chart.js';
 import { Line } from "react-chartjs-2";
-import { Switch, Select, MenuItem, FormControl, InputLabel, Checkbox, ListItemText } from "@mui/material";
+import { Switch, Select, MenuItem, FormControl, InputLabel, Chip, Checkbox, ListItemText } from "@mui/material";
 
 
 ChartJS.register(RadialLinearScale, CategoryScale, LinearScale, Title, PointElement, LineElement, Filler, Tooltip, Legend);
@@ -234,6 +234,123 @@ const LineChartComponent = ({ data, isDemo }) => {
 }
 
 
+const PracticalChart = ({ practicalData }) => {
+    const taskNames = Array.from(new Set(practicalData.flatMap((p) => p.tasks.map((t) => t.name))));
+
+    const [selectedTasks, setSelectedTasks] = useState([]);
+    const [chartData, setChartData] = useState({
+        labels: [], // No labels initially
+        datasets: [] // No datasets initially
+    });
+
+
+    // Calculate the performance score
+    const calculatePerformance = (task) => {
+        if (task.red_count + task.yellow_count + task.green_count == 0) {
+            return -1
+        }
+        return (task.red_count + 3 * task.yellow_count + 5 * task.green_count) / (task.red_count + task.yellow_count + task.green_count);
+    };
+
+    const prepareChartData = (tasksToDisplay) => {
+        const datasets = [];
+
+        tasksToDisplay.forEach((taskName) => {
+            const taskData = practicalData
+                .map((practical) => {
+                    const task = practical.tasks.find((t) => t.name === taskName);
+                    if (task) {
+                        if (calculatePerformance(task) === -1) {
+                            return null;
+                        }
+
+                        // Round the date to the nearest day
+                        const roundedDate = new Date(practical.creation_date);
+                        roundedDate.setHours(0, 0, 0, 0); // Zero out the time part
+
+                        return {
+                            x: roundedDate, // Using rounded Date object for x-axis
+                            y: calculatePerformance(task),
+                        };
+                    }
+                    return null;
+                })
+                .filter((entry) => entry !== null)
+                .sort((a, b) => a.x - b.x);
+
+            // Aggregate points with the same day (x value)
+            const aggregatedTaskData = taskData.reduce((acc, curr) => {
+                const last = acc[acc.length - 1];
+                if (last && last.x.getTime() === curr.x.getTime()) {
+                    // If the current point has the same x (day) as the last one, average the y values
+                    last.y = (last.y + curr.y) / 2;
+                } else {
+                    acc.push(curr);
+                }
+                return acc;
+            }, []);
+
+            datasets.push({
+                label: taskName,
+                data: aggregatedTaskData,
+                fill: false,
+                borderColor: `#${Math.floor(Math.random() * 16777215).toString(16)}`, // Random color
+                tension: 0.1,
+            });
+        });
+
+        setChartData({
+            datasets: datasets,
+        });
+    };
+
+    useEffect(() => {
+        if (taskNames.length > 0) {
+            setSelectedTasks(taskNames)
+            prepareChartData(taskNames);
+        }
+        // Only run this effect when taskNames changes
+    }, [taskNames.length]);
+
+
+    // Handle task selection
+    const handleTaskSelection = (event) => {
+        const value = event.target.value;
+        setSelectedTasks(value);
+        prepareChartData(value);
+    };
+
+
+    return (
+        <div>
+
+            {/* Chart component */}
+            <Line
+                data={chartData}
+                options={{
+                    responsive: true,
+                    scales: {
+                        x: {
+                            type: 'time', // Time-based x-axis
+                            title: {
+                                display: true,
+                                text: 'Date',
+                            },
+                        },
+                        y: {
+                            title: {
+                                display: true,
+                                text: 'Performance',
+                            },
+                        },
+                    },
+                }}
+            />
+        </div>
+    );
+};
+
+
 export default function Analytics() {
 
     const [schoolId, setSchoolId] = useState()
@@ -250,6 +367,8 @@ export default function Analytics() {
     const [cohortPlotData, setCohortPlotData] = useState([])
 
     const [isDemo, setDemo] = useState(false);
+
+    const [isAdmin, setIsAdmin] = useState(true);
 
 
     const testCohortPlotData = [[{
@@ -287,17 +406,8 @@ export default function Analytics() {
     };
 
 
-    const handleCohortGraphButton = (cohort_year, idx) => {
-        setSelectedCohort(cohort_year)
-        setSelectedCohortInd(idx)
-        setCohortGraphOpen(true)
-    }
+    const [practicalPerformanceData, setPracticalPerformanceData] = useState([]);
 
-    const handleCohortGraphClose = () => {
-        setCohortGraphOpen(false)
-        setSelectedCohortInd(-1)
-        setSelectedCohort()
-    }
 
     const handleDemoSwitch = () => {
         setDemo(!isDemo);
@@ -325,6 +435,13 @@ export default function Analytics() {
                 const user_data = await user_res.json()
 
                 setSchoolId(user_data.school_id)
+
+                if (user_data.role === "admin") {
+                    setIsAdmin(true);
+                }
+                else {
+                    setIsAdmin(false);
+                }
 
             } catch (e) {
                 console.log(e);
@@ -438,6 +555,52 @@ export default function Analytics() {
 
     }, [schoolId])
 
+    useEffect(() => {
+        async function fetchPracticals() {
+            try {
+                const user = auth.currentUser;
+                const token = user && (await user.getIdToken());
+
+                const userId = user.uid;
+
+                const requestOptions = {
+                    method: "GET",
+                    mode: "cors",
+                    headers: {
+                        "Content-Type": "application/json",
+                        Authorization: `Bearer ${token}`,
+                    },
+
+                };
+
+                const user_res = await fetch(`${process.env.REACT_APP_API_HOST}/api/user/${userId}`, requestOptions);
+
+                let userData = null
+                if (user_res.status == 200) {
+                    userData = await user_res.json()
+                }
+                else {
+                    userData = null
+                }
+
+                let practicalData = []
+
+                if (userData) {
+                    const practical_res = await fetch(`${process.env.REACT_APP_API_HOST}/api/practical/student/${userData.id}`, requestOptions);
+                    practicalData = await practical_res.json()
+                }
+
+                setPracticalPerformanceData(practicalData)
+
+            } catch (e) {
+                console.log(e);
+            }
+        }
+        if (!isAdmin) {
+            fetchPracticals()
+        }
+    }, [isAdmin])
+
     return (
         <Box sx={{
             minHeight: "100%",
@@ -457,27 +620,38 @@ export default function Analytics() {
                     <Typography variant="h3"> Analytics Dashboard </Typography>
                 </Box>
 
-                <Box sx={{
-                    display: "flex",
-                    alignItems: "center",
-                    py: 5
-                }}>
-                    <Typography variant='h5'>Demo Switch</Typography>
+                {isAdmin ?
+                    (<>
+                        <Box sx={{
+                            display: "flex",
+                            alignItems: "center",
+                            py: 5
+                        }}>
+                            <Typography variant='h5'>Demo Switch</Typography>
 
-                    <Switch
-                        checked={isDemo}
-                        onChange={handleDemoSwitch}
-                        color="primary"
-                    />
-                </Box>
+                            <Switch
+                                checked={isDemo}
+                                onChange={handleDemoSwitch}
+                                color="primary"
+                            />
+                        </Box>
 
-                <Box sx={{
-                    width: "75%",
-                    height: "100%",
-                    py: 5
-                }}>
-                    <LineChartComponent data={taskData} isDemo={isDemo} />
-                </Box>
+                        <Box sx={{
+                            width: "75%",
+                            height: "100%",
+                            py: 5
+                        }}>
+                            <LineChartComponent data={taskData} isDemo={isDemo} />
+                        </Box></>) :
+                    (<Box sx={{
+                        width: "75%",
+                        height: "100%",
+                        py: 5
+                    }}>
+                        <PracticalChart practicalData={practicalPerformanceData} />
+                    </Box>)}
+
+
             </Box>
 
         </Box>

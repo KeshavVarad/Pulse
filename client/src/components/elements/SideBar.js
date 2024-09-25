@@ -402,14 +402,14 @@ export default function SideBar() {
                         </ListItemButton>
                     </ListItem> : <Box></Box>}
 
-                {isAdmin ?
-                    <ListItem key={"Analytics"} disablePadding>
-                        <ListItemButton component={Link} to={"/analytics"}
-                            variant="contained" color="secondary">
-                            <ListItemIcon><InsightsIcon /></ListItemIcon>
-                            <ListItemText primary={"Analytics"} />
-                        </ListItemButton>
-                    </ListItem> : <Box></Box>}
+
+                <ListItem key={"Analytics"} disablePadding>
+                    <ListItemButton component={Link} to={"/analytics"}
+                        variant="contained" color="secondary">
+                        <ListItemIcon><InsightsIcon /></ListItemIcon>
+                        <ListItemText primary={"Analytics"} />
+                    </ListItemButton>
+                </ListItem>
 
                 <ListItem key={"User Guides"} disablePadding>
                     <ListItemButton component={Link} to={"/user_guides"}
