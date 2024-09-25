@@ -10,7 +10,7 @@ import TableRow from '@mui/material/TableRow';
 import Paper from '@mui/material/Paper';
 import { FormControl, InputLabel, Select, Chip, MenuItem } from "@mui/material"
 import { useState, useEffect } from 'react';
-import auth from "../../config/firebase.js";
+import { auth } from "../../config/firebase.js";
 import { useAuth } from '../../contexts/AuthContext.js';
 //import { Link } from 'react-router-dom';
 import Link from '@mui/material/Link';

@@ -4,7 +4,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { Box, Typography, TextField, Button } from '@mui/material'
 import { useAuth } from '../../contexts/AuthContext';
 import { useEffect } from "react";
-import auth from "../../config/firebase.js";
+import { auth } from "../../config/firebase.js";
 import { v4 as uuidv4 } from 'uuid';
 import DeleteIcon from '@mui/icons-material/Delete';
 import Joyride from 'react-joyride';

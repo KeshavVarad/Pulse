@@ -3,7 +3,7 @@ import { useParams } from "react-router-dom"
 import { useEffect, useState, useCallback } from "react";
 import { useAuth } from "../../contexts/AuthContext.js";
 import { useRef } from "react";
-import auth from "../../config/firebase.js";
+import { auth } from "../../config/firebase.js";
 import { v4 as uuidv4 } from 'uuid';
 
 import YouTube from "react-youtube"
@@ -22,6 +22,8 @@ export default function InstructorPractical() {
     const practicalId = params.id;
 
     const [practicalName, setPracticalName] = useState("");
+
+    const [participants, setParticipants] = useState([]);
 
     const [schoolId, setSchoolId] = useState();
     const [studentYear, setStudentYear] = useState();
@@ -52,6 +54,29 @@ export default function InstructorPractical() {
 
     // Message state
     const [curMessage, setMessage] = useState("")
+
+
+    const createNotification = async (notificationData) => {
+        try {
+            const response = await fetch(`${process.env.REACT_APP_API_HOST}/api/newNotification`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(notificationData),
+            });
+
+            if (!response.ok) {
+                throw new Error('Failed to create notification');
+            }
+
+            const result = await response.text();
+            console.log(result); // You can handle success feedback here if needed
+        } catch (error) {
+            console.error("Error creating notification:", error);
+        }
+    };
+
 
     // Task functions
 
@@ -618,8 +643,6 @@ export default function InstructorPractical() {
             const cur_user_res = await fetch(`${process.env.REACT_APP_API_HOST}/api/user/${user.uid}`);
             const cur_user_data = await cur_user_res.json()
 
-
-
             const newReply = {
                 message: curMessage,
                 createdAt: Date.now(),
@@ -642,6 +665,18 @@ export default function InstructorPractical() {
 
             };
             await fetch(`${process.env.REACT_APP_API_HOST}/api/updatePractical/${practicalId}`, requestOptions);
+
+            participants.map((participant) => {
+                createNotification({
+                    id: uuidv4(),
+                    task: taskToDisplay.name,
+                    user_id: participant,
+                    message: `Instructor has posted a new comment in the ${taskToDisplay.name} discussion board for ${practicalName}.`,
+                    timestamp: new Date().toISOString(), // Or however you want to handle timestamps
+                    read_status: false,
+                    practical_id: practicalId,
+                })
+            })
 
             setTaskToDisplay(newTaskToDisplay)
             setMessage("")
@@ -667,6 +702,7 @@ export default function InstructorPractical() {
             setPracticalName(practical.practical_name)
             setSchoolId(practical.school_id)
             setStudentYear(practical.cohort_year)
+            setParticipants(practical.user_participants)
 
 
             const videoParams = practical.video_link.split("/")

@@ -18,6 +18,7 @@ import commentRoute from "./routes/commentRoutes.js"
 import adminRoute from "./routes/adminRoutes.js"
 import schoolRoute from "./routes/schoolRoutes.js"
 import inviteRoute from "./routes/inviteRoutes.js"
+import notificationRoute from "./routes/notificationRoutes.js"
 
 dotenv.config();
 
@@ -52,6 +53,8 @@ app.use('/api', commentRoute);
 app.use('/api', adminRoute);
 app.use('/api', schoolRoute);
 app.use('/api', inviteRoute);
+app.use('/api', notificationRoute);
+
 
 app.post('/api/chat', async (req, res) => {
     const { messages } = req.body;

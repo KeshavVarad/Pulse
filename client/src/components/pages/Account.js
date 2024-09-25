@@ -8,7 +8,7 @@ import {
     Divider,
 } from '@mui/material'
 import React, { useCallback, useEffect, useState } from 'react'
-import auth from '../../config/firebase';
+import { auth } from '../../config/firebase';
 import { useAuth } from '../../contexts/AuthContext';
 import DeleteIcon from "@mui/icons-material/Delete";
 

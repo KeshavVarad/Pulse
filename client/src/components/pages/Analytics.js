@@ -1,6 +1,6 @@
 import { Card, CardContent, Box, Button, Container, Grid, List, Modal, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Typography } from '@mui/material'
 import React, { useEffect, useState } from 'react'
-import auth from '../../config/firebase'
+import { auth } from '../../config/firebase'
 import InfoIcon from '@mui/icons-material/Info';
 import { Radar } from 'react-chartjs-2';
 import { Chart as ChartJS, CategoryScale, LinearScale, Title, RadialLinearScale, PointElement, LineElement, Filler, Tooltip, Legend } from 'chart.js';

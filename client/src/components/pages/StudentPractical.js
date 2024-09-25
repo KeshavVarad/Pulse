@@ -5,11 +5,12 @@ import { useAuth } from "../../contexts/AuthContext.js";
 import { useRef, useCallback, useMemo } from "react";
 import React from "react";
 import YouTube from "react-youtube"
-import auth from "../../config/firebase.js";
+import { auth } from "../../config/firebase.js";
 import SendIcon from '@mui/icons-material/Send';
 import InsertCommentIcon from "@mui/icons-material/InsertComment"
 
-import { FormControl, InputLabel, Select, MenuItem, Typography, Box, Button, TextField, Grid, Modal, List, ListItem, ListItemText, Tooltip,TableContainer, Table, TableBody, TableCell , TableRow, TableHead, ButtonGroupContext} from "@mui/material";
+import { v4 as uuidv4 } from 'uuid';
+import { FormControl, InputLabel, Select, MenuItem, Typography, Box, Button, TextField, Grid, Modal, List, ListItem, ListItemText, Tooltip, TableContainer, Table, TableBody, TableCell, TableRow, TableHead, ButtonGroupContext } from "@mui/material";
 import { BarChart } from '@mui/x-charts/BarChart';
 import StudentDisplayComments from "../elements/StudentDisplayComments.js"
 import { grey } from "@mui/material/colors";
@@ -37,6 +38,8 @@ export default function StudentPractical() {
     const [currentTaskDiscussion, setCurrentTaskDiscussion] = useState(null);
 
     const [practical_name, setPracticalName] = useState("");
+    const [instructorId, setInstructorId] = useState("");
+    const [participants, setParticipants] = useState([]);
 
     const videoRef = useRef(null);
     const [currentTime, setCurrentTime] = useState(0);
@@ -91,6 +94,27 @@ export default function StudentPractical() {
         setCommentChatOpen(false)
     }
 
+    const createNotification = async (notificationData) => {
+        try {
+            const response = await fetch(`${process.env.REACT_APP_API_HOST}/api/newNotification`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(notificationData),
+            });
+
+            if (!response.ok) {
+                throw new Error('Failed to create notification');
+            }
+
+            const result = await response.text();
+            console.log(result); // You can handle success feedback here if needed
+        } catch (error) {
+            console.error("Error creating notification:", error);
+        }
+    };
+
     const handleMessageInput = async () => {
         if (curMessage == "") {
             return
@@ -132,6 +156,31 @@ export default function StudentPractical() {
 
             };
             await fetch(`${process.env.REACT_APP_API_HOST}/api/updatePractical/${practicalId}`, requestOptions);
+
+            participants.map((participant) => {
+                if (participant == currentUser.uid) {
+                    return
+                }
+                createNotification({
+                    id: uuidv4(),
+                    task: currentTaskDiscussion.name,
+                    user_id: participant,
+                    message: `${cur_user_data.real_name} has posted a new comment in the ${currentTaskDiscussion.name} discussion board for ${practical_name}.`,
+                    timestamp: new Date().toISOString(), // Or however you want to handle timestamps
+                    read_status: false,
+                    practical_id: practicalId,
+                })
+            })
+
+            createNotification({
+                id: uuidv4(),
+                task: currentTaskDiscussion.name,
+                user_id: instructorId,
+                message: `${cur_user_data.real_name} has posted a new comment in the ${currentTaskDiscussion.name} discussion board for ${practical_name}.`,
+                timestamp: new Date().toISOString(), // Or however you want to handle timestamps
+                read_status: false,
+                practical_id: practicalId,
+            })
 
             setCurrentTaskDiscussion(newTaskToDisplay)
             setMessage("")
@@ -199,27 +248,27 @@ export default function StudentPractical() {
         }
 
         return (
-            
-                <Box
-                    sx={{
-                        position:"absolute",
-                        left: `${(comment.timestamp / videoLength) * 100}%`,
-                        width: '10px',
+
+            <Box
+                sx={{
+                    position: "absolute",
+                    left: `${(comment.timestamp / videoLength) * 100}%`,
+                    width: '10px',
+                    height: '100%',
+                    backgroundColor: getColorForRating(comment.rating),
+                    transform: 'translate(-50%)',
+                    cursor: 'pointer',
+                    '&:hover': {
                         height: '100%',
-                        backgroundColor: getColorForRating(comment.rating),
-                        transform: 'translate(-50%)',
-                        cursor: 'pointer',
-                        '&:hover': {
-                            height: '100%',
-                            width: "20px",
-                        },
-                        zIndex: 2,
-                        borderRadius: "5px",
-                        opacity:0.9,
-                    }}
-                    onClick={handleClick}
-                />
-            
+                        width: "20px",
+                    },
+                    zIndex: 2,
+                    borderRadius: "5px",
+                    opacity: 0.9,
+                }}
+                onClick={handleClick}
+            />
+
         );
     });
 
@@ -227,67 +276,67 @@ export default function StudentPractical() {
         const memoizedComments = useMemo(() => comments, [comments]);
         return (
 
-            <Box sx={{minWidth:"95%", position: 'relative'}}>
+            <Box sx={{ minWidth: "95%", position: 'relative' }}>
 
                 <TableContainer>
                     <Table sx={{ minWidth: "100%" }} aria-label="simple table">
-                         <TableHead>
+                        <TableHead>
 
-                            </TableHead>
+                        </TableHead>
                         <TableBody>
                             {tasks.map((task) => (
                                 <TableRow sx={{
                                 }}>
-                                     <TableCell sx={{
-                                        maxWidth:"150px"
-                                     }}>
-                                            <Typography variant="h7" sx={{
-                                                textOverflow: "ellipsis",
-                                                maxWidth:"60px"
-                                            }}>{task.name}</Typography>
-                                            
+                                    <TableCell sx={{
+                                        maxWidth: "150px"
+                                    }}>
+                                        <Typography variant="h7" sx={{
+                                            textOverflow: "ellipsis",
+                                            maxWidth: "60px"
+                                        }}>{task.name}</Typography>
+
                                     </TableCell>
                                     <TableCell sx={{
-                                        width:"100%",
-                                        p:0
+                                        width: "100%",
+                                        p: 0
                                     }}>
-                                    <Box
-                                        key={task.name}
-                                        sx={{
-                                            position:"relative",
-                                            width:"100%",
-                                            height: "50px",
-                                            backgroundColor:"primary.grey",
-                                            p:0,
-                                            left: 0,
-                                        }}>
-                                        {memoizedComments
-                                            .filter(comment => comment.task === task.name)
-                                            .map((comment, index) => (
-                                                <CommentMarker
-                                                    key={index}
-                                                    comment={comment}
-                                                    videoLength={videoLength}
-                                                    onSeek={onSeek}
-                                                    index={comments.indexOf(comment)}
-                                                />
-                                            ))}
+                                        <Box
+                                            key={task.name}
+                                            sx={{
+                                                position: "relative",
+                                                width: "100%",
+                                                height: "50px",
+                                                backgroundColor: "primary.grey",
+                                                p: 0,
+                                                left: 0,
+                                            }}>
+                                            {memoizedComments
+                                                .filter(comment => comment.task === task.name)
+                                                .map((comment, index) => (
+                                                    <CommentMarker
+                                                        key={index}
+                                                        comment={comment}
+                                                        videoLength={videoLength}
+                                                        onSeek={onSeek}
+                                                        index={comments.indexOf(comment)}
+                                                    />
+                                                ))}
                                             <Box
-                                         sx={{
-                                             position: 'absolute',
-                                             left: `${(currentTime / videoLength) * 50}%`,
-                                             top: 0,
-                                             width: `${(currentTime / videoLength) * 100}%`,
-                                             height: '100%',
-                                             backgroundColor: 'primary.light',
-                                             transform: 'translateX(-50%)',
-                                             zIndex: 1,
-                                         }}
-                                     />
+                                                sx={{
+                                                    position: 'absolute',
+                                                    left: `${(currentTime / videoLength) * 50}%`,
+                                                    top: 0,
+                                                    width: `${(currentTime / videoLength) * 100}%`,
+                                                    height: '100%',
+                                                    backgroundColor: 'primary.light',
+                                                    transform: 'translateX(-50%)',
+                                                    zIndex: 1,
+                                                }}
+                                            />
 
-                                    </Box>
-                                    
-                                        
+                                        </Box>
+
+
                                     </TableCell>
                                 </TableRow>
                             ))}
@@ -298,18 +347,18 @@ export default function StudentPractical() {
             </Box>
 
 
-                // <Box
-                //     sx={{
-                //         position: 'absolute',
-                //         left: `${(currentTime / videoLength) * 50}%`,
-                //         top: 0,
-                //         width: `${(currentTime / videoLength) * 100}%`,
-                //         height: '100%',
-                //         backgroundColor: 'primary.light',
-                //         transform: 'translateX(-50%)',
-                //         zIndex: 0,
-                //     }}
-                // />
+            // <Box
+            //     sx={{
+            //         position: 'absolute',
+            //         left: `${(currentTime / videoLength) * 50}%`,
+            //         top: 0,
+            //         width: `${(currentTime / videoLength) * 100}%`,
+            //         height: '100%',
+            //         backgroundColor: 'primary.light',
+            //         transform: 'translateX(-50%)',
+            //         zIndex: 0,
+            //     }}
+            // />
 
         );
     };
@@ -338,6 +387,8 @@ export default function StudentPractical() {
 
             setAvgRating(practical.avg_rating)
             setTasks(practical.tasks)
+            setParticipants(practical.user_participants)
+            setInstructorId(practical.user_instructor_id)
 
             let newTaskNames = []
 
@@ -448,7 +499,7 @@ export default function StudentPractical() {
 
                         <Box sx={{
                             width: "100%",
-                            height:"98%",
+                            height: "98%",
                             alignContent: "center",
                             justifyContent: "center"
                         }}>
@@ -477,7 +528,7 @@ export default function StudentPractical() {
                 }}>
 
                     <Box sx={{
-                        display:"flex",
+                        display: "flex",
                         flexDirection: "column",
                         py: 5,
                         width: "100%",
@@ -488,17 +539,17 @@ export default function StudentPractical() {
                     </Box>
 
                     <CommentTimeline
-                            comments={comments}
-                            videoLength={player ? player.getDuration() : 0}
-                            currentTime={currentTime}
-                            onSeek={(timestamp) => player && player.seekTo(timestamp)}
-                            tasks={tasks}
+                        comments={comments}
+                        videoLength={player ? player.getDuration() : 0}
+                        currentTime={currentTime}
+                        onSeek={(timestamp) => player && player.seekTo(timestamp)}
+                        tasks={tasks}
                     />
 
 
 
 
-                    
+
                     {/* <Box sx={{
                         display: "flex",
                         flexDirection: "row",

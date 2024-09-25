@@ -15,7 +15,7 @@ import {
     TextField
 } from '@mui/material'
 import { useAuth } from '../../contexts/AuthContext'
-import auth from '../../config/firebase'
+import { auth } from '../../config/firebase'
 import { v4 as uuidv4 } from "uuid"
 import CloseIcon from '@mui/icons-material/Close';
 
@@ -299,7 +299,7 @@ export default function AdminDashboard() {
                         alignItems: "center"
                     }}>
                         <Box>
-                        <Typography variant="h4">Students</Typography>
+                            <Typography variant="h4">Students</Typography>
                         </Box>
 
                         <TableContainer component={Paper}>
@@ -362,7 +362,7 @@ export default function AdminDashboard() {
                         alignItems: "center"
                     }}>
                         <Box>
-                        <Typography variant="h4">Instructors</Typography>
+                            <Typography variant="h4">Instructors</Typography>
                         </Box>
 
                         <TableContainer component={Paper}>
@@ -525,7 +525,7 @@ export default function AdminDashboard() {
                                 sx={{ my: 3 }}
                                 fullWidth
                                 value={email}
-                                 />
+                            />
 
                             <Box sx={{
                                 display: "flex",

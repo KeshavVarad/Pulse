@@ -19,7 +19,7 @@ import theme from './theme';
 import CssBaseline from '@mui/material/CssBaseline';
 import TeachingAssistant from './components/pages/TeachingAssistant';
 import LearnMore from './components/pages/LearnMore';
-
+import UserGuide from './components/pages/UserGuide';
 
 function App() {
 
@@ -47,7 +47,8 @@ function App() {
                 <Route exact path="/register_school" element={<Register />} />
                 <Route exact path="/register_user" element={<RegisterUser />} />
                 <Route exact path="/login" element={<Login />} />
-                <Route exact path="/learn-more" element={<LearnMore />} />
+                <Route exact path="/learn_more" element={<LearnMore />} />
+                <Route exact path="/user_guides" element={<UserGuide />} />
                 <Route exact path="/practical/:id" element={
                   <WithPrivateRoute>
                     <Practical />

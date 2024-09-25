@@ -2,7 +2,7 @@ import React, { useEffect, useState, useCallback } from 'react'
 
 import { useAuth } from '../../contexts/AuthContext.js';
 import { Button, Modal, Box, Typography, TextField } from '@mui/material'
-import auth from "../../config/firebase.js";
+import { auth } from "../../config/firebase.js";
 import AddIcon from '@mui/icons-material/Add';
 import DeleteIcon from '@mui/icons-material/Delete';
 import RestoreIcon from '@mui/icons-material/Restore';
@@ -330,7 +330,7 @@ export default function PracticalSettingsModal({ openState, handleClose, practic
                     </Typography>
 
                     {participantEmails.map((email, idx) => (
-                        <Box key={idx} sx={{ display: "flex", mt:2, justifyContent: "center", alignItems: "center" }}>
+                        <Box key={idx} sx={{ display: "flex", mt: 2, justifyContent: "center", alignItems: "center" }}>
                             <Typography variant='text' key={idx}>
                                 {email}
                             </Typography>
@@ -361,8 +361,8 @@ export default function PracticalSettingsModal({ openState, handleClose, practic
 
                     <Box sx={{
                         display: "flex",
-                        height:"10",
-                        mt:2,
+                        height: "10",
+                        mt: 2,
                     }}>
 
                         <TextField label="Add Participant"
@@ -370,7 +370,7 @@ export default function PracticalSettingsModal({ openState, handleClose, practic
                             variant="outlined"
                             color="secondary"
                             value={curParticipant}
-                            sx={{ height:"100%"}} />
+                            sx={{ height: "100%" }} />
 
                         <Button onClick={handleAddParticipantButton} variant="contianed" size="small">
                             <AddIcon />

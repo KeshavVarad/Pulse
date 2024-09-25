@@ -17,7 +17,7 @@ const Home = () => {
                 <Typography variant="body1" align="center" gutterBottom sx={{ color: '#777', lineHeight: 1.5 }}>
                     Pulse provides a robust mechanism for gathering and analyzing feedback from practical demonstrations, allowing medical schools to enhance their curricula and improve student learning outcomes.
                 </Typography>
-                <Button variant="contained" color="primary" sx={{ display: 'block', margin: '1rem auto', padding: '0.75rem 2rem' }} component={Link} to="/learn-more">
+                <Button variant="contained" color="primary" sx={{ display: 'block', margin: '1rem auto', padding: '0.75rem 2rem' }} component={Link} to="/learn_more">
                     Learn More
                 </Button>
             </Paper>

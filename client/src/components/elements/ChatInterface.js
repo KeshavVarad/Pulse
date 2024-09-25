@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { TextField, Button, List, ListItem, ListItemText, Paper } from '@mui/material';
 import { useAuth } from '../../contexts/AuthContext';
-import auth from '../../config/firebase';
+import { auth } from '../../config/firebase';
 import { format } from 'date-fns';
 import OpenAI from "openai";
 import ReactMarkdown from 'react-markdown';

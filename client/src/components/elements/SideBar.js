@@ -22,13 +22,14 @@ import { Link, useNavigate } from 'react-router-dom'
 import MonitorHeartIcon from '@mui/icons-material/MonitorHeart';
 import Joyride from 'react-joyride';
 import { useState, useEffect } from 'react';
-import auth from "../../config/firebase.js";
+import { auth } from "../../config/firebase.js";
 import { useAuth } from '../../contexts/AuthContext.js';
 import SmartToyIcon from '@mui/icons-material/SmartToy';
 import BugReportIcon from '@mui/icons-material/BugReport';
 import { CircularProgress, FormControl, InputLabel, Select, MenuItem } from '@mui/material';
 import axios from "axios"
 import LightbulbOutlinedIcon from '@mui/icons-material/LightbulbOutlined';
+import BookIcon from '@mui/icons-material/Book';
 
 
 const BugReportModal = ({ openModal, setOpenModal }) => {
@@ -409,6 +410,14 @@ export default function SideBar() {
                             <ListItemText primary={"Analytics"} />
                         </ListItemButton>
                     </ListItem> : <Box></Box>}
+
+                <ListItem key={"User Guides"} disablePadding>
+                    <ListItemButton component={Link} to={"/user_guides"}
+                        variant="contained" color="secondary">
+                        <ListItemIcon><BookIcon /></ListItemIcon>
+                        <ListItemText primary={"User Guides"} />
+                    </ListItemButton>
+                </ListItem>
 
 
 

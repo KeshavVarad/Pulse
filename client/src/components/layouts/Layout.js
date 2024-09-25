@@ -5,7 +5,7 @@ import { Box, Grid } from '@mui/material'
 import Header from '../elements/Header'
 import Joyride, { ACTIONS } from 'react-joyride'
 import { useState, useEffect } from 'react'
-import auth from '../../config/firebase'
+import { auth } from '../../config/firebase'
 import { useLocation } from 'react-router-dom'
 
 export default function Layout({ children }) {
