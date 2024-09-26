@@ -455,15 +455,16 @@ export default function Account() {
                         (
                             <div>
                                 <Box sx={{
-                                    py: 5,
+                                    py: 10,
                                     display: "flex",
                                     alignItems: "center",
                                     flexDirection: "column",
                                 }}>
-                                    <Typography variant="h3"> Shortcuts </Typography>
+                                    <Typography variant="h4"> Shortcuts </Typography>
+                                    <ShortcutManager />
                                 </Box>
 
-                                <ShortcutManager />
+                                
                             </div>
                         ) :
                         null

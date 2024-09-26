@@ -51,25 +51,26 @@ export default function Login() {
 
                 justifyContent: "center",
                 alignItems: "center",
-                mt: 5,
+                mt: 4,
                 width: '32%',
             }}>
                 <Box sx={{
-                    my: 2
+                    mt: 2,
+                    mb:4
                 }}>
-                    <Typography variant='h3'>
-                        Login To Your Account
-                    </Typography>
+                    <center><Typography variant='h2'>
+                        Login to your Account
+                    </Typography></center>
                 </Box>
 
                 <form onSubmit={handleFormSubmit}>
-                    <TextField label="Email"
+                    <TextField label="School Email"
                         onChange={e => setEmail(e.target.value)}
                         required
                         variant="outlined"
                         color="secondary"
                         type="email"
-                        sx={{ mb: 2 }}
+                        sx={{ mb: 3 }}
                         fullWidth
                         value={email} />
 
@@ -79,7 +80,7 @@ export default function Login() {
                         variant="outlined"
                         color="secondary"
                         type="password"
-                        sx={{ mb: 2 }}
+                        sx={{ mb: 3 }}
                         fullWidth
                         value={password} />
 
@@ -93,7 +94,7 @@ export default function Login() {
                             Login
                         </Button>
 
-                        <Button component={Link} to="/register_school" sx={{ mx: 1 }}>
+                        <Button component={Link} to="/register_school" sx={{ mx: 1, textTransform:'none'}}>
                             Don't have an account? Register
                         </Button>
                     </Box>

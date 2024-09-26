@@ -1,7 +1,7 @@
 import React from 'react'
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom';
-import { Box, Typography, TextField, Button } from '@mui/material'
+import { Box, Typography, TextField, Button, ButtonGroup } from '@mui/material'
 import { useAuth } from '../../contexts/AuthContext';
 import { useEffect } from "react";
 
@@ -17,8 +17,13 @@ export default function RegisterUser() {
     const navigate = useNavigate();
     const { currentUser, register, setError } = useAuth();
     const [loading, setLoading] = useState(false);
+    const [isInstructor, setIsInstructor] = useState(true)
+    const handleButtonClick = (button) => {
+        setIsInstructor(button);
+      };
 
     useEffect(() => {
+        
         if (currentUser) {
             navigate("/dashboard");
         }
@@ -56,6 +61,16 @@ export default function RegisterUser() {
             if (currentDate > inviteExpireDate) {
                 return setError("Your invite expired.")
             }
+            if (invite_data.role=="student") {
+                if(isInstructor){
+                    return setError("Your email was invited as a Student, please sign up as a Student or contact your Administrator")
+                }
+            }
+            else{
+                if(!isInstructor){
+                    return setError("Your email was invited as an Instructor, please sign up as an Instructor or contact your Administrator")
+                }
+            }
 
             await register(email, password, username, real_name, invite_data.role, invite_data.school_name, invite_data.school_id, invite_data.id, gradYear);
             navigate("/dashboard");
@@ -80,72 +95,115 @@ export default function RegisterUser() {
             <Box sx={{
                 justifyContent: "center",
                 alignItems: "center",
-                mt: 5,
+                mt: 4,
                 width: '32%',
 
             }}>
                 <Box sx={{
                     my: 2,
                     justifyItems: "center",
+                    alignItems:"center",
+                    display:"flex",
+                    flexDirection:"column",
+                    width:"100%"
                 }}>
-                    <Typography variant='h3'>
+                    <Typography variant='h2'>
                         Register Account
                     </Typography>
+                    <Box sx={{my:1}}>
+                    <Typography varient='h4'>
+                            Sign up as an...
+                    </Typography>
+                    </Box>
+
+
+                    <Box sx={{
+                        justifyItems: "center",
+                        alignItems:"center",
+                        display:"flex",
+                        flexDirection:"column",
+                        minWidth:"100%"
+                        }}>
+
+                    <ButtonGroup
+                    minWidth="100%"
+                    disableElevation
+                    disableRipple
+                    >
+                    <Button onClick={()=>handleButtonClick(true)} variant={
+                        (isInstructor)? "contained":"outlined"
+                    } sx={{width:"150px"}}>Instructor</Button>
+
+
+
+                    <Button onClick={()=>handleButtonClick(false)}variant={
+                        (isInstructor)? "outlined":"contained"
+                    }sx={{width:"150px"}}>Student</Button>
+
+
+                    </ButtonGroup>
+
+                    
+                    </Box>
+
+
                 </Box>
+
 
                 <form onSubmit={handleFormSubmit}>
                     <TextField label="Username"
                         onChange={e => setUsername(e.target.value)}
                         required
-                        variant="outlined"
+                        variant="standard"
                         color="secondary"
-                        sx={{ mb: 2 }}
+                        sx={{ mb: 1.2}}
                         fullWidth
-                        value={username} />
+                        value={username} 
+                        />
                     <TextField label="Full Name"
                         onChange={e => setRealName(e.target.value)}
                         required
-                        variant="outlined"
+                        variant="standard"
                         color="secondary"
-                        sx={{ mb: 2 }}
+                        sx={{ mb: 1.2 }}
                         fullWidth
                         value={real_name} />
-
-                    <TextField label="Graduation Year (For Students)"
+                    {(!isInstructor)?(<TextField label="Graduation Year"
                         onChange={e => setGradYear(e.target.value)}
-                        variant="outlined"
+                        required
+                        variant="standard"
                         color="secondary"
-                        sx={{ mb: 2 }}
+                        sx={{ mb: 1.2 }}
                         fullWidth
-                        value={gradYear} />
+                        value={gradYear} />):(<Box></Box>)}
 
-                    <TextField label="Email"
+                    <TextField label="School Email"
                         onChange={e => setEmail(e.target.value)}
                         required
-                        variant="outlined"
+                        variant="standard"
                         color="secondary"
                         type="email"
-                        sx={{ mb: 2 }}
+                        sx={{ mb: 1.2 }}
                         fullWidth
                         value={email} />
 
                     <TextField label="Password"
                         onChange={e => setPassword(e.target.value)}
                         required
-                        variant="outlined"
+                        variant="standard"
                         color="secondary"
                         type="password"
-                        sx={{ mb: 2 }}
+                        sx={{ mb: 1.2 }}
                         fullWidth
                         value={password} />
 
                     <TextField label="Confirm Password"
                         onChange={e => setConfirmPassword(e.target.value)}
                         required
-                        variant="outlined"
+                        variant="standard"
                         color="secondary"
                         type="password"
-                        sx={{ mb: 2 }}
+                        sx={{ mb: 1.2 }}
                         fullWidth
                         value={confirmPassword}
                         error={password !== confirmPassword} />
@@ -155,13 +213,14 @@ export default function RegisterUser() {
                         flexDirection: "row",
                         justifyContent: "center",
                         alignItems: "center",
+                        my:2
                     }}>
                         <Button variant='contained' type='submit' disabled={loading} sx={{ mx: 1 }}>
                             Register
                         </Button>
 
-                        <Button component={Link} to="/login" sx={{ mx: 1 }}>
-                            Already have an account? Login
+                        <Button component={Link} to="/login" sx={{ mx: 1, textTransform: 'none'}}>
+                            Already have an Account? Login
                         </Button>
                     </Box>
 
