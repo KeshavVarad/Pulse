@@ -237,6 +237,8 @@ const LineChartComponent = ({ data, isDemo }) => {
 const PracticalChart = ({ practicalData }) => {
     const taskNames = Array.from(new Set(practicalData.flatMap((p) => p.tasks.map((t) => t.name))));
 
+    console.log(taskNames)
+
     const [selectedTasks, setSelectedTasks] = useState([]);
     const [chartData, setChartData] = useState({
         labels: [], // No labels initially
@@ -311,15 +313,6 @@ const PracticalChart = ({ practicalData }) => {
         }
         // Only run this effect when taskNames changes
     }, [taskNames.length]);
-
-
-    // Handle task selection
-    const handleTaskSelection = (event) => {
-        const value = event.target.value;
-        setSelectedTasks(value);
-        prepareChartData(value);
-    };
-
 
     return (
         <div>
@@ -537,8 +530,6 @@ export default function Analytics() {
 
                 setCohortPlotData(cohorts_plot_data)
 
-                console.log(cohorts_plot_data)
-
                 setCohortYears(cohort_years)
                 setCohortAvgs(cohort_data)
                 setLoading(false)
@@ -586,12 +577,11 @@ export default function Analytics() {
                 let practicalData = []
 
                 if (userData) {
-                    const practical_res = await fetch(`${process.env.REACT_APP_API_HOST}/api/practical/student/${userData.id}`, requestOptions);
+                    const practical_res = await fetch(`${process.env.REACT_APP_API_HOST}/api/practical/${userData.role}/${userData.id}`, requestOptions);
                     practicalData = await practical_res.json()
                 }
 
                 setPracticalPerformanceData(practicalData)
-
             } catch (e) {
                 console.log(e);
             }

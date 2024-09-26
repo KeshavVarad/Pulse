@@ -117,7 +117,6 @@ export const getStudentPracticals = async (req, res, next) => {
                 );
                 practicalArray.push(practical);
             });
-
             res.status(200).send(practicalArray);
         }
     } catch (error) {
