@@ -1,13 +1,75 @@
 import React from 'react'
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom';
-import { Box, Typography, TextField, Button } from '@mui/material'
+import { Box, Typography, TextField, Button, Input, LinearProgress, Snackbar } from '@mui/material'
 import { useAuth } from '../../contexts/AuthContext';
 import { useEffect } from "react";
 import { auth } from "../../config/firebase.js";
 import { v4 as uuidv4 } from 'uuid';
 import DeleteIcon from '@mui/icons-material/Delete';
 import Joyride from 'react-joyride';
+import axios from "axios";
+
+const UploadVideo = ({ setVideoLink }) => {
+    const [file, setFile] = useState(null);
+    const [error, setError] = useState(null);
+    const [loading, setLoading] = useState(false);
+
+    const handleFileChange = (event) => {
+        setFile(event.target.files[0]);
+        setError(null); // Reset error on new file selection
+    };
+
+    const handleUpload = async () => {
+        if (!file) {
+            setError('Please select a video file.');
+            return;
+        }
+
+        setLoading(true);
+        setError(null);
+
+        const formData = new FormData();
+        formData.append('video', file);
+
+        try {
+            // Post the video file to your backend to upload it to Google Cloud
+            const response = await axios.post(`${process.env.REACT_APP_API_HOST}/api/upload`, formData, {
+                headers: {
+                    'Content-Type': 'multipart/form-data',
+                },
+            });
+
+            // Assuming the backend sends the public URL of the uploaded video
+            const { videoUrl } = response.data;
+            setVideoLink(videoUrl); // Store the URL in state (or pass it up to a parent component)
+        } catch (err) {
+            console.error('Upload error:', err.response ? err.response.data : err.message);
+            setError('Error during video upload: ' + (err.response ? err.response.data.error : err.message));
+        } finally {
+            setLoading(false);
+        }
+    };
+
+
+    return (
+        <Box sx={{ mb: 3 }}>
+            <Typography variant="h6">Upload Video</Typography>
+            <input type="file" accept="video/mp4" onChange={handleFileChange} />
+            <Button
+                variant="contained"
+                onClick={handleUpload}
+                disabled={loading}
+                sx={{ mt: 2 }}
+            >
+                {loading ? 'Uploading...' : 'Upload'}
+            </Button>
+            {error && <Typography color="error">{error}</Typography>}
+        </Box>
+    );
+};
+
+
 
 export default function MakePractical() {
 
@@ -15,23 +77,16 @@ export default function MakePractical() {
     const [videoLink, setVideoLink] = useState("");
     const [participants, setParticipants] = useState([]);
     const [participantIds, setParticipantIds] = useState([]);
-
     const [curParticipant, setCurParticipant] = useState("");
-
     const [instructor, setInstructor] = useState("");
     const [isInstructor, setIsInstructor] = useState(true);
-
-
     const navigate = useNavigate();
-    const { currentUser, login, setError } = useAuth();
+    const { currentUser, setError } = useAuth();
     const [loading, setLoading] = useState(false);
-
-    const [makePracticalTutorial, setMakePracticalTutorial] = useState(true)
+    const [makePracticalTutorial, setMakePracticalTutorial] = useState(true);
     const [isMakePracticalMounted, setMakePracticalMounted] = useState(false);
-
-    const [schoolStudents, setSchoolStudents] = useState([])
-    const [schoolInstructors, setSchoolInstructors] = useState([])
-
+    const [schoolStudents, setSchoolStudents] = useState([]);
+    const [schoolInstructors, setSchoolInstructors] = useState([]);
 
 
     const handleAddParticipant = async () => {
@@ -69,6 +124,7 @@ export default function MakePractical() {
 
     async function handleFormSubmit(e) {
         e.preventDefault();
+
 
         if (schoolInstructors.findIndex((school_instructor) => school_instructor.email == instructor) == -1) {
             return setError("Instructor not in school.")
@@ -380,15 +436,12 @@ export default function MakePractical() {
                         fullWidth
                         value={practicalName} />
 
-                    <TextField label="Video Link"
-                        onChange={e => setVideoLink(e.target.value)}
-                        required
-                        className='new_practical_video_link'
-                        variant="outlined"
-                        color="secondary"
-                        sx={{ mb: 3 }}
-                        fullWidth
-                        value={videoLink} />
+                    <Box sx={{ mb: 3, border: '1px solid #ccc', borderRadius: 2, padding: 2, backgroundColor: '#f9f9f9' }}>
+                        <Typography variant="h6" sx={{ mb: 2, fontWeight: 'bold' }}>
+                            Upload Video
+                        </Typography>
+                        <UploadVideo setVideoLink={setVideoLink} />
+                    </Box>
 
                     <Box
                         className='new_practical_participants'

@@ -7,10 +7,12 @@ import { auth } from "../../config/firebase.js";
 import { v4 as uuidv4 } from 'uuid';
 
 import YouTube from "react-youtube"
-import { Modal, List, ListItem, ListItemText, ButtonGroup, Grid, Typography, Box, Button, TextField, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Autocomplete } from "@mui/material"
+import { Modal, List, ListItem, ListItemText, Slider, ButtonGroup, Grid, Typography, Box, Button, TextField, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Autocomplete } from "@mui/material"
 import DeleteIcon from '@mui/icons-material/Delete';
 import InsertCommentIcon from '@mui/icons-material/InsertComment';
 import SendIcon from '@mui/icons-material/Send';
+import GCloudVideoPlayer from "../elements/GCloudVideoPlayer.js";
+
 
 export default function InstructorPractical() {
 
@@ -38,6 +40,7 @@ export default function InstructorPractical() {
     const videoRef = useRef(null);
     const [videoTimeStamp, setVideoTimeStamp] = useState(0)
     const [player, setPlayer] = useState(null);
+    const [videoLink, setVideoLink] = useState("");
 
     // Task state
     const [tasks, setTasks] = useState([])
@@ -54,6 +57,48 @@ export default function InstructorPractical() {
 
     // Message state
     const [curMessage, setMessage] = useState("")
+
+    // GCloud specific state variables
+    const [gcloudVideoTimeStamp, setGcloudVideoTimeStamp] = useState(0);
+    const [gcloudPlayer, setGcloudPlayer] = useState(null);
+    const gcloudVideoRef = useRef(null);
+
+    const checkGCloudVideoTime = useCallback(() => {
+        if (gcloudPlayer && gcloudPlayer.getCurrentTime) {
+            const currentTime = gcloudPlayer.getCurrentTime();
+            setGcloudVideoTimeStamp(currentTime);
+        }
+    }, [gcloudPlayer]);
+
+    const handleGCloudVideoChange = (playedSeconds) => {
+        setGcloudVideoTimeStamp(playedSeconds); // Set the current timestamp directly
+    };
+
+
+    useEffect(() => {
+        let interval;
+        if (gcloudPlayer) {
+            interval = setInterval(checkGCloudVideoTime, 250); // Check every 250ms
+        }
+        return () => {
+            if (interval) {
+                clearInterval(interval);
+            }
+        };
+    }, [gcloudPlayer]);
+
+    const getVideoSourceType = (videoUrl) => {
+        const youtubePattern = /(?:https?:\/\/)?(?:www\.)?(youtube\.com|youtu\.be)/;
+        const gcloudPattern = /https:\/\/storage\.googleapis\.com\/.+/;
+
+        if (youtubePattern.test(videoUrl)) {
+            return 'youtube';
+        } else if (gcloudPattern.test(videoUrl)) {
+            return 'gcloud';
+        } else {
+            return 'unknown';
+        }
+    };
 
 
     const createNotification = async (notificationData) => {
@@ -172,7 +217,6 @@ export default function InstructorPractical() {
     const handleVideoChange = async (e) => {
         const curTime = await e.target.getCurrentTime();
 
-
         setVideoTimeStamp(curTime)
     }
 
@@ -189,7 +233,7 @@ export default function InstructorPractical() {
             id: commentId,
             task: task.name,
             rating: rating,
-            timestamp: videoTimeStamp,
+            timestamp: getVideoSourceType(videoLink) === "youtube" ? videoTimeStamp : gcloudVideoTimeStamp,
             feedback: "",
             replies: []
         }
@@ -707,6 +751,7 @@ export default function InstructorPractical() {
 
             const videoParams = practical.video_link.split("/")
             setVideoId(videoParams[videoParams.length - 1])
+            setVideoLink(practical.video_link)
 
             const tasks = practical.tasks
             setTasks(tasks)
@@ -800,7 +845,15 @@ export default function InstructorPractical() {
                             width: "65%"
 
                         }}>
-                            <YouTube videoId={videoId} onStateChange={handleVideoChange} opts={video_opts} ref={videoRef} onReady={(event) => { setPlayer(event.target); }} />
+                            {(getVideoSourceType(videoLink) === "youtube") ?
+                                (<YouTube videoId={videoId} onStateChange={handleVideoChange} opts={video_opts} ref={videoRef} onReady={(event) => { setPlayer(event.target); }} />) :
+                                (<GCloudVideoPlayer
+                                    videoLink={videoLink}
+                                    onPlayerReady={setGcloudPlayer}
+                                    onVideoChange={handleGCloudVideoChange}
+                                    ref={gcloudVideoRef}
+                                />)}
+
                         </Box>
 
                         <Box sx={{

@@ -15,6 +15,9 @@ import { BarChart } from '@mui/x-charts/BarChart';
 import StudentDisplayComments from "../elements/StudentDisplayComments.js"
 import { grey } from "@mui/material/colors";
 
+import GCloudVideoPlayer from "../elements/GCloudVideoPlayer.js";
+
+
 export default function StudentPractical() {
 
     const { currentUser } = useAuth();
@@ -52,6 +55,49 @@ export default function StudentPractical() {
     const [redCount, setRedCount] = useState(0)
     const [yellowCount, setYellowCount] = useState(0)
     const [greenCount, setGreenCount] = useState(0)
+
+    // GCloud specific state variables
+    const [gcloudVideoTimeStamp, setGcloudVideoTimeStamp] = useState(0);
+    const [gcloudPlayer, setGcloudPlayer] = useState(null);
+    const gcloudVideoRef = useRef(null);
+    const [videoLink, setVideoLink] = useState("");
+
+    const checkGCloudVideoTime = useCallback(() => {
+        if (gcloudPlayer && gcloudPlayer.getCurrentTime) {
+            const currentTime = gcloudPlayer.getCurrentTime();
+            setGcloudVideoTimeStamp(currentTime);
+        }
+    }, [gcloudPlayer]);
+
+    const handleGCloudVideoChange = (playedSeconds) => {
+        setGcloudVideoTimeStamp(playedSeconds); // Set the current timestamp directly
+    };
+
+
+    useEffect(() => {
+        let interval;
+        if (gcloudPlayer) {
+            interval = setInterval(checkGCloudVideoTime, 250); // Check every 250ms
+        }
+        return () => {
+            if (interval) {
+                clearInterval(interval);
+            }
+        };
+    }, [gcloudPlayer]);
+
+    const getVideoSourceType = (videoUrl) => {
+        const youtubePattern = /(?:https?:\/\/)?(?:www\.)?(youtube\.com|youtu\.be)/;
+        const gcloudPattern = /https:\/\/storage\.googleapis\.com\/.+/;
+
+        if (youtubePattern.test(videoUrl)) {
+            return 'youtube';
+        } else if (gcloudPattern.test(videoUrl)) {
+            return 'gcloud';
+        } else {
+            return 'unknown';
+        }
+    };
 
 
     const handleChangeDisplayTask = (e) => {
@@ -389,6 +435,7 @@ export default function StudentPractical() {
             setTasks(practical.tasks)
             setParticipants(practical.user_participants)
             setInstructorId(practical.user_instructor_id)
+            setVideoLink(practical.video_link)
 
             let newTaskNames = []
 
@@ -438,7 +485,7 @@ export default function StudentPractical() {
             }
         };
 
-    }, [player])
+    }, [player, gcloudPlayer])
 
     const video_opts = {
         height: '468',
@@ -493,9 +540,14 @@ export default function StudentPractical() {
                         justifyContent: "space-between"
 
                     }}>
-                        <YouTube videoId={videoId} opts={video_opts} ref={videoRef} onReady={(event) => { setPlayer(event.target); }} />
-
-
+                        {(getVideoSourceType(videoLink) === "youtube") ?
+                            (<YouTube videoId={videoId} opts={video_opts} ref={videoRef} onReady={(event) => { setPlayer(event.target); }} />) :
+                            (<GCloudVideoPlayer
+                                videoLink={videoLink}
+                                onPlayerReady={setGcloudPlayer}
+                                onVideoChange={handleGCloudVideoChange}
+                                ref={gcloudVideoRef}
+                            />)}
 
                         <Box sx={{
                             width: "100%",
@@ -540,9 +592,9 @@ export default function StudentPractical() {
 
                     <CommentTimeline
                         comments={comments}
-                        videoLength={player ? player.getDuration() : 0}
-                        currentTime={currentTime}
-                        onSeek={(timestamp) => player && player.seekTo(timestamp)}
+                        videoLength={(getVideoSourceType(videoLink) === "youtube") ? (player ? player.getDuration() : 0) : (gcloudPlayer ? gcloudPlayer.getDuration() : 0)}
+                        currentTime={(getVideoSourceType(videoLink) === "youtube") ? currentTime : gcloudVideoTimeStamp}
+                        onSeek={(getVideoSourceType(videoLink) === "youtube") ? ((timestamp) => player && player.seekTo(timestamp)) : ((timestamp) => gcloudPlayer && gcloudPlayer.seekTo(timestamp))}
                         tasks={tasks}
                     />
 
