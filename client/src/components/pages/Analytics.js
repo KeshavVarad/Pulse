@@ -636,7 +636,7 @@ export default function Analytics() {
                     (<Box sx={{
                         width: "75%",
                         height: "100%",
-                        py: 5
+                        py: 0
                     }}>
                         <PracticalChart practicalData={practicalPerformanceData} />
                     </Box>)}
