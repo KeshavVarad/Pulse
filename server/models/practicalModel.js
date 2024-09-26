@@ -16,7 +16,8 @@ class Practical {
         green_count,
         avg_rating,
         school_id,
-        cohort_year
+        cohort_year,
+        transcript_link
     ) {
         (this.id = id),
             (this.practical_name = practical_name),
@@ -34,7 +35,8 @@ class Practical {
             (this.green_count = green_count),
             (this.avg_rating = avg_rating),
             (this.school_id = school_id),
-            (this.cohort_year = cohort_year);
+            (this.cohort_year = cohort_year),
+            (this.transcript_link = transcript_link);
     }
 }
 
