@@ -410,6 +410,7 @@ export default function UserDashboard() {
                 alignItems: "center",
                 pt: 8,
                 flexDirection: "column",
+                
             }}>
                 <Box sx={{
                     py: 5
@@ -419,7 +420,8 @@ export default function UserDashboard() {
 
                 <Box sx={{
                     display: "flex",
-                    width: "100%",
+                    maxWidth: "80%",
+                    minWidth: "80%",
                 }}>
 
                     {isInstructor ? (
