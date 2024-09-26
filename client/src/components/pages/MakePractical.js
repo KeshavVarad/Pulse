@@ -53,18 +53,24 @@ const UploadVideo = ({ setVideoLink }) => {
 
 
     return (
-        <Box sx={{ mb: 3 }}>
-            <Typography variant="h6">Upload Video</Typography>
-            <input type="file" accept="video/mp4" onChange={handleFileChange} />
+        <Box sx={{ my: 1,display:"flex", flexDirection:"column", justifyItems:"center", alignItems:"center" }}>
+            <Box sx={{mb:2}}><Typography variant="h6">Upload Video</Typography>
+                </Box>
+            <Box sx={{width:"85%"}}>
+            <input type="file" accept="video/mp4" onChange={handleFileChange} sx={{}}/>
+            </Box>
+            
+
             <Button
                 variant="contained"
+                size="small"
                 onClick={handleUpload}
                 disabled={loading}
-                sx={{ mt: 2 }}
+                sx={{ mt: 2, width:"50%"}}
             >
                 {loading ? 'Uploading...' : 'Upload'}
             </Button>
-            {error && <Typography color="error">{error}</Typography>}
+            {error && <Box sx={{mt:2}}><Typography variant="h7" color="error">{error}</Typography></Box>}
         </Box>
     );
 };
@@ -426,6 +432,9 @@ export default function MakePractical() {
                 </Box>
 
                 <form onSubmit={handleFormSubmit}>
+                <Box sx={{ mb: 3, border: '1px solid #ccc', borderRadius: 4, padding: 2, backgroundColor: '#F4F4F4' }}>
+                        <UploadVideo setVideoLink={setVideoLink} />
+                    </Box>
                     <TextField label="Name"
                         onChange={e => setPracticalName(e.target.value)}
                         required
@@ -436,12 +445,6 @@ export default function MakePractical() {
                         fullWidth
                         value={practicalName} />
 
-                    <Box sx={{ mb: 3, border: '1px solid #ccc', borderRadius: 2, padding: 2, backgroundColor: '#f9f9f9' }}>
-                        <Typography variant="h6" sx={{ mb: 2, fontWeight: 'bold' }}>
-                            Upload Video
-                        </Typography>
-                        <UploadVideo setVideoLink={setVideoLink} />
-                    </Box>
 
                     <Box
                         className='new_practical_participants'
@@ -451,7 +454,7 @@ export default function MakePractical() {
                             justifyContent: "center",
                             alignItems: "center",
                         }}>
-                        <TextField label="Student"
+                        <TextField label="Students"
                             onChange={e => setCurParticipant(e.target.value)}
                             variant="outlined"
                             color="secondary"
