@@ -259,14 +259,17 @@ export default function InstructorPractical() {
             newComments.push(commentId)
 
             let newTasks = practical.tasks
+            
             let newSchoolTaskData = schoolTaskData.slice()
             let taskIndex = newTasks.findIndex(t => t.name == task.name)
             let schoolDataTaskIndex = newSchoolTaskData[cohortInd].data[yearInd].data.findIndex(data => data.name == task.name)
 
             let practicalUpdateData = { comments: newComments }
 
-            let rating_sum = 1 * practical.red_count + 3 * practical.yellow_count + 5 * practical.green_count
+            
 
+            let rating_sum = 1 * practical.red_count + 3 * practical.yellow_count + 5 * practical.green_count
+            
             if (rating == 1) {
                 practicalUpdateData.red_count = practical.red_count + 1
                 newTasks[taskIndex].red_count += 1
@@ -306,6 +309,8 @@ export default function InstructorPractical() {
             practicalUpdateData.tasks = newTasks
             setTasks(newTasks)
             setSchoolTaskData(newSchoolTaskData)
+            console.log(rating_sum)
+            // BUG HERE ABOVE
 
             const updatePracticalRequestOptions = {
                 method: "PUT",
@@ -842,7 +847,7 @@ export default function InstructorPractical() {
                     }}>
                         <Box sx={{
                             display: "absolute",
-                            width: "65%"
+                            width: "60%"
 
                         }}>
                             {(getVideoSourceType(videoLink) === "youtube") ?
@@ -859,9 +864,11 @@ export default function InstructorPractical() {
                         <Box sx={{
                             display: "flex",
                             flexDirection: "column",
-                            maxWidth: "35%",
+                            maxWidth: "40%",
+                            minWidth: "40%",
                             justifyContent: "space-between",
                             alignItems: "center",
+                            px:5,
 
                         }}>
                             <Typography variant="h4">
@@ -871,7 +878,7 @@ export default function InstructorPractical() {
                             {tasks.map(task => (
                                 <Box sx={{
                                     width: "100%",
-                                    display: "absolute",
+                                    display: "flex",
                                     flexDirection: "row",
                                     justifyContent: "space-between",
                                     alignItems: "center",
@@ -882,23 +889,28 @@ export default function InstructorPractical() {
                                         display: "flex",
                                         flexDirection: "row",
                                         width: "100%",
+                                        justifyItems:"center",
                                         alignItems: "center",
+                                        justifyContent:"center",
                                     }}>
 
                                         <Box sx={{
-                                            width: "200px", display: "absolute"
+                                            width: "200px",
+                                            height:"100%",
+                                            pl:2,
                                         }}>
                                             <Typography variant="h7">{task.name}</Typography>
                                         </Box>
-                                        <Box sx={{ width: "180px", display: "absolute" }}>
+
+                                        <Box sx={{ minWidth: "210px", maxWidth: "210px", p:0}}>
                                             <ButtonGroup variant="contained" aria-label="Basic button group" >
-                                                <Button onClick={() => { handleRating(task, 1) }} variant="contained" color="red" size="small" disableElevation>Red</Button>
-                                                <Button onClick={() => { handleRating(task, 3) }} variant="contained" color="yellow" size="small" disableElevation>Yellow</Button>
-                                                <Button onClick={() => { handleRating(task, 5) }} variant="contained" color="green" size="small" disableElevation>Green</Button>
+                                                <Button onClick={() => { handleRating(task, 1) }} variant="contained" color="red"  disableElevation sx={{width:"70px"}}>Red</Button>
+                                                <Button onClick={() => { handleRating(task, 3) }} variant="contained" color="yellow" disableElevation sx={{width:"70px"}}>Yellow</Button>
+                                                <Button onClick={() => { handleRating(task, 5) }} variant="contained" color="green" disableElevation sx={{width:"70px"}}>Green</Button>
                                             </ButtonGroup>
                                         </Box>
 
-                                        <Box sx={{ width: "10%" }}>
+                                        <Box sx={{ width: "30px", height:"100%"}}>
                                             <Button onClick={() => handleTaskChatButton(task)}>
                                                 <InsertCommentIcon />
                                             </Button>
@@ -938,6 +950,7 @@ export default function InstructorPractical() {
                                         }}
 
                                         value={newTask} />)}
+                                    size="small"
                                 />
 
 
@@ -1038,7 +1051,7 @@ export default function InstructorPractical() {
                     transform: "translate(-50%, -50%)",
                     width: 800,
                     bgcolor: "background.paper",
-                    border: "2px solid #000",
+                    borderRadius:"10px",
                     boxShadow: 24,
                     p: 4,
                 }}>
