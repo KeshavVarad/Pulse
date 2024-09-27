@@ -60,7 +60,7 @@ const UploadVideo = ({ setVideoLink, practicalId }) => {
         <Box sx={{ my: 1, display: "flex", flexDirection: "column", justifyItems: "center", alignItems: "center" }}>
             <Box sx={{ mb: 2 }}><Typography variant="h6">Upload Video</Typography>
             </Box>
-            <Box sx={{ width: "85%" }}>
+            <Box sx={{ width: "70%" }}>
                 <input type="file" accept="video/mp4" onChange={handleFileChange} sx={{}} />
             </Box>
 
@@ -306,7 +306,7 @@ export default function MakePractical() {
                 }
 
                 const user_res = await fetch(`${process.env.REACT_APP_API_HOST}/api/user/${userId}`, requestOptions);
-
+                console.log(user_res)
                 if (user_res.status == 404) {
                     setMakePracticalTutorial(true)
                 }
@@ -319,6 +319,10 @@ export default function MakePractical() {
                         setInstructor(userData.email);
                         setIsInstructor(true);
                     }
+                    else {
+                        setIsInstructor(false);
+                    }
+                    console.log(userData.role)
                 }
 
 
@@ -436,7 +440,8 @@ export default function MakePractical() {
                 flexDirection: "column"
             }}>
                 <Box sx={{
-                    py: 5
+                    pt: 5,
+                    pb: 3
                 }}>
                     <Typography variant='h3'>
                         Create a Practical
@@ -453,7 +458,7 @@ export default function MakePractical() {
                         className='new_practical_name'
                         variant="outlined"
                         color="secondary"
-                        sx={{ mb: 3 }}
+                        sx={{ mb: 2 }}
                         fullWidth
                         value={practicalName} />
 
@@ -484,14 +489,14 @@ export default function MakePractical() {
                         flexDirection: "column",
                         justifyContent: "center",
                         alignItems: "center",
-                        mb: 3
+                        mb: 2
                     }}>
 
                         {participants.map((participant, idx) => (
                             <Box
                                 sx={{
                                     display: "flex",
-                                    pt: 2,
+                                    pt: 1,
                                     alignItems: "center"
                                 }}>
                                 <Typography variant='text'>
@@ -511,7 +516,7 @@ export default function MakePractical() {
                         required
                         variant="outlined"
                         color="secondary"
-                        sx={{ mb: 3 }}
+                        sx={{ mb: 2 }}
                         fullWidth
                         value={instructor} /> : null}
 

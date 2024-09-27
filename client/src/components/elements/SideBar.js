@@ -294,7 +294,7 @@ export default function SideBar() {
         try {
             setError("");
             await logout();
-            navigate("/home");
+            navigate("/");
         } catch {
             setError("Failed to logout");
         }

@@ -1,6 +1,15 @@
 # Adding Students, Instructors, and Admins to Your School
 
 ---
+
+In this Guide:
+- [Adding Students, Instructors, and Admins to Your School](#adding-students-instructors-and-admins-to-your-school)
+  - [Adding Students](#adding-students)
+  - [Adding Instructors](#adding-instructors)
+  - [Adding Other Admins](#adding-other-admins)
+
+---
+
 >Any Admin can add other Students, Instructors, or other Admins to their School.
 
 Login to your Admin account and navigate to your **Dashboard**.
