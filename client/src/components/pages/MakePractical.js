@@ -10,7 +10,7 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import Joyride from 'react-joyride';
 import axios from "axios";
 
-const UploadVideo = ({ setVideoLink }) => {
+const UploadVideo = ({ setVideoLink, practicalId }) => {
     const [file, setFile] = useState(null);
     const [error, setError] = useState(null);
     const [loading, setLoading] = useState(false);
@@ -34,14 +34,18 @@ const UploadVideo = ({ setVideoLink }) => {
 
         try {
             // Post the video file to your backend to upload it to Google Cloud
-            const response = await axios.post(`${process.env.REACT_APP_API_HOST}/api/upload`, formData, {
+            const videoResponse = await axios.post(`${process.env.REACT_APP_API_HOST}/api/upload`, formData, {
                 headers: {
                     'Content-Type': 'multipart/form-data',
                 },
             });
 
             // Assuming the backend sends the public URL of the uploaded video
-            const { videoUrl } = response.data;
+            const { videoUrl } = videoResponse.data;
+
+
+            // await axios.post(`${process.env.REACT_APP_API_HOST}/api/transcribe`, { videoUrl, practicalId });
+
             setVideoLink(videoUrl); // Store the URL in state (or pass it up to a parent component)
         } catch (err) {
             console.error('Upload error:', err.response ? err.response.data : err.message);
@@ -53,24 +57,24 @@ const UploadVideo = ({ setVideoLink }) => {
 
 
     return (
-        <Box sx={{ my: 1,display:"flex", flexDirection:"column", justifyItems:"center", alignItems:"center" }}>
-            <Box sx={{mb:2}}><Typography variant="h6">Upload Video</Typography>
-                </Box>
-            <Box sx={{width:"85%"}}>
-            <input type="file" accept="video/mp4" onChange={handleFileChange} sx={{}}/>
+        <Box sx={{ my: 1, display: "flex", flexDirection: "column", justifyItems: "center", alignItems: "center" }}>
+            <Box sx={{ mb: 2 }}><Typography variant="h6">Upload Video</Typography>
             </Box>
-            
+            <Box sx={{ width: "85%" }}>
+                <input type="file" accept="video/mp4" onChange={handleFileChange} sx={{}} />
+            </Box>
+
 
             <Button
                 variant="contained"
                 size="small"
                 onClick={handleUpload}
                 disabled={loading}
-                sx={{ mt: 2, width:"50%"}}
+                sx={{ mt: 2, width: "50%" }}
             >
                 {loading ? 'Uploading...' : 'Upload'}
             </Button>
-            {error && <Box sx={{mt:2}}><Typography variant="h7" color="error">{error}</Typography></Box>}
+            {error && <Box sx={{ mt: 2 }}><Typography variant="h7" color="error">{error}</Typography></Box>}
         </Box>
     );
 };
@@ -81,6 +85,7 @@ export default function MakePractical() {
 
     const [practicalName, setPracticalName] = useState("");
     const [videoLink, setVideoLink] = useState("");
+
     const [participants, setParticipants] = useState([]);
     const [participantIds, setParticipantIds] = useState([]);
     const [curParticipant, setCurParticipant] = useState("");
@@ -93,6 +98,14 @@ export default function MakePractical() {
     const [isMakePracticalMounted, setMakePracticalMounted] = useState(false);
     const [schoolStudents, setSchoolStudents] = useState([]);
     const [schoolInstructors, setSchoolInstructors] = useState([]);
+
+    const [practicalId, setPracticalId] = useState();
+
+    useEffect(() => {
+        if (!practicalId) {
+            setPracticalId(uuidv4())
+        }
+    }, [practicalId])
 
 
     const handleAddParticipant = async () => {
@@ -139,8 +152,6 @@ export default function MakePractical() {
         try {
             const user = auth.currentUser;
             const token = user && (await user.getIdToken());
-
-            const practicalId = uuidv4()
 
             const creation_date = Date.now()
             const user_creator = user.uid
@@ -212,7 +223,8 @@ export default function MakePractical() {
                 green_count: 0,
                 avg_rating: 0,
                 school_id: instructorData[0].school_id,
-                cohort_year: participant_year
+                cohort_year: participant_year,
+                transcript_link: "No Transcript"
             }
 
             const createNewPracticalOptions = {
@@ -432,8 +444,8 @@ export default function MakePractical() {
                 </Box>
 
                 <form onSubmit={handleFormSubmit}>
-                <Box sx={{ mb: 3, border: '1px solid #ccc', borderRadius: 4, padding: 2, backgroundColor: '#F4F4F4' }}>
-                        <UploadVideo setVideoLink={setVideoLink} />
+                    <Box sx={{ mb: 3, border: '1px solid #ccc', borderRadius: 4, padding: 2, backgroundColor: '#F4F4F4' }}>
+                        <UploadVideo setVideoLink={setVideoLink} practicalId={practicalId} />
                     </Box>
                     <TextField label="Name"
                         onChange={e => setPracticalName(e.target.value)}
