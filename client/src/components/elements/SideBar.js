@@ -412,7 +412,7 @@ export default function SideBar() {
                 </ListItem>
 
                 <ListItem key={"User Guides"} disablePadding>
-                    <ListItemButton component={Link} to={"/user_guides"}
+                    <ListItemButton component={Link} to={"/tutorials"}
                         variant="contained" color="secondary">
                         <ListItemIcon><BookIcon /></ListItemIcon>
                         <ListItemText primary={"User Guides"} />

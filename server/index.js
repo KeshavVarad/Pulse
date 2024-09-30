@@ -104,6 +104,25 @@ app.use(function (req, res, next) {
     next();
 });
 
+app.get('/api/user_guides/:role', (req, res) => {
+    const role = req.params.role;
+
+    let tutorialsDir = path.join(__dirname, './build', 'user_guides', role);
+
+
+    if (process.env.MODE == "dev") {
+        tutorialsDir = path.join(__dirname, '../client/public', 'user_guides', role);
+    }
+
+    fs.readdir(tutorialsDir, (err, folders) => {
+        if (err) {
+            return res.status(500).send(`Error reading tutorials directory: ${err}`);
+        }
+        res.json(folders); // Send folder names
+    });
+});
+
+
 
 app.use('/api', userRoute);
 app.use('/api', practicalRoute);
@@ -248,6 +267,32 @@ transcriptionQueue.process(async (job) => {
     }
 });
 
+app.post('/api/getUploadUrl', async (req, res) => {
+    try {
+        const { fileName, contentType } = req.body;
+
+        if (!fileName || !contentType) {
+            return res.status(400).json({ error: 'Missing fileName or contentType in request body.' });
+        }
+
+        const options = {
+            version: 'v4',
+            action: 'write',
+            expires: Date.now() + 15 * 60 * 1000, // 15 minutes
+            contentType,
+        };
+
+        const [url] = await storage
+            .bucket(process.env.GCLOUD_STORAGE_BUCKET)
+            .file(fileName)
+            .getSignedUrl(options);
+
+        res.status(200).json({ url });
+    } catch (error) {
+        console.error('Error generating signed URL:', error);
+        res.status(500).json({ error: 'Failed to generate signed URL' });
+    }
+});
 
 
 app.post('/api/upload', upload.single('video'), async (req, res) => {

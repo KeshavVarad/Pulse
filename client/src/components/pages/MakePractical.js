@@ -10,7 +10,7 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import Joyride from 'react-joyride';
 import axios from "axios";
 
-const UploadVideo = ({ setVideoLink, practicalId }) => {
+const UploadVideo = ({ setVideoLink, practicalId, videoUploaded, setVideoUploaded }) => {
     const [file, setFile] = useState(null);
     const [error, setError] = useState(null);
     const [loading, setLoading] = useState(false);
@@ -29,31 +29,46 @@ const UploadVideo = ({ setVideoLink, practicalId }) => {
         setLoading(true);
         setError(null);
 
-        const formData = new FormData();
-        formData.append('video', file);
-
         try {
-            // Post the video file to your backend to upload it to Google Cloud
-            const videoResponse = await axios.post(`${process.env.REACT_APP_API_HOST}/api/upload`, formData, {
-                headers: {
-                    'Content-Type': 'multipart/form-data',
-                },
+            // Step 1: Get the signed upload URL from your backend
+            console.log("Getting url")
+
+            const getUploadUrlResponse = await axios.post(`${process.env.REACT_APP_API_HOST}/api/getUploadUrl`, {
+                fileName: file.name, // Name of the video file
+                contentType: file.type // MIME type of the video
             });
 
-            // Assuming the backend sends the public URL of the uploaded video
-            const { videoUrl } = videoResponse.data;
+            const { url } = getUploadUrlResponse.data; // The signed URL
 
+            // Step 2: Upload the file to Google Cloud Storage using the signed URL
+            const uploadResponse = await axios.put(url, file, {
+                headers: {
+                    'Content-Type': file.type, // Ensure the content type is set correctly
+                }
+            });
 
-            // await axios.post(`${process.env.REACT_APP_API_HOST}/api/transcribe`, { videoUrl, practicalId });
+            if (uploadResponse.status === 200) {
+                console.log('File uploaded successfully to Google Cloud Storage.');
 
-            setVideoLink(videoUrl); // Store the URL in state (or pass it up to a parent component)
+                // Step 3: You may want to derive the public URL of the uploaded file (depending on your setup)
+                // Assuming the bucket is publicly accessible, the public URL would typically be:
+
+                const videoUrl = `https://storage.googleapis.com/pulse-4d3a4.appspot.com/${file.name}`;
+
+                setVideoLink(videoUrl); // Store the public URL or pass it to the parent component
+            } else {
+                throw new Error('Failed to upload video.');
+            }
+
         } catch (err) {
             console.error('Upload error:', err.response ? err.response.data : err.message);
             setError('Error during video upload: ' + (err.response ? err.response.data.error : err.message));
         } finally {
             setLoading(false);
+            setVideoUploaded(true);
         }
     };
+
 
 
     return (
@@ -94,6 +109,8 @@ export default function MakePractical() {
     const navigate = useNavigate();
     const { currentUser, setError } = useAuth();
     const [loading, setLoading] = useState(false);
+    const [videoUploaded, setVideoUploaded] = useState(false);
+
     const [makePracticalTutorial, setMakePracticalTutorial] = useState(true);
     const [isMakePracticalMounted, setMakePracticalMounted] = useState(false);
     const [schoolStudents, setSchoolStudents] = useState([]);
@@ -306,7 +323,7 @@ export default function MakePractical() {
                 }
 
                 const user_res = await fetch(`${process.env.REACT_APP_API_HOST}/api/user/${userId}`, requestOptions);
-                console.log(user_res)
+
                 if (user_res.status == 404) {
                     setMakePracticalTutorial(true)
                 }
@@ -450,7 +467,7 @@ export default function MakePractical() {
 
                 <form onSubmit={handleFormSubmit}>
                     <Box sx={{ mb: 3, border: '1px solid #ccc', borderRadius: 4, padding: 2, backgroundColor: '#F4F4F4' }}>
-                        <UploadVideo setVideoLink={setVideoLink} practicalId={practicalId} />
+                        <UploadVideo setVideoLink={setVideoLink} practicalId={practicalId} videoUploaded={videoUploaded} setVideoUploaded={setVideoUploaded} />
                     </Box>
                     <TextField label="Name"
                         onChange={e => setPracticalName(e.target.value)}
@@ -529,7 +546,7 @@ export default function MakePractical() {
                             justifyContent: "center",
                             alignItems: "center",
                         }}>
-                        <Button variant='contained' type='submit' disabled={loading} sx={{ mx: 1 }}>
+                        <Button variant='contained' type='submit' disabled={loading || !videoUploaded} sx={{ mx: 1 }}>
                             Create Practical
                         </Button>
                     </Box>

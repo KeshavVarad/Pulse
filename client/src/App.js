@@ -20,6 +20,8 @@ import CssBaseline from '@mui/material/CssBaseline';
 import TeachingAssistant from './components/pages/TeachingAssistant';
 import LearnMore from './components/pages/LearnMore';
 import UserGuide from './components/pages/UserGuide';
+import MarkdownDisplay from './components/elements/MarkdownDisplay';
+import TutorialDashboard from './components/pages/TutorialDashboard';
 
 function App() {
 
@@ -42,6 +44,8 @@ function App() {
 
 
               <Routes>
+                <Route path="/tutorials" exact element={<TutorialDashboard />} />
+                <Route path="/user_guides/:role/:tutorial" element={<MarkdownDisplay />} />
                 <Route exact path="/dashboard" element={<Dashboard />} />
                 <Route exact path="/" element={<Home />} />
                 <Route exact path="/register_school" element={<Register />} />

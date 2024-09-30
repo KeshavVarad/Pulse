@@ -756,6 +756,9 @@ export default function InstructorPractical() {
 
             const videoParams = practical.video_link.split("/")
             setVideoId(videoParams[videoParams.length - 1])
+
+            console.log(practical.video_link)
+
             setVideoLink(practical.video_link)
 
             const tasks = practical.tasks
