@@ -33,7 +33,7 @@ Then on the **Practical Settings Tab** you can:
 To add additional students to a Practical:
 
 1. Enter their school/work email into **Add Student** box.
-   ![Adding Students](adding_students.png){width=60%}
+   ![Adding Students](adding_students.png){width=70%}
 2. Click the **+** Icon.
    ![Plus](plus.png){width=60%}
 3. Click **Update Practical**.
@@ -44,7 +44,14 @@ To add additional students to a Practical:
 
 To remove students from a Practical:
 
-
+1. Click the **Trash Icon** next to the student's email.
+   ![Removing Students](removing_students.png){width=70%}
+2. Click **Update Practical**.
+   ![Update Removing](update_remove.png){width=60%}
 
 ---
 ### Deleting a Practical
+
+Click the **Delete Practical**
+
+![Delete Practical](delete_practical.png){width=70%}
