@@ -537,8 +537,8 @@ export default function StudentPractical() {
                     <Box sx={{
                         display: "flex",
                         width: "100%",
-                        justifyContent: "space-between"
-
+                        justifyContent: "space-between",
+                        px: 5
                     }}>
                         {(getVideoSourceType(videoLink) === "youtube") ?
                             (<YouTube videoId={videoId} opts={video_opts} ref={videoRef} onReady={(event) => { setPlayer(event.target); }} />) :

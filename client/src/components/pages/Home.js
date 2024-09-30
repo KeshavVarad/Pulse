@@ -1,7 +1,8 @@
-import React from 'react';
-import { Container, Typography, Paper, Button, Box } from '@mui/material';
-import { Assessment, People, Chat, Insights } from '@mui/icons-material';
+import { Container, Paper, Typography, Button, Box } from '@mui/material';
 import { Link } from 'react-router-dom';
+import aiTeachingAssistant from '../../demoGifs/aiTeachingAssistant.gif';
+import instructorFeedback from '../../demoGifs/instructorFeedback.gif';
+import analyticsDashboard from '../../demoGifs/analyticsDashboard.gif';
 
 const Home = () => {
     return (
@@ -15,7 +16,7 @@ const Home = () => {
                 <Typography variant="h6" align="center" gutterBottom sx={{ color: '#555' }}>
                     Clear, Honest, and Efficient Feedback for Practical Medical Education.
                 </Typography>
-                <Button variant="contained" color="primary" sx={{ display: 'block', margin: '1.5rem auto', padding: '0.75rem 2.5rem' }} component={Link} to="/user_guides">
+                <Button variant="contained" color="primary" sx={{ display: 'block', margin: '1.5rem auto', padding: '0.75rem 2.5rem' }} component={Link} to="/learn_more">
                     Get Started
                 </Button>
             </Paper>
@@ -28,11 +29,9 @@ const Home = () => {
                 <Typography variant="body1" sx={{ color: '#555', marginBottom: '1.5rem' }}>
                     Pulse enables instructors to provide feedback efficiently, with minimal effort. Streamlined workflows allow for fast, meaningful input without sacrificing quality.
                 </Typography>
-                {/* Placeholder for Demo Video or Animation */}
-                <Box sx={{ backgroundColor: '#ddd', height: '300px', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                    <Typography variant="h6" sx={{ color: '#555' }}>
-                        Instructor Demo Placeholder
-                    </Typography>
+                {/* Instructor Feedback Demo */}
+                <Box sx={{ height: '300px', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <img src={instructorFeedback} alt="Instructor Feedback Demo" style={{ maxHeight: '100%', maxWidth: '100%', borderRadius: '8px' }} />
                 </Box>
             </Paper>
 
@@ -44,11 +43,9 @@ const Home = () => {
                 <Typography variant="body1" sx={{ color: '#555', marginBottom: '1.5rem' }}>
                     Pulse’s AI-powered assistant breaks down complex feedback, providing students with clear, actionable insights into their performance.
                 </Typography>
-                {/* Placeholder for AI Feedback Demo */}
-                <Box sx={{ backgroundColor: '#ddd', height: '300px', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                    <Typography variant="h6" sx={{ color: '#555' }}>
-                        AI Feedback Demo Placeholder
-                    </Typography>
+                {/* AI Teaching Assistant Demo */}
+                <Box sx={{ height: '300px', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <img src={aiTeachingAssistant} alt="AI Teaching Assistant Demo" style={{ maxHeight: '100%', maxWidth: '100%', borderRadius: '8px' }} />
                 </Box>
             </Paper>
 
@@ -60,11 +57,9 @@ const Home = () => {
                 <Typography variant="body1" sx={{ color: '#555', marginBottom: '1.5rem' }}>
                     Administrators can make data-backed decisions to fine-tune curricula based on performance insights, helping optimize learning outcomes for cohorts.
                 </Typography>
-                {/* Placeholder for Analytics Demo */}
-                <Box sx={{ backgroundColor: '#ddd', height: '300px', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                    <Typography variant="h6" sx={{ color: '#555' }}>
-                        Admin Analytics Demo Placeholder
-                    </Typography>
+                {/* Analytics Dashboard Demo */}
+                <Box sx={{ height: '300px', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <img src={analyticsDashboard} alt="Admin Analytics Dashboard Demo" style={{ maxHeight: '100%', maxWidth: '100%', borderRadius: '8px' }} />
                 </Box>
             </Paper>
 

@@ -842,7 +842,8 @@ export default function InstructorPractical() {
                     }}>
                         <Box sx={{
                             display: "absolute",
-                            width: "65%"
+                            width: "65%",
+                            px: 5
 
                         }}>
                             {(getVideoSourceType(videoLink) === "youtube") ?
