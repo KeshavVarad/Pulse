@@ -435,8 +435,6 @@ export default function InstructorPractical() {
 
             let rating_sum = 1 * practical.red_count + 3 * practical.yellow_count + 5 * practical.green_count
 
-            console.log(cohortInd, yearInd, schoolDataTaskIndex)
-
             if (comment_rating == 1) {
                 practicalUpdateData.red_count = practical.red_count - 1
                 newTasks[taskIndex].red_count -= 1

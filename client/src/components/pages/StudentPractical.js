@@ -40,6 +40,8 @@ export default function StudentPractical() {
     const [currentCommentIndex, setCurrentCommentIndex] = useState(comments.length > 0 ? 0 : -1);
     const [currentTaskDiscussion, setCurrentTaskDiscussion] = useState(null);
 
+    const [commentIds, setCommentIds] = useState([]);
+
     const [practical_name, setPracticalName] = useState("");
     const [instructorId, setInstructorId] = useState("");
     const [participants, setParticipants] = useState([]);
@@ -392,20 +394,6 @@ export default function StudentPractical() {
 
             </Box>
 
-
-            // <Box
-            //     sx={{
-            //         position: 'absolute',
-            //         left: `${(currentTime / videoLength) * 50}%`,
-            //         top: 0,
-            //         width: `${(currentTime / videoLength) * 100}%`,
-            //         height: '100%',
-            //         backgroundColor: 'primary.light',
-            //         transform: 'translateX(-50%)',
-            //         zIndex: 0,
-            //     }}
-            // />
-
         );
     };
 
@@ -451,22 +439,9 @@ export default function StudentPractical() {
             setVideoId(videoParams[videoParams.length - 1])
 
             setPracticalName(practical.practical_name)
-            const commentIds = practical.comments
-            const commentsData = []
+            const comment_ids = practical.comments
 
-            commentIds.map(async (commentId, idx) => {
-                const commentRes = await fetch(`${process.env.REACT_APP_API_HOST}/api/comment/${commentId}`);
-                const commentData = await commentRes.json()
-                commentsData.push(commentData)
-                commentsData.sort((a, b) => a.timestamp - b.timestamp);
-
-                setComments(commentsData)
-
-            })
-
-            if (comments.length > 0) {
-                setCurrentCommentIndex(0)
-            }
+            setCommentIds(comment_ids)
 
 
             // setComments(commentsData)
@@ -486,6 +461,32 @@ export default function StudentPractical() {
         };
 
     }, [player, gcloudPlayer])
+
+    useEffect(() => {
+        async function fetchComments() {
+            try {
+                const commentsData = await Promise.all(
+                    commentIds.map(async (commentId) => {
+                        const commentRes = await fetch(`${process.env.REACT_APP_API_HOST}/api/comment/${commentId}`);
+                        return await commentRes.json();
+                    })
+                );
+                // Sort comments by timestamp
+                commentsData.sort((a, b) => a.timestamp - b.timestamp);
+                // Update state with the fully fetched and sorted comments
+                setComments(commentsData);
+
+                if (commentsData.length > 0) {
+                    setCurrentCommentIndex(0);
+                }
+            } catch (error) {
+                console.error("Error fetching comments:", error);
+            }
+        }
+
+        fetchComments();
+    }, [commentIds]);
+
 
     const video_opts = {
         height: '468',
