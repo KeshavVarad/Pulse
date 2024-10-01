@@ -83,7 +83,8 @@ export function AuthProvider({ children }) {
                     school_name: schoolData.school_name,
                     school_id: school_id,
                     grad_year: grad_year,
-                    shortcuts: {}
+                    shortcuts: {},
+                    task_pool: []
                 }
 
                 const createNewUserOptions = {

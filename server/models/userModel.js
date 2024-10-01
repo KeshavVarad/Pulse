@@ -13,7 +13,8 @@ class User {
         school_name,
         school_id,
         grad_year,
-        shortcuts
+        shortcuts,
+        task_pool
     ) {
         (this.id = id),
             (this.username = username),
@@ -29,7 +30,8 @@ class User {
             (this.school_name = school_name),
             (this.school_id = school_id),
             (this.grad_year = grad_year),
-            (this.shortcuts = shortcuts);
+            (this.shortcuts = shortcuts),
+            (this.task_pool = task_pool);
     }
 }
 

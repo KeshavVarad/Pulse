@@ -17,57 +17,127 @@ export default function PracticalSettingsModal({ openState, handleClose, practic
     const [curParticipant, setCurParticipant] = useState("");
     const [removedParticpantIds, setRemovedParticipantIds] = useState([]);
     const [addedParticipantIds, setAddedParticipantIds] = useState([]);
+    const [schoolId, setSchoolId] = useState();
+    const [studentYear, setStudentYear] = useState();
+    const [schoolTaskData, setSchoolTaskData] = useState([]);
+    const [cohortInd, setCohortInd] = useState(-1)
+    const [yearInd, setYearInd] = useState(-1)
 
 
     const { setError } = useAuth()
 
     const handleDeleteButton = async () => {
-        const user = auth.currentUser;
-        const token = user && (await user.getIdToken());
+        try {
+            const user = auth.currentUser;
+            const token = user && (await user.getIdToken());
 
-        const deletePracticalOptions = {
-            method: "DELETE",
-            mode: "cors",
-            headers: {
-                "Content-Type": "application/json",
-                Authorization: `Bearer ${token}`,
-            },
-        }
-        await fetch(`${process.env.REACT_APP_API_HOST}/api/deletePractical/${practicalId}`, deletePracticalOptions)
+            // Fetch practical data (including comments)
+            const practicalRes = await fetch(`${process.env.REACT_APP_API_HOST}/api/practical/${practicalId}`);
+            const practical = await practicalRes.json();
+            const practicalComments = practical.comments;
 
-        participantIds.map(async (participantId) => {
-
-            const getParticipantOptions = {
-                method: "GET",
+            // Delete the practical
+            const deletePracticalOptions = {
+                method: "DELETE",
                 mode: "cors",
                 headers: {
                     "Content-Type": "application/json",
                     Authorization: `Bearer ${token}`,
                 },
-            }
+            };
+            await fetch(`${process.env.REACT_APP_API_HOST}/api/deletePractical/${practicalId}`, deletePracticalOptions);
 
-            const deleted_participant_res = await fetch(`${process.env.REACT_APP_API_HOST}/api/user/${participantId}`, getParticipantOptions);
-            const deleted_participant_data = await deleted_participant_res.json()
+            // Update participants' practical list
+            participantIds.map(async (participantId) => {
+                const getParticipantOptions = {
+                    method: "GET",
+                    mode: "cors",
+                    headers: {
+                        "Content-Type": "application/json",
+                        Authorization: `Bearer ${token}`,
+                    },
+                };
 
-            let curInPracticals = deleted_participant_data.inPracticals
-            curInPracticals.splice(curInPracticals.indexOf(practicalId), 1)
+                const deletedParticipantRes = await fetch(`${process.env.REACT_APP_API_HOST}/api/user/${participantId}`, getParticipantOptions);
+                const deletedParticipantData = await deletedParticipantRes.json();
 
-            const updateParticipantOptions = {
+                let curInPracticals = deletedParticipantData.inPracticals;
+                curInPracticals.splice(curInPracticals.indexOf(practicalId), 1);
+
+                const updateParticipantOptions = {
+                    method: "PUT",
+                    mode: "cors",
+                    headers: {
+                        "Content-Type": "application/json",
+                        Authorization: `Bearer ${token}`,
+                    },
+                    body: JSON.stringify({ inPracticals: curInPracticals }),
+                };
+
+                await fetch(`${process.env.REACT_APP_API_HOST}/api/updateUser/${participantId}`, updateParticipantOptions);
+            });
+
+            // Update the school task data
+            let newSchoolTaskData = schoolTaskData.slice();
+
+            practical.tasks.forEach(task => {
+                // Find the task in the school task data
+                let schoolDataTaskIndex = newSchoolTaskData[cohortInd].data[yearInd].data.findIndex(data => data.name === task.name);
+
+                if (schoolDataTaskIndex !== -1) {
+                    let schoolDataTask = newSchoolTaskData[cohortInd].data[yearInd].data[schoolDataTaskIndex];
+
+                    // Update the school data counts based on the comments of the practical being deleted
+                    let redCount = 0, yellowCount = 0, greenCount = 0;
+
+                    practicalComments.forEach(comment => {
+                        if (comment.task === task.name) {
+                            if (comment.rating === 1) redCount++;
+                            if (comment.rating === 3) yellowCount++;
+                            if (comment.rating === 5) greenCount++;
+                        }
+                    });
+
+                    // Subtract the counts for this practical's comments
+                    schoolDataTask.red_count -= redCount;
+                    schoolDataTask.yellow_count -= yellowCount;
+                    schoolDataTask.green_count -= greenCount;
+
+                    // Recalculate the average rating for the task
+                    let totalPracticalCount = schoolDataTask.red_count + schoolDataTask.yellow_count + schoolDataTask.green_count;
+                    schoolDataTask.avg_rating = totalPracticalCount > 0
+                        ? ((schoolDataTask.green_count * 5) + (schoolDataTask.yellow_count * 3) + (schoolDataTask.red_count * 1)) / totalPracticalCount
+                        : 0;
+
+                    // Remove the task if all counts are zero
+                    if (schoolDataTask.red_count === 0 && schoolDataTask.yellow_count === 0 && schoolDataTask.green_count === 0) {
+                        newSchoolTaskData[cohortInd].data[yearInd].data.splice(schoolDataTaskIndex, 1);
+                    }
+                }
+            });
+
+            // Update the school data on the server
+            const schoolUpdateOptions = {
                 method: "PUT",
                 mode: "cors",
                 headers: {
                     "Content-Type": "application/json",
                     Authorization: `Bearer ${token}`,
                 },
-                body: JSON.stringify({ inPracticals: curInPracticals })
-            }
+                body: JSON.stringify({ task_data: newSchoolTaskData }),
+            };
 
-            await fetch(`${process.env.REACT_APP_API_HOST}/api/updateUser/${participantId}`, updateParticipantOptions);
+            await fetch(`${process.env.REACT_APP_API_HOST}/api/updateSchool/${schoolId}`, schoolUpdateOptions);
 
-        })
+            // Close the delete modal or action
+            handleClose();
+            window.location.reload();
 
-        handleClose()
-    }
+        } catch (error) {
+            console.error("Error in handleDeleteButton:", error);
+        }
+    };
+
 
     const handleRemoveParticipant = async (idx) => {
         const cur_participant_id = participantIds[idx]
@@ -235,6 +305,65 @@ export default function PracticalSettingsModal({ openState, handleClose, practic
         };
     }, [handleKeyPress]);
 
+    useEffect(() => {
+        async function fetchSchoolData() {
+
+            try {
+                const user = auth.currentUser;
+                const token = user && (await user.getIdToken());
+
+                const requestOptions = {
+                    method: "GET",
+                    mode: "cors",
+                    headers: {
+                        "Content-Type": "application/json",
+                        Authorization: `Bearer ${token}`,
+                    },
+                };
+
+                const school_res = await fetch(`${process.env.REACT_APP_API_HOST}/api/school/${schoolId}`, requestOptions);
+                const school_data = await school_res.json()
+
+                const school_task_data = school_data.task_data
+
+                let schoolDataCohortIndex = school_task_data.findIndex((data) => data.cohort_year == studentYear)
+
+                if (schoolDataCohortIndex == -1) {
+                    school_task_data.push({
+                        cohort_year: studentYear,
+                        data: []
+                    })
+                    schoolDataCohortIndex = school_task_data.length - 1
+                }
+                setCohortInd(schoolDataCohortIndex)
+
+                const currentYear = new Date().getFullYear().toString();
+                let schoolDataYearIndex = school_task_data[schoolDataCohortIndex].data.findIndex((d) => d.year == currentYear)
+
+                if (schoolDataYearIndex == -1) {
+                    school_task_data[schoolDataCohortIndex].data.push({
+                        year: currentYear,
+                        data: []
+                    })
+                    schoolDataYearIndex = school_task_data[schoolDataCohortIndex].data.length - 1
+                }
+
+                setYearInd(schoolDataYearIndex)
+
+                setSchoolTaskData(school_task_data)
+
+            }
+            catch (e) {
+                console.log(e);
+            }
+
+        }
+
+        if (schoolId) {
+            fetchSchoolData()
+        }
+    }, [schoolId])
+
 
     useEffect(() => {
         async function fetchPracticalData() {
@@ -259,6 +388,8 @@ export default function PracticalSettingsModal({ openState, handleClose, practic
             setPracticalName(practical.practical_name)
             setInstructorName(practical.user_instructor_name)
             setVideoLink(practical.video_link)
+            setSchoolId(practical.school_id)
+            setStudentYear(practical.cohort_year)
 
             let participant_emails = []
             let participant_ids = []
@@ -309,7 +440,7 @@ export default function PracticalSettingsModal({ openState, handleClose, practic
                 bgcolor: "background.paper",
                 boxShadow: 24,
                 p: 4,
-                borderRadius:"10px"
+                borderRadius: "10px"
             }}>
                 <Box sx={{
                     display: "flex",
@@ -346,9 +477,9 @@ export default function PracticalSettingsModal({ openState, handleClose, practic
                                         <Button
                                             variant="contained"
                                             color="error"
-                                            sx={{ mx: 2}}
+                                            sx={{ mx: 2 }}
                                             onClick={() => handleRemoveParticipant(idx)}
-                                            
+
                                         >
                                             <DeleteIcon />
                                         </Button>
@@ -369,8 +500,8 @@ export default function PracticalSettingsModal({ openState, handleClose, practic
 
                             color="secondary"
                             value={curParticipant}
-                            sx={{ height: "100%" }} 
-                            size='small'/>
+                            sx={{ height: "100%" }}
+                            size='small' />
 
                         <Button onClick={handleAddParticipantButton} variant="contianed" size="small">
                             <AddIcon />

@@ -7,11 +7,16 @@ import { auth } from "../../config/firebase.js";
 import { v4 as uuidv4 } from 'uuid';
 
 import YouTube from "react-youtube"
-import { Modal, List, ListItem, ListItemText, Slider, ButtonGroup, Grid, Typography, Box, Button, TextField, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Autocomplete } from "@mui/material"
+import { Modal, List, ListItem, ListItemText, Slider, ButtonGroup, Grid, Typography, Box, Button, TextField, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Autocomplete, IconButton } from "@mui/material"
 import DeleteIcon from '@mui/icons-material/Delete';
 import InsertCommentIcon from '@mui/icons-material/InsertComment';
 import SendIcon from '@mui/icons-material/Send';
 import GCloudVideoPlayer from "../elements/GCloudVideoPlayer.js";
+import CloseIcon from '@mui/icons-material/Close';
+import RedFlagIcon from '@mui/icons-material/Flag'; // Replace with your red indicator icon
+import YellowFlagIcon from '@mui/icons-material/Warning'; // Replace with your yellow indicator icon
+import GreenCheckIcon from '@mui/icons-material/CheckCircle'; // Replace with your green indicator icon
+
 
 
 export default function InstructorPractical() {
@@ -159,7 +164,7 @@ export default function InstructorPractical() {
 
                 };
 
-                await fetch(`${process.env.REACT_APP_API_HOST}/api/updateSchool/${schoolId}`, requestOptions);
+                await fetch(`${process.env.REACT_APP_API_HOST}/api/updateUser/${currentUser.uid}`, requestOptions);
             } catch (e) {
                 console.log(e);
             }
@@ -201,6 +206,145 @@ export default function InstructorPractical() {
             console.log(e);
         }
 
+
+    }
+
+    const handleRemoveTask = async (taskName) => {
+        try {
+            // Fetch the practical data
+            const practical_res = await fetch(`${process.env.REACT_APP_API_HOST}/api/practical/${practicalId}`);
+            const practical = await practical_res.json();
+
+            // Find the task in the practical's tasks
+            let newTasks = practical.tasks.slice();
+            let taskIndex = newTasks.findIndex(t => t.name === taskName.name);
+
+            if (taskIndex === -1) {
+                console.log("Task not found");
+                return;
+            }
+
+            // Remove all comments associated with the task
+            let commentIdsToRemove = comments
+                .filter(comment => comment.task === taskName.name)
+                .map(comment => comment.id);
+
+            let remainingComments = comments.filter(comment => !commentIdsToRemove.includes(comment.id));
+
+            // Update the practical's counts for red, yellow, and green ratings
+            let redCount = 0, yellowCount = 0, greenCount = 0, ratingSum = 0;
+
+            // Calculate the sum of ratings and update the counts
+            remainingComments.forEach(comment => {
+                if (comment.rating === 1) redCount++;
+                if (comment.rating === 3) yellowCount++;
+                if (comment.rating === 5) greenCount++;
+                ratingSum += comment.rating;
+            });
+
+            // Update practical data
+            let practicalUpdateData = {
+                comments: remainingComments.map(c => c.id),
+                red_count: redCount,
+                yellow_count: yellowCount,
+                green_count: greenCount,
+                avg_rating: remainingComments.length > 0 ? ratingSum / remainingComments.length : 0,
+            };
+
+            // Remove the task from the practical's task list
+            newTasks.splice(taskIndex, 1);
+            practicalUpdateData.tasks = newTasks;
+
+            // Update the school task data
+            let newSchoolTaskData = schoolTaskData.slice();
+            let schoolDataTaskIndex = newSchoolTaskData[cohortInd].data[yearInd].data.findIndex(data => data.name === taskName.name);
+
+            if (schoolDataTaskIndex !== -1) {
+                let schoolDataTask = newSchoolTaskData[cohortInd].data[yearInd].data[schoolDataTaskIndex];
+
+                // Subtract the counts associated with the removed task
+                schoolDataTask.red_count -= practical.red_count;
+                schoolDataTask.yellow_count -= practical.yellow_count;
+                schoolDataTask.green_count -= practical.green_count;
+
+                // Recalculate the average rating based on the remaining practicals
+                let totalPracticalCount = schoolDataTask.red_count + schoolDataTask.yellow_count + schoolDataTask.green_count;
+                schoolDataTask.avg_rating = totalPracticalCount > 0
+                    ? ((schoolDataTask.green_count * 5) + (schoolDataTask.yellow_count * 3) + (schoolDataTask.red_count * 1)) / totalPracticalCount
+                    : 0;
+
+                // Check if all counts are zero, then remove the task from school data
+                if (schoolDataTask.red_count === 0 && schoolDataTask.yellow_count === 0 && schoolDataTask.green_count === 0) {
+                    newSchoolTaskData[cohortInd].data[yearInd].data.splice(schoolDataTaskIndex, 1);
+                }
+            }
+
+            // Send the updated practical data to the server
+            const user = auth.currentUser;
+            const token = user && (await user.getIdToken());
+
+            const practicalUpdateOptions = {
+                method: "PUT",
+                mode: "cors",
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${token}`,
+                },
+                body: JSON.stringify(practicalUpdateData),
+            };
+
+            await fetch(`${process.env.REACT_APP_API_HOST}/api/updatePractical/${practicalId}`, practicalUpdateOptions);
+
+            // Update the school data
+            const schoolUpdateOptions = {
+                method: "PUT",
+                mode: "cors",
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${token}`,
+                },
+                body: JSON.stringify({ task_data: newSchoolTaskData }),
+            };
+
+            await fetch(`${process.env.REACT_APP_API_HOST}/api/updateSchool/${schoolId}`, schoolUpdateOptions);
+
+            // Update local state after the task removal
+            setTasks(newTasks);
+            setComments(remainingComments);
+            setSchoolTaskData(newSchoolTaskData);
+
+        } catch (error) {
+            console.error("Error in handleRemoveTask:", error);
+        }
+    };
+
+
+
+
+    const handleRemoveTaskPoolOption = async (option) => {
+
+        let newSchoolTaskPool = schoolTaskPool.filter((task) => task !== option)
+        setSchoolTaskPool(newSchoolTaskPool);
+
+        try {
+            const user = auth.currentUser;
+            const token = user && (await user.getIdToken());
+            const requestOptions = {
+                method: "PUT",
+                mode: "cors",
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${token}`,
+                },
+                body: JSON.stringify({ task_pool: newSchoolTaskPool })
+
+            };
+
+            await fetch(`${process.env.REACT_APP_API_HOST}/api/updateUser/${currentUser.uid}`, requestOptions);
+
+        } catch (e) {
+            console.log(e);
+        }
 
     }
 
@@ -564,6 +708,10 @@ export default function InstructorPractical() {
                     setShortcuts(userData.shortcuts)
                 }
 
+                if (userData.task_pool) {
+                    setSchoolTaskPool(userData.task_pool)
+                }
+
 
             } catch (e) {
                 console.log(e);
@@ -591,8 +739,6 @@ export default function InstructorPractical() {
 
                 const school_res = await fetch(`${process.env.REACT_APP_API_HOST}/api/school/${schoolId}`, requestOptions);
                 const school_data = await school_res.json()
-
-                setSchoolTaskPool(school_data.task_pool)
 
                 const school_task_data = school_data.task_data
 
@@ -737,8 +883,6 @@ export default function InstructorPractical() {
 
     }
 
-
-
     useEffect(() => {
         async function fetchPractical() {
 
@@ -763,6 +907,8 @@ export default function InstructorPractical() {
             setTasks(tasks)
 
             const commentIds = practical.comments
+
+            console.log("Comment Ids: ", commentIds)
             const commentsData = []
 
             commentIds.map(async (commentId, idx) => {
@@ -862,77 +1008,143 @@ export default function InstructorPractical() {
 
                         </Box>
 
-                        <Box sx={{
-                            display: "flex",
-                            flexDirection: "column",
-                            maxWidth: "40%",
-                            minWidth: "40%",
-                            justifyContent: "space-between",
-                            alignItems: "center",
-                            px: 5,
+                        <Box
+                            sx={{
+                                display: "flex",
+                                flexDirection: "column",
+                                maxWidth: "40%",
+                                minWidth: "40%",
+                                justifyContent: "space-between",
+                                alignItems: "center",
+                                px: 5,
+                            }}
+                        >
+                            <Typography variant="h4">Make Comments</Typography>
 
-                        }}>
-                            <Typography variant="h4">
-                                Make Comments
-                            </Typography>
-
-                            {tasks.map(task => (
-                                <Box sx={{
-                                    width: "100%",
-                                    display: "flex",
-                                    flexDirection: "row",
-                                    justifyContent: "space-between",
-                                    alignItems: "center",
-                                    pt: 1,
-
-                                }}>
-                                    <Box sx={{
-                                        display: "flex",
-                                        flexDirection: "row",
+                            {tasks.map((task) => (
+                                <Grid
+                                    container
+                                    spacing={2}
+                                    sx={{
                                         width: "100%",
-                                        justifyItems: "center",
                                         alignItems: "center",
-                                        justifyContent: "center",
-                                    }}>
-
-                                        <Box sx={{
-                                            width: "200px",
-                                            height: "100%",
-                                            pl: 2,
-                                        }}>
-                                            <Typography variant="h7">{task.name}</Typography>
+                                        pt: 1,
+                                        flexWrap: "nowrap",
+                                    }}
+                                    key={task.id} // Ensure a unique key for each task
+                                >
+                                    {/* Task Name */}
+                                    <Grid item xs={12} sm={4} md={4}>
+                                        <Box sx={{ pl: 2, flexGrow: 1 }}>
+                                            <Typography
+                                                variant="h7"
+                                                noWrap={false}
+                                                sx={{
+                                                    whiteSpace: "normal", // Allow text to wrap
+                                                    overflow: "hidden",    // Hide overflow
+                                                    textOverflow: "ellipsis", // Optional: Show ellipsis for overflow
+                                                    maxWidth: "100%", // Ensures the task name doesn't exceed its container
+                                                }}
+                                            >
+                                                {task.name}
+                                            </Typography>
                                         </Box>
+                                    </Grid>
 
-                                        <Box sx={{ minWidth: "210px", maxWidth: "210px", p: 0 }}>
-                                            <ButtonGroup variant="contained" aria-label="Basic button group" >
-                                                <Button onClick={() => { handleRating(task, 1) }} variant="contained" color="red" disableElevation sx={{ width: "70px" }}>Red</Button>
-                                                <Button onClick={() => { handleRating(task, 3) }} variant="contained" color="yellow" disableElevation sx={{ width: "70px" }}>Yellow</Button>
-                                                <Button onClick={() => { handleRating(task, 5) }} variant="contained" color="green" disableElevation sx={{ width: "70px" }}>Green</Button>
+                                    {/* Rating Buttons */}
+                                    <Grid item xs={12} sm={4} md={4}>
+                                        <Box
+                                            sx={{
+                                                display: "flex",
+                                                justifyContent: "center",
+                                                flexWrap: "wrap",
+                                                ml: 2, // Space between task name and button group
+                                            }}
+                                        >
+                                            <ButtonGroup variant="contained" aria-label="Rating buttons group" sx={{ width: '100%' }}>
+                                                <Button
+                                                    onClick={() => handleRating(task, 1)}
+                                                    variant="contained"
+                                                    color="error"
+                                                    disableElevation
+                                                    sx={{ minWidth: { xs: "45px", sm: "70px" }, flexGrow: 1 }}
+                                                    title="Poor" // Tooltip for accessibility
+                                                >
+                                                    <RedFlagIcon />
+                                                </Button>
+                                                <Button
+                                                    onClick={() => handleRating(task, 3)}
+                                                    variant="contained"
+                                                    color="warning"
+                                                    disableElevation
+                                                    sx={{ minWidth: { xs: "45px", sm: "70px" }, flexGrow: 1 }}
+                                                    title="Average" // Tooltip for accessibility
+                                                >
+                                                    <YellowFlagIcon />
+                                                </Button>
+                                                <Button
+                                                    onClick={() => handleRating(task, 5)}
+                                                    variant="contained"
+                                                    color="success"
+                                                    disableElevation
+                                                    sx={{ minWidth: { xs: "45px", sm: "70px" }, flexGrow: 1 }}
+                                                    title="Excellent" // Tooltip for accessibility
+                                                >
+                                                    <GreenCheckIcon />
+                                                </Button>
                                             </ButtonGroup>
                                         </Box>
+                                    </Grid>
 
-                                        <Box sx={{ width: "30px", height: "100%" }}>
-                                            <Button onClick={() => handleTaskChatButton(task)}>
+                                    {/* Comment and Remove Buttons */}
+                                    <Grid item xs={12} sm={4} md="auto">
+                                        <Box
+                                            sx={{
+                                                display: "flex",
+                                                justifyContent: "flex-end", // Align to the right
+                                                alignItems: "center",
+                                                width: "100%",
+                                                ml: 2, // Space between button group and comment/remove buttons
+                                            }}
+                                        >
+                                            {/* Insert Comment Button */}
+                                            <Button onClick={() => handleTaskChatButton(task)} sx={{ p: 0 }}>
                                                 <InsertCommentIcon />
                                             </Button>
-                                        </Box>
-                                    </Box>
 
-                                </Box>
+                                            {/* Remove Button */}
+                                            <Button
+                                                onClick={() => handleRemoveTask(task)}
+                                                variant="contained"
+                                                color="error"
+                                                sx={{
+                                                    p: 0,
+                                                    ml: 2, // Space between comment and remove buttons
+                                                    minWidth: "40px",
+                                                    height: "40px",
+                                                }}
+                                            >
+                                                <DeleteIcon />
+                                            </Button>
+                                        </Box>
+                                    </Grid>
+                                </Grid>
                             ))}
 
-
-                            <Box sx={{
-                                display: "flex",
-                                justifyContent: "center",
-                                alignItems: "center",
-                                width: "100%",
-                            }}>
-
+                            {/* New Task Section */}
+                            <Box
+                                sx={{
+                                    display: "flex",
+                                    justifyContent: "center",
+                                    alignItems: "center",
+                                    width: "100%",
+                                    mt: 2, // Add some margin at the top
+                                }}
+                            >
                                 <Autocomplete
                                     sx={{
                                         width: "50%",
-                                        size: "small"
+                                        size: "small",
                                     }}
                                     id="free-solo-demo"
                                     freeSolo
@@ -941,24 +1153,39 @@ export default function InstructorPractical() {
                                     onInputChange={(event, newInputValue) => {
                                         setNewTask(newInputValue);
                                     }}
-                                    renderInput={(params) => (<TextField
-                                        {...params}
-                                        label="New Task"
-                                        variant="outlined"
-                                        color="secondary"
-                                        sx={{
-
-                                        }}
-
-                                        value={newTask} />)}
+                                    renderInput={(params) => (
+                                        <TextField
+                                            {...params}
+                                            label="New Task"
+                                            variant="outlined"
+                                            color="secondary"
+                                            value={newTask}
+                                        />
+                                    )}
+                                    renderOption={(props, option, { inputValue }) => (
+                                        <li {...props} key={option}>
+                                            <Box sx={{ display: "flex", justifyContent: "space-between", width: "100%" }}>
+                                                <span>{option}</span>
+                                                <IconButton
+                                                    size="small"
+                                                    color="error"
+                                                    onClick={(event) => {
+                                                        event.stopPropagation(); // Prevent selecting the option when clicking the icon
+                                                        handleRemoveTaskPoolOption(option);
+                                                    }}
+                                                >
+                                                    <CloseIcon />
+                                                </IconButton>
+                                            </Box>
+                                        </li>
+                                    )}
                                     size="small"
                                 />
 
-
-
-                                <Button variant="contained" size="large" onClick={handleNewTaskChange}>Add Task</Button>
+                                <Button variant="contained" size="large" onClick={handleNewTaskChange}>
+                                    Add Task
+                                </Button>
                             </Box>
-
                         </Box>
 
 
