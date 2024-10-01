@@ -17,7 +17,7 @@ Login to your Admin account and navigate to your **Dashboard**.
 
 ---
 
-## Adding Students
+## **Adding Students**
 
 To add Students to a School:
 1. Click **Invite Student** on the **Admin Dashboard**.
@@ -26,7 +26,7 @@ To add Students to a School:
 3. Click **Invite**.
 
 
-## Adding Instructors
+## **Adding Instructors**
 
 To add Students to a School:
 1. Click **Invite Instructor** on the **Admin Dashboard**.
@@ -35,7 +35,7 @@ To add Students to a School:
 3. Click **Invite**.
 
 
-## Adding Other Admins
+## **Adding Other Admins**
 
 To add other Admins to a School:
 1. Click **Invite Admin** on the **Admin Dashboard**.

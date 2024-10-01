@@ -27,7 +27,7 @@ Then on the **Practical Settings Tab** you can:
 
 ---
 
-### Adding Students
+## **Adding Students**
 
 To add additional students to a Practical:
 
@@ -39,7 +39,7 @@ To add additional students to a Practical:
    ![Update Adding](update_add.png)
 
 ---
-### Removing Students
+## **Removing Students**
 
 To remove students from a Practical:
 
@@ -49,7 +49,7 @@ To remove students from a Practical:
    ![Update Removing](update_remove.png)
 
 ---
-### Deleting a Practical
+## **Deleting a Practical**
 
 Click the **Delete Practical** button.
 

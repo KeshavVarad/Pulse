@@ -1041,35 +1041,31 @@ export default function InstructorPractical() {
                                     }}>
 
                                         <Box sx={{
-                                            width: "200px",
+                                            minWidth: "160px",
+                                            maxWidth: "160px",
                                             height: "100%",
-                                            pl: 2,
+                                            pl: 1,
+                                            display:"flex"
                                         }}>
                                             <Typography variant="h7">{task.name}</Typography>
                                         </Box>
 
-                                        <Box sx={{ minWidth: "210px", maxWidth: "210px", p: 0 }}>
+                                        <Box sx={{ minWidth: "180px", maxWidth: "180px", display:"flex"}}>
                                             <ButtonGroup variant="contained" aria-label="Basic button group" >
-                                                <Button onClick={() => { handleRating(task, 1) }} variant="contained" color="red" disableElevation sx={{ width: "70px" }}>Red</Button>
-                                                <Button onClick={() => { handleRating(task, 3) }} variant="contained" color="yellow" disableElevation sx={{ width: "70px" }}>Yellow</Button>
-                                                <Button onClick={() => { handleRating(task, 5) }} variant="contained" color="green" disableElevation sx={{ width: "70px" }}>Green</Button>
+                                                <Button onClick={() => { handleRating(task, 1) }} variant="contained" color="red" disableElevation sx={{ width: "60px",textTransform:'none' }}>Red</Button>
+                                                <Button onClick={() => { handleRating(task, 3) }} variant="contained" color="yellow" disableElevation sx={{ width: "60px",textTransform:'none' }}>Yellow</Button>
+                                                <Button onClick={() => { handleRating(task, 5) }} variant="contained" color="green" disableElevation sx={{ width: "60px",textTransform:'none' }}>Green</Button>
                                             </ButtonGroup>
                                         </Box>
-
-                                        <Box sx={{ width: "30px", height: "100%" }}>
-                                            <Button onClick={() => handleTaskChatButton(task)}>
-                                                <InsertCommentIcon />
-                                            </Button>
+                                        <Box sx={{width:"40px",px:1}}>
+                                        <IconButton aria-label="delete" onClick={() => handleTaskChatButton(task)}>
+                                        <InsertCommentIcon />
+                                        </IconButton>
                                         </Box>
-
-                                        <Box sx={{ width: "30px", height: "100%" }}>
-                                            <Button
-                                                onClick={() => handleRemoveTask(task)}
-                                                variant="contained"
-                                                color="error"
-                                            >
-                                                <DeleteIcon />
-                                            </Button>
+                                        <Box sx={{width:"40px",px:1}}>
+                                        <IconButton aria-label="delete" onClick={() => handleRemoveTask(task)}>
+                                        <DeleteIcon />
+                                        </IconButton>
                                         </Box>
                                     </Box>
 
@@ -1235,8 +1231,8 @@ export default function InstructorPractical() {
                         alignItems: "center",
                         justifyContent: "center"
                     }}>
-                        <Typography id="modal-modal-title" variant="h6" component="h2">
-                            {taskToDisplay ? taskToDisplay.name : "No Task"}
+                        <Typography id="modal-modal-title" variant="h4" component="h2">
+                            {taskToDisplay ? taskToDisplay.name + " Discussion": "No Task"}
                         </Typography>
                         <Grid item sx={{
                             width: "100%",
@@ -1274,12 +1270,14 @@ export default function InstructorPractical() {
 
                         <Box sx={{
                             display: "flex",
+                            width:"80%"
                         }}>
                             <TextField label="New Message"
                                 variant="outlined"
                                 color="secondary"
                                 sx={{
                                     mx: 2
+                                    
                                 }}
                                 onChange={e => setMessage(e.target.value)}
                                 fullWidth
