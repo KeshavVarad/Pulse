@@ -1022,113 +1022,58 @@ export default function InstructorPractical() {
                             <Typography variant="h4">Make Comments</Typography>
 
                             {tasks.map((task) => (
-                                <Grid
-                                    container
-                                    spacing={2}
-                                    sx={{
-                                        width: "100%",
-                                        alignItems: "center",
-                                        pt: 1,
-                                        flexWrap: "nowrap",
-                                    }}
-                                    key={task.id} // Ensure a unique key for each task
-                                >
-                                    {/* Task Name */}
-                                    <Grid item xs={12} sm={4} md={4}>
-                                        <Box sx={{ pl: 2, flexGrow: 1 }}>
-                                            <Typography
-                                                variant="h7"
-                                                noWrap={false}
-                                                sx={{
-                                                    whiteSpace: "normal", // Allow text to wrap
-                                                    overflow: "hidden",    // Hide overflow
-                                                    textOverflow: "ellipsis", // Optional: Show ellipsis for overflow
-                                                    maxWidth: "100%", // Ensures the task name doesn't exceed its container
-                                                }}
-                                            >
-                                                {task.name}
-                                            </Typography>
-                                        </Box>
-                                    </Grid>
+                                <Box sx={{
+                                    width: "100%",
+                                    display: "flex",
+                                    flexDirection: "row",
+                                    justifyContent: "space-between",
+                                    alignItems: "center",
+                                    pt: 1,
 
-                                    {/* Rating Buttons */}
-                                    <Grid item xs={12} sm={4} md={4}>
-                                        <Box
-                                            sx={{
-                                                display: "flex",
-                                                justifyContent: "center",
-                                                flexWrap: "wrap",
-                                                ml: 2, // Space between task name and button group
-                                            }}
-                                        >
-                                            <ButtonGroup variant="contained" aria-label="Rating buttons group" sx={{ width: '100%' }}>
-                                                <Button
-                                                    onClick={() => handleRating(task, 1)}
-                                                    variant="contained"
-                                                    color="error"
-                                                    disableElevation
-                                                    sx={{ minWidth: { xs: "45px", sm: "70px" }, flexGrow: 1 }}
-                                                    title="Poor" // Tooltip for accessibility
-                                                >
-                                                    <RedFlagIcon />
-                                                </Button>
-                                                <Button
-                                                    onClick={() => handleRating(task, 3)}
-                                                    variant="contained"
-                                                    color="warning"
-                                                    disableElevation
-                                                    sx={{ minWidth: { xs: "45px", sm: "70px" }, flexGrow: 1 }}
-                                                    title="Average" // Tooltip for accessibility
-                                                >
-                                                    <YellowFlagIcon />
-                                                </Button>
-                                                <Button
-                                                    onClick={() => handleRating(task, 5)}
-                                                    variant="contained"
-                                                    color="success"
-                                                    disableElevation
-                                                    sx={{ minWidth: { xs: "45px", sm: "70px" }, flexGrow: 1 }}
-                                                    title="Excellent" // Tooltip for accessibility
-                                                >
-                                                    <GreenCheckIcon />
-                                                </Button>
+                                }}>
+                                    <Box sx={{
+                                        display: "flex",
+                                        flexDirection: "row",
+                                        width: "100%",
+                                        justifyItems: "center",
+                                        alignItems: "center",
+                                        justifyContent: "center",
+                                    }}>
+
+                                        <Box sx={{
+                                            width: "200px",
+                                            height: "100%",
+                                            pl: 2,
+                                        }}>
+                                            <Typography variant="h7">{task.name}</Typography>
+                                        </Box>
+
+                                        <Box sx={{ minWidth: "210px", maxWidth: "210px", p: 0 }}>
+                                            <ButtonGroup variant="contained" aria-label="Basic button group" >
+                                                <Button onClick={() => { handleRating(task, 1) }} variant="contained" color="red" disableElevation sx={{ width: "70px" }}>Red</Button>
+                                                <Button onClick={() => { handleRating(task, 3) }} variant="contained" color="yellow" disableElevation sx={{ width: "70px" }}>Yellow</Button>
+                                                <Button onClick={() => { handleRating(task, 5) }} variant="contained" color="green" disableElevation sx={{ width: "70px" }}>Green</Button>
                                             </ButtonGroup>
                                         </Box>
-                                    </Grid>
 
-                                    {/* Comment and Remove Buttons */}
-                                    <Grid item xs={12} sm={4} md="auto">
-                                        <Box
-                                            sx={{
-                                                display: "flex",
-                                                justifyContent: "flex-end", // Align to the right
-                                                alignItems: "center",
-                                                width: "100%",
-                                                ml: 2, // Space between button group and comment/remove buttons
-                                            }}
-                                        >
-                                            {/* Insert Comment Button */}
-                                            <Button onClick={() => handleTaskChatButton(task)} sx={{ p: 0 }}>
+                                        <Box sx={{ width: "30px", height: "100%" }}>
+                                            <Button onClick={() => handleTaskChatButton(task)}>
                                                 <InsertCommentIcon />
                                             </Button>
+                                        </Box>
 
-                                            {/* Remove Button */}
+                                        <Box sx={{ width: "30px", height: "100%" }}>
                                             <Button
                                                 onClick={() => handleRemoveTask(task)}
                                                 variant="contained"
                                                 color="error"
-                                                sx={{
-                                                    p: 0,
-                                                    ml: 2, // Space between comment and remove buttons
-                                                    minWidth: "40px",
-                                                    height: "40px",
-                                                }}
                                             >
                                                 <DeleteIcon />
                                             </Button>
                                         </Box>
-                                    </Grid>
-                                </Grid>
+                                    </Box>
+
+                                </Box>
                             ))}
 
                             {/* New Task Section */}
