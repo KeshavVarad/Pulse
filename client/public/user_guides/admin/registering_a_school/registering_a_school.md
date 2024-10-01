@@ -13,4 +13,4 @@ From the Home Page navigate to "Register School" or follow this link: https://th
 ![Register School](./register_school.png)
 1. Click **Register**
 
-To add instructors and students, Follow this page: **[Adding Students, Instructors, and Admins to a School](/user_guides/admin/add_users/)**
+To add instructors and students, Follow this page: **[Adding Students, Instructors, and Admins to a School](/user_guides/admin/adding_users_to_your_school/)**

@@ -2,7 +2,7 @@
 
 ---
 
-*Any Admin or Instructor of a school can make a Practical. This page is for making a Practical as an Admin.  For Instructors follow this: **[Making a Practical (Instructor)](/user_guides/instructor/make_practical/)***
+*Any Admin or Instructor of a school can make a Practical. This page is for making a Practical as an Admin.  For Instructors follow this: **[Making a Practical (Instructor)](/user_guides/instructor/making_a_practical/)***
 
 
 To Make a Practical:

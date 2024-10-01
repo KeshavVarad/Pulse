@@ -1,8 +1,8 @@
-# Register Account (Instructor)
+# Registering an Account (Instructor)
 
 ---
 
-*To register an account as an Instructor, an admin at your school must first invite your school/work email to your school. See **[Adding Students, Instructors, and Admins to Your School](/user_guides/admin/add_users/)** for more.*
+*To register an account as an Instructor, an admin at your school must first invite your school/work email to your school. See **[Adding Students, Instructors, and Admins to Your School](/user_guides/admin/adding_users_to_your_school/)** for more.*
 
 
 From the Home Page navigate to "Register User" or follow this link: https://the-pulse-app.com/register_user.

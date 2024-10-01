@@ -2,6 +2,23 @@ import React, { useEffect, useState } from 'react';
 import { Container, Typography, Grid, Card, CardContent, CardActionArea, Box, Button, Divider } from '@mui/material';
 import { Link } from 'react-router-dom';
 
+function formatString(str) {
+    const smallWords = ['a', 'an', 'the', 'and', 'or', 'but', 'on', 'in', 'with'];
+  
+    return str
+      .replace(/_/g, ' ') // Replace all underscores with spaces
+      .split(' ')          // Split the string into an array of words
+      .map((word, index) => {
+        // Capitalize the first word or any word not in the smallWords list
+        if (index === 0 || !smallWords.includes(word)) {
+          return word.charAt(0).toUpperCase() + word.slice(1);
+        } else {
+          return word; // Keep small words lowercase
+        }
+      })
+      .join(' ');          // Join the array back into a string
+  }
+
 const TutorialInstructor = () => {
     const [tutorials, setTutorials] = useState([]);
 
@@ -68,7 +85,7 @@ const TutorialInstructor = () => {
                         <Card>
                             <CardActionArea component={Link} to={`/user_guides/instructor/${tutorial}/`}>
                                 <CardContent>
-                                    <Typography variant="h5">{tutorial}</Typography>
+                                    <Typography variant="h5">{formatString(tutorial)}</Typography>
                                     <Typography variant="subtitle1" color="textSecondary">
                                         Instructor Tutorial
                                     </Typography>
