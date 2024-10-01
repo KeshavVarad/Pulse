@@ -1,10 +1,11 @@
 import React, { useEffect, useState } from 'react';
-import { Container, CircularProgress, Typography, Link, List, ListItem, Box } from '@mui/material';
+import { Container, CircularProgress, Typography, List, ListItem, Box, Button } from '@mui/material';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm'; // For GitHub Flavored Markdown
 import { useParams } from 'react-router-dom';
 import CustomImage from './CustomImage';
 import { useTheme } from '@mui/material/styles';
+import { Link } from 'react-router-dom';
 
 const MarkdownDisplay = () => {
     const { role, tutorial } = useParams();
@@ -50,12 +51,24 @@ const MarkdownDisplay = () => {
     const isLoading = loading || !imagesLoaded;
 
     return (
+        
         <Container maxWidth="md" sx={{ pt: 10, pb: 5 }}>
             {isLoading ? (
                 <Box sx={{ display: 'flex', justifyContent: 'center' }}>
                     <CircularProgress />
                 </Box>
             ) : (
+                <Box>
+                    
+                    <Button component={Link} to={`/user_guides/${role}/`} sx={{textTransform: 'none', 
+                '&:hover': {
+                    textDecoration: 'underline', // Adds underline on hover
+                    },
+                position:"absolute",
+                top:80,
+                }}>
+                Back to {role.charAt(0).toUpperCase() + role.slice(1)} Guides
+                </Button>
                 <ReactMarkdown
                     remarkPlugins={[remarkGfm]}
                     components={{
@@ -113,6 +126,7 @@ const MarkdownDisplay = () => {
                 >
                     {markdownContent}
                 </ReactMarkdown>
+                </Box>
             )}
         </Container>
     );

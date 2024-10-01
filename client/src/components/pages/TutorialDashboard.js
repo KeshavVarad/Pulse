@@ -65,7 +65,7 @@ const TutorialDashboard = () => {
             <Grid container spacing={2} sx={{my:3}}>
                 <Grid item xs={4} sx={{}}>
                 <Card>
-                <CardActionArea component={Link} to={`/tutorials/admin`} sx={{textTransform: 'none', '&:hover': {
+                <CardActionArea component={Link} to={`/user_guides/admin`} sx={{textTransform: 'none', '&:hover': {
                     textDecoration: 'underline', // Adds underline on hover
                     }
 
@@ -91,7 +91,7 @@ const TutorialDashboard = () => {
                 </Grid>
                 <Grid item xs={4}>
                 <Card>
-                <CardActionArea component={Link} to={`/tutorials/instructor`} sx={{textTransform: 'none', '&:hover': {
+                <CardActionArea component={Link} to={`/user_guides/instructor`} sx={{textTransform: 'none', '&:hover': {
                     textDecoration: 'underline', // Adds underline on hover
                     }
 
@@ -117,7 +117,7 @@ const TutorialDashboard = () => {
                 </Grid>
                 <Grid item xs={4}>
                 <Card>
-                <CardActionArea component={Link} to={`/tutorials/student`} sx={{textTransform: 'none', '&:hover': {
+                <CardActionArea component={Link} to={`/user_guides/student`} sx={{textTransform: 'none', '&:hover': {
                     textDecoration: 'underline', // Adds underline on hover
                     }
 

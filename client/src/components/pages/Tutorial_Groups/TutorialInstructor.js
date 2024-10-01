@@ -36,7 +36,7 @@ const TutorialInstructor = () => {
             width:"100%",
         }}>
 
-            <Button component={Link} to={`/tutorials/`} sx={{textTransform: 'none', 
+            <Button component={Link} to={`/user_guides/`} sx={{textTransform: 'none', 
                 '&:hover': {
                     textDecoration: 'underline', // Adds underline on hover
                     },

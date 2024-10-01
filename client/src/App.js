@@ -47,10 +47,10 @@ function App() {
 
 
               <Routes>
-                <Route path="/tutorials" exact element={<TutorialDashboard />} />
-                <Route path="/tutorials/admin" exact element={<TutorialAdmin />} />
-                <Route path="/tutorials/instructor" exact element={<TutorialInstructor />} />
-                <Route path="/tutorials/student" exact element={<TutorialStudent />} />
+                <Route path="/user_guides" exact element={<TutorialDashboard />} />
+                <Route path="/user_guides/admin" exact element={<TutorialAdmin />} />
+                <Route path="/user_guides/instructor" exact element={<TutorialInstructor />} />
+                <Route path="/user_guides/student" exact element={<TutorialStudent />} />
                 <Route path="/user_guides/:role/:tutorial" element={<MarkdownDisplay />} />
                 
                 <Route exact path="/dashboard" element={<Dashboard />} />
