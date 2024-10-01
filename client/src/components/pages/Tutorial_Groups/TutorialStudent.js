@@ -5,26 +5,26 @@ import { Link } from 'react-router-dom';
 
 function formatString(str) {
     const smallWords = ['a', 'an', 'the', 'and', 'or', 'but', 'on', 'in', 'with'];
-  
+
     return str
-      .replace(/_/g, ' ') // Replace all underscores with spaces
-      .split(' ')          // Split the string into an array of words
-      .map((word, index) => {
-        // Capitalize the first word or any word not in the smallWords list
-        if (index === 0 || !smallWords.includes(word)) {
-          return word.charAt(0).toUpperCase() + word.slice(1);
-        } else {
-          return word; // Keep small words lowercase
-        }
-      })
-      .join(' ');          // Join the array back into a string
-  }
+        .replace(/_/g, ' ') // Replace all underscores with spaces
+        .split(' ')          // Split the string into an array of words
+        .map((word, index) => {
+            // Capitalize the first word or any word not in the smallWords list
+            if (index === 0 || !smallWords.includes(word)) {
+                return word.charAt(0).toUpperCase() + word.slice(1);
+            } else {
+                return word; // Keep small words lowercase
+            }
+        })
+        .join(' ');          // Join the array back into a string
+}
 const TutorialStudent = () => {
     const [tutorials, setTutorials] = useState([]);
 
     useEffect(() => {
         const fetchTutorials = async () => {
-            
+
             const allTutorials = [];
 
 
@@ -33,11 +33,10 @@ const TutorialStudent = () => {
                 const folders = await response.json();
 
                 folders.forEach(tutorial => {
-                    allTutorials.push({tutorial});
+                    allTutorials.push({ tutorial });
                 });
             }
             setTutorials(allTutorials);
-            console.log(allTutorials)
         };
 
         fetchTutorials();
@@ -46,41 +45,42 @@ const TutorialStudent = () => {
     return (
         <Box sx={{
             pt: 8,
-            justifyContent:"center",
-            display:"flex",
-            flexDirection:"column",
-            justifyItems:"center",
-            width:"100%",
+            justifyContent: "center",
+            display: "flex",
+            flexDirection: "column",
+            justifyItems: "center",
+            width: "100%",
         }}>
 
-            <Button component={Link} to={`/user_guides/`} sx={{textTransform: 'none', 
+            <Button component={Link} to={`/user_guides/`} sx={{
+                textTransform: 'none',
                 '&:hover': {
                     textDecoration: 'underline', // Adds underline on hover
-                    },
-                position:"absolute",
-                top:80,
-                }}>
+                },
+                position: "absolute",
+                top: 80,
+            }}>
                 Back to User Guides
             </Button>
 
 
 
             <Box sx={{
-                width:"100%",
-                mt:5,
-                mb:7,
-                justifyContent:"center",
-                justifyItems:"center",
-                display:"flex"
+                width: "100%",
+                mt: 5,
+                mb: 7,
+                justifyContent: "center",
+                justifyItems: "center",
+                display: "flex"
             }}>
-            <Typography variant="h3">
-                Student User Guides
-            </Typography>
+                <Typography variant="h3">
+                    Student User Guides
+                </Typography>
             </Box>
-            <Divider/>
+            <Divider />
 
-            <Grid container spacing={3}sx={{my:3}}>
-                {tutorials.map(({tutorial}, index) => (
+            <Grid container spacing={3} sx={{ my: 3 }}>
+                {tutorials.map(({ tutorial }, index) => (
                     <Grid item xs={12} sm={6} md={4} key={index}>
                         <Card>
                             <CardActionArea component={Link} to={`/user_guides/student/${tutorial}/`}>

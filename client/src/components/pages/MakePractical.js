@@ -31,7 +31,6 @@ const UploadVideo = ({ setVideoLink, practicalId, videoUploaded, setVideoUploade
 
         try {
             // Step 1: Get the signed upload URL from your backend
-            console.log("Getting url")
 
             const getUploadUrlResponse = await axios.post(`${process.env.REACT_APP_API_HOST}/api/getUploadUrl`, {
                 fileName: file.name, // Name of the video file
@@ -48,7 +47,6 @@ const UploadVideo = ({ setVideoLink, practicalId, videoUploaded, setVideoUploade
             });
 
             if (uploadResponse.status === 200) {
-                console.log('File uploaded successfully to Google Cloud Storage.');
 
                 // Step 3: You may want to derive the public URL of the uploaded file (depending on your setup)
                 // Assuming the bucket is publicly accessible, the public URL would typically be:
@@ -339,7 +337,6 @@ export default function MakePractical() {
                     else {
                         setIsInstructor(false);
                     }
-                    console.log(userData.role)
                 }
 
 
