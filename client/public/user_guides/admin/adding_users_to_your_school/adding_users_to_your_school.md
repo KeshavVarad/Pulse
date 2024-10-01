@@ -22,8 +22,8 @@ Login to your Admin account and navigate to your **Dashboard**.
 To add Students to a School:
 1. Click **Invite Student** on the **Admin Dashboard**.
 ![Invite Student](./invite_student.png)
-2. Enter the their **School/Work Email**.
-3. Click **Invite**.
+1. Enter their **School/Work Email**.
+2. Click **Invite**.
 
 
 ## **Adding Instructors**
@@ -31,8 +31,8 @@ To add Students to a School:
 To add Students to a School:
 1. Click **Invite Instructor** on the **Admin Dashboard**.
 ![Invite Instructor](./invite_instructor.png)
-2. Enter the their **School/Work Email**.
-3. Click **Invite**.
+1. Enter their **School/Work Email**.
+2. Click **Invite**.
 
 
 ## **Adding Other Admins**
@@ -40,5 +40,5 @@ To add Students to a School:
 To add other Admins to a School:
 1. Click **Invite Admin** on the **Admin Dashboard**.
 ![Invite Admin](./invite_admin.png)
-2. Enter the their **School/Work Email**.
-3. Click **Invite**.
+1. Enter their **School/Work Email**.
+2. Click **Invite**.
