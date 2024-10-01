@@ -1,11 +1,11 @@
 import React, { useEffect, useState } from 'react';
-import { Container, CircularProgress, Typography, List, ListItem, Box, Button } from '@mui/material';
+import { Container, CircularProgress, Typography, List, ListItem, Box, Button,Link } from '@mui/material';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm'; // For GitHub Flavored Markdown
 import { useParams } from 'react-router-dom';
 import CustomImage from './CustomImage';
 import { useTheme } from '@mui/material/styles';
-import { Link } from 'react-router-dom';
+import  {Link as Link_react} from 'react-router-dom';
 
 const MarkdownDisplay = () => {
     const { role, tutorial } = useParams();
@@ -60,7 +60,7 @@ const MarkdownDisplay = () => {
             ) : (
                 <Box>
                     
-                    <Button component={Link} to={`/user_guides/${role}/`} sx={{textTransform: 'none', 
+                    <Button component={Link_react} to={`/user_guides/${role}/`} sx={{textTransform: 'none', 
                 '&:hover': {
                     textDecoration: 'underline', // Adds underline on hover
                     },
