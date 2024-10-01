@@ -30,6 +30,7 @@ import { CircularProgress, FormControl, InputLabel, Select, MenuItem } from '@mu
 import axios from "axios"
 import LightbulbOutlinedIcon from '@mui/icons-material/LightbulbOutlined';
 import BookIcon from '@mui/icons-material/Book';
+import InfoIcon from '@mui/icons-material/Info';
 
 
 const BugReportModal = ({ openModal, setOpenModal }) => {
@@ -414,7 +415,7 @@ export default function SideBar() {
                 <ListItem key={"User Guides"} disablePadding>
                     <ListItemButton component={Link} to={"/tutorials"}
                         variant="contained" color="secondary">
-                        <ListItemIcon><BookIcon /></ListItemIcon>
+                        <ListItemIcon><InfoIcon /></ListItemIcon>
                         <ListItemText primary={"User Guides"} />
                     </ListItemButton>
                 </ListItem>

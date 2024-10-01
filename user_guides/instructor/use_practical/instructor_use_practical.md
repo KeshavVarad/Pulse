@@ -4,6 +4,7 @@
 - [Using a Practical (Instructor)](#using-a-practical-instructor)
     - [Making Tasks](#making-tasks)
     - [Adding Comments](#adding-comments)
+      - [Adding Additional Feedback](#adding-additional-feedback)
     - [Removing Comments](#removing-comments)
     - [Using Discussions](#using-discussions)
 ---
@@ -33,8 +34,13 @@ Clicking any of these buttons will add a comment of that rating in that task at 
 
 The comments will also appear below the video, with your most recent comments sorted at the top.
 
+
+#### Adding Additional Feedback
+
 ---
 
 ### Removing Comments
+
+
 
 ### Using Discussions

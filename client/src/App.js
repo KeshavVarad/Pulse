@@ -22,6 +22,9 @@ import LearnMore from './components/pages/LearnMore';
 import UserGuide from './components/pages/UserGuide';
 import MarkdownDisplay from './components/elements/MarkdownDisplay';
 import TutorialDashboard from './components/pages/TutorialDashboard';
+import TutorialAdmin from './components/pages/Tutorial_Groups/TutorialAdmin';
+import TutorialInstructor from './components/pages/Tutorial_Groups/TutorialInstructor';
+import TutorialStudent from './components/pages/Tutorial_Groups/TutorialStudent';
 
 function App() {
 
@@ -45,7 +48,11 @@ function App() {
 
               <Routes>
                 <Route path="/tutorials" exact element={<TutorialDashboard />} />
+                <Route path="/tutorials/admin" exact element={<TutorialAdmin />} />
+                <Route path="/tutorials/instructor" exact element={<TutorialInstructor />} />
+                <Route path="/tutorials/student" exact element={<TutorialStudent />} />
                 <Route path="/user_guides/:role/:tutorial" element={<MarkdownDisplay />} />
+                
                 <Route exact path="/dashboard" element={<Dashboard />} />
                 <Route exact path="/" element={<Home />} />
                 <Route exact path="/register_school" element={<Register />} />

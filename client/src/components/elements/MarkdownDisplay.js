@@ -1,9 +1,10 @@
 import React, { useEffect, useState } from 'react';
-import { Container, CircularProgress } from '@mui/material';
+import { Container, CircularProgress, Typography, Link, List, ListItem, Box } from '@mui/material';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm'; // For GitHub Flavored Markdown
 import { useParams } from 'react-router-dom';
 import CustomImage from './CustomImage';
+import { useTheme } from '@mui/material/styles';
 
 const MarkdownDisplay = () => {
     const { role, tutorial } = useParams();
@@ -11,7 +12,10 @@ const MarkdownDisplay = () => {
 
     const [markdownContent, setMarkdownContent] = useState('');
     const [loading, setLoading] = useState(true);
+    const [imagesLoaded, setImagesLoaded] = useState(false); // New state to track image loading status
+    const theme = useTheme(); // Accessing the Material UI theme
 
+    // Fetch Markdown content
     useEffect(() => {
         const fetchMarkdown = async () => {
             const response = await fetch(tutorialPath);
@@ -23,25 +27,88 @@ const MarkdownDisplay = () => {
         fetchMarkdown();
     }, [tutorialPath]);
 
-    // Check if images are loaded, if not reload the page
+    // Check if all images have loaded
     useEffect(() => {
         const images = document.querySelectorAll('img');
-        const allImagesLoaded = Array.from(images).every(img => img.complete);
+        let imageLoadPromises = Array.from(images).map((img) => {
+            if (img.complete) {
+                return Promise.resolve();
+            } else {
+                return new Promise((resolve) => {
+                    img.onload = resolve;
+                    img.onerror = resolve; // Ensure that errors are handled too
+                });
+            }
+        });
 
-        if (!allImagesLoaded && !loading) {
-            window.location.reload(); // Force reload if images are not loaded
-        }
-    }, [markdownContent, loading]);
+        Promise.all(imageLoadPromises).then(() => {
+            setImagesLoaded(true); // Set images loaded to true after all images are loaded
+        });
+    }, [markdownContent]);
+
+    // Only show content after both markdown and images have loaded
+    const isLoading = loading || !imagesLoaded;
 
     return (
-        <Container sx={{ pt: 10 }}>
-            {loading ? (
-                <CircularProgress /> // Show a loading spinner while fetching
+        <Container maxWidth="md" sx={{ pt: 10, pb: 5 }}>
+            {isLoading ? (
+                <Box sx={{ display: 'flex', justifyContent: 'center' }}>
+                    <CircularProgress />
+                </Box>
             ) : (
                 <ReactMarkdown
                     remarkPlugins={[remarkGfm]}
                     components={{
-                        img: ({ node, ...props }) => <CustomImage {...props} />, // Use CustomImage for img elements
+                        h1: ({ children }) => (
+                            <Typography variant="h3" gutterBottom sx={{ mt: theme.spacing(4), mb: theme.spacing(2) }}>
+                                {children}
+                            </Typography>
+                        ),
+                        h2: ({ children }) => (
+                            <Typography variant="h4" gutterBottom sx={{ mt: theme.spacing(3), mb: theme.spacing(2) }}>
+                                {children}
+                            </Typography>
+                        ),
+                        h3: ({ children }) => (
+                            <Typography variant="h5" gutterBottom sx={{ mt: theme.spacing(2), mb: theme.spacing(1.5) }}>
+                                {children}
+                            </Typography>
+                        ),
+                        p: ({ children }) => (
+                            <Typography variant="body1" paragraph sx={{ mt: theme.spacing(1.5), mb: theme.spacing(1.5) }}>
+                                {children}
+                            </Typography>
+                        ),
+                        a: ({ href, children }) => (
+                            <Link href={href} color="primary" sx={{ textDecoration: 'none' }}>
+                                {children}
+                            </Link>
+                        ),
+                        ul: ({ children }) => (
+                            <List sx={{ listStyleType: 'disc', pl: theme.spacing(4), mt: theme.spacing(2) }}>
+                                {children}
+                            </List>
+                        ),
+                        li: ({ children }) => (
+                            <ListItem sx={{ display: 'list-item', paddingLeft: 0 }}>
+                                {children}
+                            </ListItem>
+                        ),
+                        img: ({ node, ...props }) => (
+                            <Box
+                                component="img"
+                                src={props.src}
+                                alt={props.alt}
+                                sx={{
+                                    maxWidth: '100%',
+                                    marginTop: theme.spacing(2),
+                                    marginBottom: theme.spacing(2),
+                                    display: 'block',
+                                    marginLeft: 'auto',
+                                    marginRight: 'auto',
+                                }}
+                            />
+                        ),
                     }}
                 >
                     {markdownContent}

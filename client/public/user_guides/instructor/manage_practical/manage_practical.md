@@ -2,20 +2,19 @@
 
 ---
 
-**In this guide:**
-- [Managing Practicals](#managing-practicals)
-    - [Adding Students](#adding-students)
-    - [Removing Students](#removing-students)
-    - [Deleting a Practical](#deleting-a-practical)
+In this guide:
+- **Adding Students**
+- **Removing Students**
+- **Deleting a Practical**
 ---
 
 1. Login to your Instructor account and navigate to your **Instructor Dashboard**.
 
-![Instructor Dashboard](./instructor_dashboard.png){width=60%}
+![Instructor Dashboard](./instructor_dashboard.png)
 
-2. Select the **Settings** icon for the Practical
+1. Select the **Settings** icon for the Practical
 
-![Settings](settings.png){width=60%}
+![Settings](settings.png)
 
 
 Then on the **Practical Settings Tab** you can:
@@ -33,11 +32,11 @@ Then on the **Practical Settings Tab** you can:
 To add additional students to a Practical:
 
 1. Enter their school/work email into **Add Student** box.
-   ![Adding Students](adding_students.png){width=70%}
+   ![Adding Students](adding_students.png)
 2. Click the **+** Icon.
-   ![Plus](plus.png){width=60%}
+   ![Plus](plus.png)
 3. Click **Update Practical**.
-   ![Update Adding](update_add.png){width=60%}
+   ![Update Adding](update_add.png)
 
 ---
 ### Removing Students
@@ -45,13 +44,13 @@ To add additional students to a Practical:
 To remove students from a Practical:
 
 1. Click the **Trash Icon** next to the student's email.
-   ![Removing Students](removing_students.png){width=70%}
+   ![Removing Students](removing_students.png)
 2. Click **Update Practical**.
-   ![Update Removing](update_remove.png){width=60%}
+   ![Update Removing](update_remove.png)
 
 ---
 ### Deleting a Practical
 
-Click the **Delete Practical**
+Click the **Delete Practical** button.
 
-![Delete Practical](delete_practical.png){width=70%}
+![Delete Practical](delete_practical.png)
