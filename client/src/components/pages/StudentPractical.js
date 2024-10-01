@@ -157,7 +157,7 @@ export default function StudentPractical() {
             }
 
             const result = await response.text();
-            console.log(result); // You can handle success feedback here if needed
+
         } catch (error) {
             console.error("Error creating notification:", error);
         }

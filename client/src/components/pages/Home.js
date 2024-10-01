@@ -19,6 +19,9 @@ const Home = () => {
                 <Button variant="contained" color="primary" sx={{ display: 'block', margin: '1.5rem auto', padding: '0.75rem 2.5rem' }} component={Link} to="/learn_more">
                     Get Started
                 </Button>
+                <Button variant="contained" color="primary" sx={{ display: 'block', margin: '1.5rem auto', padding: '0.75rem 2.5rem' }} component={Link} to="/user_guides">
+                    See the User Guides
+                </Button>
             </Paper>
 
             {/* Section 1: Efficient Platform for Instructors */}

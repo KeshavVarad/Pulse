@@ -90,8 +90,6 @@ const ChatInterface = () => {
                     practicals: cleaned_practical_data
                 }
 
-                console.log(cleanedData)
-
                 setUserPerfData(cleanedData)
 
             } catch (e) {

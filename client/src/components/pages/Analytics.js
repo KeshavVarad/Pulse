@@ -237,8 +237,6 @@ const LineChartComponent = ({ data, isDemo }) => {
 const PracticalChart = ({ practicalData }) => {
     const taskNames = Array.from(new Set(practicalData.flatMap((p) => p.tasks.map((t) => t.name))));
 
-    console.log(taskNames)
-
     const [selectedTasks, setSelectedTasks] = useState([]);
     const [chartData, setChartData] = useState({
         labels: [], // No labels initially

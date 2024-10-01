@@ -453,7 +453,6 @@ export default function InstructorPractical() {
             practicalUpdateData.tasks = newTasks
             setTasks(newTasks)
             setSchoolTaskData(newSchoolTaskData)
-            console.log(rating_sum)
             // BUG HERE ABOVE
 
             const updatePracticalRequestOptions = {
@@ -481,7 +480,7 @@ export default function InstructorPractical() {
 
 
             let newCommentsData = comments.slice()
-            console.log(practicalUpdateData);
+
             newCommentsData.unshift(newComment)
 
             setComments(newCommentsData)
@@ -638,7 +637,7 @@ export default function InstructorPractical() {
 
 
             let newComments = comments.slice()
-            console.log(practicalUpdateData)
+
             newComments.splice(idx, 1)
 
             setComments(newComments)
@@ -899,7 +898,6 @@ export default function InstructorPractical() {
             const videoParams = practical.video_link.split("/")
             setVideoId(videoParams[videoParams.length - 1])
 
-            console.log(practical.video_link)
 
             setVideoLink(practical.video_link)
 
@@ -908,7 +906,7 @@ export default function InstructorPractical() {
 
             const commentIds = practical.comments
 
-            console.log("Comment Ids: ", commentIds)
+
             const commentsData = []
 
             commentIds.map(async (commentId, idx) => {
@@ -1045,27 +1043,27 @@ export default function InstructorPractical() {
                                             maxWidth: "160px",
                                             height: "100%",
                                             pl: 1,
-                                            display:"flex"
+                                            display: "flex"
                                         }}>
                                             <Typography variant="h7">{task.name}</Typography>
                                         </Box>
 
-                                        <Box sx={{ minWidth: "180px", maxWidth: "180px", display:"flex"}}>
+                                        <Box sx={{ minWidth: "180px", maxWidth: "180px", display: "flex" }}>
                                             <ButtonGroup variant="contained" aria-label="Basic button group" >
-                                                <Button onClick={() => { handleRating(task, 1) }} variant="contained" color="red" disableElevation sx={{ width: "60px",textTransform:'none' }}>Red</Button>
-                                                <Button onClick={() => { handleRating(task, 3) }} variant="contained" color="yellow" disableElevation sx={{ width: "60px",textTransform:'none' }}>Yellow</Button>
-                                                <Button onClick={() => { handleRating(task, 5) }} variant="contained" color="green" disableElevation sx={{ width: "60px",textTransform:'none' }}>Green</Button>
+                                                <Button onClick={() => { handleRating(task, 1) }} variant="contained" color="red" disableElevation sx={{ width: "60px", textTransform: 'none' }}>Red</Button>
+                                                <Button onClick={() => { handleRating(task, 3) }} variant="contained" color="yellow" disableElevation sx={{ width: "60px", textTransform: 'none' }}>Yellow</Button>
+                                                <Button onClick={() => { handleRating(task, 5) }} variant="contained" color="green" disableElevation sx={{ width: "60px", textTransform: 'none' }}>Green</Button>
                                             </ButtonGroup>
                                         </Box>
-                                        <Box sx={{width:"40px",px:1}}>
-                                        <IconButton aria-label="delete" onClick={() => handleTaskChatButton(task)}>
-                                        <InsertCommentIcon />
-                                        </IconButton>
+                                        <Box sx={{ width: "40px", px: 1 }}>
+                                            <IconButton aria-label="delete" onClick={() => handleTaskChatButton(task)}>
+                                                <InsertCommentIcon />
+                                            </IconButton>
                                         </Box>
-                                        <Box sx={{width:"40px",px:1}}>
-                                        <IconButton aria-label="delete" onClick={() => handleRemoveTask(task)}>
-                                        <DeleteIcon />
-                                        </IconButton>
+                                        <Box sx={{ width: "40px", px: 1 }}>
+                                            <IconButton aria-label="delete" onClick={() => handleRemoveTask(task)}>
+                                                <DeleteIcon />
+                                            </IconButton>
                                         </Box>
                                     </Box>
 
@@ -1232,7 +1230,7 @@ export default function InstructorPractical() {
                         justifyContent: "center"
                     }}>
                         <Typography id="modal-modal-title" variant="h4" component="h2">
-                            {taskToDisplay ? taskToDisplay.name + " Discussion": "No Task"}
+                            {taskToDisplay ? taskToDisplay.name + " Discussion" : "No Task"}
                         </Typography>
                         <Grid item sx={{
                             width: "100%",
@@ -1270,14 +1268,14 @@ export default function InstructorPractical() {
 
                         <Box sx={{
                             display: "flex",
-                            width:"80%"
+                            width: "80%"
                         }}>
                             <TextField label="New Message"
                                 variant="outlined"
                                 color="secondary"
                                 sx={{
                                     mx: 2
-                                    
+
                                 }}
                                 onChange={e => setMessage(e.target.value)}
                                 fullWidth

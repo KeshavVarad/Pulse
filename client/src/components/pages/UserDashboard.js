@@ -311,7 +311,6 @@ export default function UserDashboard() {
 
                 if (userData.role === "instructor") {
                     setPracticalPerformanceData(practicalData)
-                    console.log(practicalData)
                 }
 
                 const displayData = []
@@ -410,7 +409,7 @@ export default function UserDashboard() {
                 alignItems: "center",
                 pt: 8,
                 flexDirection: "column",
-                
+
             }}>
                 <Box sx={{
                     py: 5

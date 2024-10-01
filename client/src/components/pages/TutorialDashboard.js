@@ -28,7 +28,7 @@ const TutorialDashboard = () => {
             }
 
             setTutorials(allTutorials);
-            console.log(allTutorials)
+
         };
 
         fetchTutorials();
@@ -37,109 +37,112 @@ const TutorialDashboard = () => {
     return (
         <Box sx={{
             pt: 8,
-            justifyContent:"center",
-            display:"flex",
-            flexDirection:"column",
-            justifyItems:"center",
-            alignContent:"center",
-            alignContent:"center",
-            width:"100%",
+            justifyContent: "center",
+            display: "flex",
+            flexDirection: "column",
+            justifyItems: "center",
+            alignContent: "center",
+            alignContent: "center",
+            width: "100%",
         }}>
             <Box sx={{
-                mt:5,
-                mb:7,
-                width:"100%",
-                justifyContent:"center",
-                justifyItems:"center",
-                display:"flex",
+                mt: 5,
+                mb: 7,
+                width: "100%",
+                justifyContent: "center",
+                justifyItems: "center",
+                display: "flex",
             }}>
-            <Typography variant="h3">
-                User Guides
-            </Typography>
+                <Typography variant="h3">
+                    User Guides
+                </Typography>
             </Box>
-            
-            <Divider/>
+
+            <Divider />
 
 
-            
-            <Grid container spacing={2} sx={{my:3}}>
+
+            <Grid container spacing={2} sx={{ my: 3 }}>
                 <Grid item xs={4} sx={{}}>
-                <Card>
-                <CardActionArea component={Link} to={`/user_guides/admin`} sx={{textTransform: 'none', '&:hover': {
-                    textDecoration: 'underline', // Adds underline on hover
-                    }
+                    <Card>
+                        <CardActionArea component={Link} to={`/user_guides/admin`} sx={{
+                            textTransform: 'none', '&:hover': {
+                                textDecoration: 'underline', // Adds underline on hover
+                            }
 
-                }}>
-                    <CardContent sx={{
-                        
-                        height:"200px",
-                        display:"flex",
-                        flexDirection:"column",
-                        alignContent:"center",
-                        justifyContent:"center",
-                    }}>
+                        }}>
+                            <CardContent sx={{
 
-                    <SchoolRoundedIcon size='large' color="primary.main"/>
-                    <Typography variant="h4">
-                        Administrators
-                    </Typography>
-                    </CardContent>
+                                height: "200px",
+                                display: "flex",
+                                flexDirection: "column",
+                                alignContent: "center",
+                                justifyContent: "center",
+                            }}>
+
+                                <SchoolRoundedIcon size='large' color="primary.main" />
+                                <Typography variant="h4">
+                                    Administrators
+                                </Typography>
+                            </CardContent>
 
 
-                </CardActionArea>
-                </Card>
+                        </CardActionArea>
+                    </Card>
                 </Grid>
                 <Grid item xs={4}>
-                <Card>
-                <CardActionArea component={Link} to={`/user_guides/instructor`} sx={{textTransform: 'none', '&:hover': {
-                    textDecoration: 'underline', // Adds underline on hover
-                    }
+                    <Card>
+                        <CardActionArea component={Link} to={`/user_guides/instructor`} sx={{
+                            textTransform: 'none', '&:hover': {
+                                textDecoration: 'underline', // Adds underline on hover
+                            }
 
-                }}>
-                    <CardContent sx={{
-                        
-                        height:"200px",
-                        display:"flex",
-                        flexDirection:"column",
-                        alignContent:"center",
-                        justifyContent:"center",
-                    }}>
+                        }}>
+                            <CardContent sx={{
 
-                    <HistoryEduRoundedIcon size='large' color="primary.main"/>
-                    <Typography variant="h4">
-                        Instructors
-                    </Typography>
-                    </CardContent>
+                                height: "200px",
+                                display: "flex",
+                                flexDirection: "column",
+                                alignContent: "center",
+                                justifyContent: "center",
+                            }}>
+
+                                <HistoryEduRoundedIcon size='large' color="primary.main" />
+                                <Typography variant="h4">
+                                    Instructors
+                                </Typography>
+                            </CardContent>
 
 
-                </CardActionArea>
-                </Card>
+                        </CardActionArea>
+                    </Card>
                 </Grid>
                 <Grid item xs={4}>
-                <Card>
-                <CardActionArea component={Link} to={`/user_guides/student`} sx={{textTransform: 'none', '&:hover': {
-                    textDecoration: 'underline', // Adds underline on hover
-                    }
+                    <Card>
+                        <CardActionArea component={Link} to={`/user_guides/student`} sx={{
+                            textTransform: 'none', '&:hover': {
+                                textDecoration: 'underline', // Adds underline on hover
+                            }
 
-                }}>
-                    <CardContent sx={{
-                        
-                        height:"200px",
-                        display:"flex",
-                        flexDirection:"column",
-                        alignContent:"center",
-                        justifyContent:"center",
-                    }}>
+                        }}>
+                            <CardContent sx={{
 
-                    <PersonIcon size='large' color="primary.main"/>
-                    <Typography variant="h4">
-                        Students
-                    </Typography>
-                    </CardContent>
+                                height: "200px",
+                                display: "flex",
+                                flexDirection: "column",
+                                alignContent: "center",
+                                justifyContent: "center",
+                            }}>
+
+                                <PersonIcon size='large' color="primary.main" />
+                                <Typography variant="h4">
+                                    Students
+                                </Typography>
+                            </CardContent>
 
 
-                </CardActionArea>
-                </Card>
+                        </CardActionArea>
+                    </Card>
                 </Grid>
 
 

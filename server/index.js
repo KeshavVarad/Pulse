@@ -30,23 +30,10 @@ import notificationRoute from "./routes/notificationRoutes.js"
 import { Storage } from '@google-cloud/storage'
 
 
-const speechClient = new SpeechClient({
-    keyFilename: `${process.env.GCLOUD_TRANSCRIPT_KEY_FILE}`, // Path to your service account key file
-});
-
-
 const storage = new Storage({
     projectId: process.env.GCLOUD_PROJECT_ID,
     keyFilename: process.env.GCLOUD_KEY_FILE, // Path to the service account key file
 });
-
-const transcriptionQueue = new Bull('transcription', {
-    redis: {
-        host: 'localhost', // or your Redis server IP
-        port: 6379,        // default Redis port
-    },
-});
-
 
 const bucket = storage.bucket(process.env.GCLOUD_STORAGE_BUCKET);
 
@@ -86,10 +73,6 @@ app.use(express.json());
 
 app.use(express.urlencoded({ extended: false }));
 // app.use(VerifyToken);
-
-setQueues([
-    new BullAdapter(transcriptionQueue)
-]);
 
 app.use('/admin/queues', router);
 
@@ -132,140 +115,6 @@ app.use('/api', schoolRoute);
 app.use('/api', inviteRoute);
 app.use('/api', notificationRoute);
 
-// Function to upload the transcript to Google Cloud Storage
-async function uploadTranscriptToGCS(transcript, fileName) {
-    // Create a temporary local file with the transcript content
-    const tempFilePath = path.join(__dirname, `${fileName}.txt`);
-
-    fs.writeFileSync(tempFilePath, transcript);
-
-    // Define the destination path within the bucket (e.g., transcripts/fileName.txt)
-    const destination = `transcripts/${fileName}.txt`;
-
-    // Upload the file to the specified Google Cloud Storage bucket
-    await bucket.upload(tempFilePath, {
-        destination: destination,
-        public: false, // Optional: Set to true if you want the file to be publicly accessible
-    });
-
-    await storage.bucket(bucketName).file(destination).makePublic();
-
-
-    // Delete the temporary file after upload
-    fs.unlinkSync(tempFilePath);
-
-    const publicUrl = `https://storage.googleapis.com/${process.env.GCLOUD_STORAGE_BUCKET}/${destination}`;
-    return publicUrl;
-
-}
-
-function convertToGcsUri(publicUrl) {
-    // Check if the URL is a valid Google Cloud Storage URL
-    const baseUrl = 'https://storage.googleapis.com/';
-    if (publicUrl.startsWith(baseUrl)) {
-        // Replace the base URL with 'gs://'
-        return publicUrl.replace(baseUrl, 'gs://');
-    } else {
-        throw new Error('Invalid Google Cloud Storage public URL.');
-    }
-}
-
-async function transcribeLongAudio(publicUrl) {
-    const audio = {
-        uri: convertToGcsUri(publicUrl),
-    };
-
-    const config = {
-        encoding: 'LINEAR16', // Adjust based on your audio file
-        sampleRateHertz: 16000, // Adjust based on your audio file
-        languageCode: 'en-US', // Adjust based on your audio language
-    };
-
-    const request = {
-        audio: audio,
-        config: config,
-    };
-
-    try {
-        const [operation] = await speechClient.longRunningRecognize(request);
-        const [response] = await operation.promise();
-        const transcripts = response.results.map(result => result.alternatives[0].transcript);
-        const transcriptText = transcripts.join('\n');
-
-        const fileName = `transcript_${Date.now()}`;
-
-        const transcriptUrl = await uploadTranscriptToGCS(transcriptText, fileName);
-        return transcriptUrl;
-    } catch (error) {
-        console.error('Error transcribing audio:', error);
-        throw new Error('Transcription failed');
-    }
-}
-
-
-// Route to transcribe video audio and upload the transcript
-app.post('/api/transcribe', async (req, res) => {
-    const { practicalId, videoUrl } = req.body;
-
-    console.log(practicalId, videoUrl)
-
-    if (!practicalId || !videoUrl) {
-        return res.status(400).json({ error: 'practicalId and videoUri are required.' });
-    }
-
-    try {
-        // Add the transcription job to the queue
-        await transcriptionQueue.add({
-            practicalId: practicalId,
-            publicUrl: videoUrl
-        });
-
-        res.status(202).json({
-            message: 'Transcription is in progress.',
-            practicalId: practicalId
-        });
-    } catch (error) {
-        console.error('Error queuing transcription job:', error);
-        res.status(500).json({ error: 'Failed to start transcription process.' });
-    }
-});
-
-const updatePractical = async (id, data) => {
-    try {
-        const practical = doc(db, 'practicals', id);
-        await updateDoc(practical, data);
-        console.log(`Practical ${id} updated successfully`);
-    } catch (error) {
-        console.error(`Error updating practical ${id}:`, error.message);
-    }
-};
-
-transcriptionQueue.on('added', (job) => {
-    console.log(`Job ${job.id} added to the queue.`);
-});
-
-transcriptionQueue.on('completed', (job) => {
-    console.log(`Job ${job.id} completed.`);
-});
-
-transcriptionQueue.on('failed', (job, err) => {
-    console.error(`Job ${job.id} failed with error: ${err.message}`);
-});
-
-
-transcriptionQueue.process(async (job) => {
-    const { practicalId, publicUrl } = job.data;
-
-    try {
-        const transcriptUrl = await transcribeLongAudio(publicUrl); // Call your transcription function
-
-        // Update the practical with the transcript URL
-        await updatePractical(practicalId, { transcript_link: transcriptUrl });
-
-    } catch (error) {
-        console.error(`Error processing transcription for practical ${practicalId}:`, error);
-    }
-});
 
 app.post('/api/getUploadUrl', async (req, res) => {
     try {

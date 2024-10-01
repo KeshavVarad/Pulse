@@ -35,7 +35,6 @@ const GCloudVideoPlayer = forwardRef(({ videoLink, onPlayerReady, onVideoChange 
                 }} // Send current time to parent
                 onDuration={(duration) => {
                     // Handle video duration if needed
-                    console.log('Video Duration:', duration);
                 }}
                 onError={(e) => {
                     console.error('Error occurred while playing the video:', e);
