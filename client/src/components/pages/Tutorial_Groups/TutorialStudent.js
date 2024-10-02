@@ -81,7 +81,7 @@ const TutorialStudent = () => {
 
             <Grid container spacing={3} sx={{ my: 3 }}>
                 {tutorials.map(({ tutorial }, index) => (
-                    <Grid item xs={12} sm={6} md={4} key={index}>
+                    <Grid item xs={12} sm={6} md={3} key={index}>
                         <Card>
                             <CardActionArea component={Link} to={`/user_guides/student/${tutorial}/`}>
                                 <CardContent>

@@ -2,7 +2,7 @@
 ---
 
 
-*By Registering a School, you will automatically create a new Admin account to manage it in the process. Therefore, you will not need to register a new Admin Account for the school beforehand. However, to register a different Admin Account for a preexisting school, follow this: **[Registering an Account](/user_guides/admin/registering_an_account/)***
+*By Registering a School, you will automatically create a new Admin account to manage it in the process. Therefore, you will not need to register a new Admin Account for the school beforehand. However, to register a different Admin Account for a preexisting school, go to https://the-pulse-app.com/register_user*
 
 
 From the Home Page navigate to "Register School" or follow this link: https://the-pulse-app.com/register_school
