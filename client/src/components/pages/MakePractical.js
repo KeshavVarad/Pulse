@@ -10,7 +10,7 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import Joyride from 'react-joyride';
 import axios from "axios";
 
-const UploadVideo = ({ setVideoLink, practicalId, videoUploaded, setVideoUploaded }) => {
+const UploadVideo = ({ setVideoLink, practicalId, schoolId, setVideoUploaded }) => {
     const [file, setFile] = useState(null);
     const [error, setError] = useState(null);
     const [loading, setLoading] = useState(false);
@@ -34,7 +34,9 @@ const UploadVideo = ({ setVideoLink, practicalId, videoUploaded, setVideoUploade
 
             const getUploadUrlResponse = await axios.post(`${process.env.REACT_APP_API_HOST}/api/getUploadUrl`, {
                 fileName: file.name, // Name of the video file
-                contentType: file.type // MIME type of the video
+                contentType: file.type, // MIME type of the video,
+                practicalId: practicalId,
+                schoolId: schoolId
             });
 
             const { url } = getUploadUrlResponse.data; // The signed URL
@@ -51,7 +53,7 @@ const UploadVideo = ({ setVideoLink, practicalId, videoUploaded, setVideoUploade
                 // Step 3: You may want to derive the public URL of the uploaded file (depending on your setup)
                 // Assuming the bucket is publicly accessible, the public URL would typically be:
 
-                const videoUrl = `https://storage.googleapis.com/pulse-4d3a4.appspot.com/${file.name}`;
+                const videoUrl = `https://storage.googleapis.com/pulse-4d3a4.appspot.com/${schoolId}/${practicalId}/${file.name}`;
 
                 setVideoLink(videoUrl); // Store the public URL or pass it to the parent component
             } else {
@@ -115,6 +117,8 @@ export default function MakePractical() {
     const [schoolInstructors, setSchoolInstructors] = useState([]);
 
     const [practicalId, setPracticalId] = useState();
+    const [schoolId, setSchoolId] = useState();
+
 
     useEffect(() => {
         if (!practicalId) {
@@ -329,6 +333,7 @@ export default function MakePractical() {
                     const userData = await user_res.json()
 
                     setMakePracticalTutorial(userData.make_practical_tutorial)
+                    setSchoolId(userData.school_id)
 
                     if (userData.role === "instructor") {
                         setInstructor(userData.email);
@@ -464,7 +469,7 @@ export default function MakePractical() {
 
                 <form onSubmit={handleFormSubmit}>
                     <Box sx={{ mb: 3, border: '1px solid #ccc', borderRadius: 4, padding: 2, backgroundColor: '#F4F4F4' }}>
-                        <UploadVideo setVideoLink={setVideoLink} practicalId={practicalId} videoUploaded={videoUploaded} setVideoUploaded={setVideoUploaded} />
+                        <UploadVideo setVideoLink={setVideoLink} practicalId={practicalId} schoolId={schoolId} setVideoUploaded={setVideoUploaded} />
                     </Box>
                     <TextField label="Name"
                         onChange={e => setPracticalName(e.target.value)}

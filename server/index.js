@@ -7,11 +7,7 @@ import path from "path"
 import axios from "axios"
 import multer from "multer"
 import fs from "fs"
-import Bull from "bull"
-import { SpeechClient } from '@google-cloud/speech';
-import { doc, updateDoc } from "firebase/firestore"
-import { BullAdapter } from 'bull-board';
-import { setQueues, router } from 'bull-board';
+
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -28,7 +24,6 @@ import inviteRoute from "./routes/inviteRoutes.js"
 import notificationRoute from "./routes/notificationRoutes.js"
 
 import { Storage } from '@google-cloud/storage'
-
 
 const storage = new Storage({
     projectId: process.env.GCLOUD_PROJECT_ID,
@@ -74,7 +69,6 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 // app.use(VerifyToken);
 
-app.use('/admin/queues', router);
 
 if (process.env.MODE != "dev") {
     app.use(express.static(path.join(__dirname, "./build")));
@@ -86,6 +80,8 @@ app.use(function (req, res, next) {
     res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
     next();
 });
+
+
 
 app.get('/api/user_guides/:role', (req, res) => {
     const role = req.params.role;
@@ -118,11 +114,15 @@ app.use('/api', notificationRoute);
 
 app.post('/api/getUploadUrl', async (req, res) => {
     try {
-        const { fileName, contentType } = req.body;
+        const { fileName, contentType, schoolId, practicalId } = req.body;
 
-        if (!fileName || !contentType) {
-            return res.status(400).json({ error: 'Missing fileName or contentType in request body.' });
+        // Validate input
+        if (!fileName || !contentType || !schoolId || !practicalId) {
+            return res.status(400).json({ error: 'Missing required fields: fileName, contentType, schoolId, or practicalId.' });
         }
+
+        // Construct file path: /school_id/practical_id/filename
+        const filePath = `${schoolId}/${practicalId}/${fileName}`;
 
         const options = {
             version: 'v4',
@@ -131,11 +131,13 @@ app.post('/api/getUploadUrl', async (req, res) => {
             contentType,
         };
 
+        // Generate signed URL for the file
         const [url] = await storage
             .bucket(process.env.GCLOUD_STORAGE_BUCKET)
-            .file(fileName)
+            .file(filePath)
             .getSignedUrl(options);
 
+        // Return signed URL
         res.status(200).json({ url });
     } catch (error) {
         console.error('Error generating signed URL:', error);
@@ -143,41 +145,6 @@ app.post('/api/getUploadUrl', async (req, res) => {
     }
 });
 
-
-app.post('/api/upload', upload.single('video'), async (req, res) => {
-    if (!req.file) {
-        console.error('No file uploaded');
-        return res.status(400).json({ error: 'No file uploaded' });
-    }
-
-    const filePath = req.file.path; // Full path on the server
-    const fileName = path.basename(filePath); // File name of the uploaded video
-
-    try {
-        // Upload the video to Google Cloud Storage
-        await bucket.upload(filePath, {
-            destination: fileName,
-            metadata: {
-                contentType: req.file.mimetype,
-            },
-        });
-
-        // Get public URL for the uploaded file
-        const publicUrl = `https://storage.googleapis.com/${process.env.GCLOUD_STORAGE_BUCKET}/${fileName}`;
-
-        // Delete temporary file after upload
-        fs.unlink(filePath, (err) => {
-            if (err) {
-                console.error('Error deleting temporary file:', err);
-            }
-        });
-
-        return res.status(200).json({ videoUrl: publicUrl });
-    } catch (error) {
-        console.error('Error uploading to Google Cloud:', error);
-        return res.status(500).json({ error: 'Failed to upload video' });
-    }
-});
 
 app.post('/api/chat', async (req, res) => {
     const { messages } = req.body;

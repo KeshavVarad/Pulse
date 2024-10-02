@@ -18,12 +18,13 @@ export default function RegisterUser() {
     const { currentUser, register, setError } = useAuth();
     const [loading, setLoading] = useState(false);
     const [isInstructor, setIsInstructor] = useState(true)
-    const handleButtonClick = (button) => {
-        setIsInstructor(button);
-      };
+    const [role, setRole] = useState("student");
+    const handleButtonClick = (e) => {
+        setRole(e);
+    };
 
     useEffect(() => {
-        
+
         if (currentUser) {
             navigate("/dashboard");
         }
@@ -61,14 +62,21 @@ export default function RegisterUser() {
             if (currentDate > inviteExpireDate) {
                 return setError("Your invite expired.")
             }
-            if (invite_data.role=="student") {
-                if(isInstructor){
+            if (invite_data.role == "student") {
+                if (role !== "student") {
                     return setError("Your email was invited as a Student, please sign up as a Student or contact your Administrator")
                 }
             }
-            else{
-                if(!isInstructor){
+
+            if (invite_data.role == "instructor") {
+                if (role !== "instructor") {
                     return setError("Your email was invited as an Instructor, please sign up as an Instructor or contact your Administrator")
+                }
+            }
+
+            if (invite_data.role == "admin") {
+                if (role !== "admin") {
+                    return setError("Your email was invited as an Admin, please sign up as an Admin or contact your Administrator")
                 }
             }
 
@@ -102,48 +110,52 @@ export default function RegisterUser() {
                 <Box sx={{
                     my: 2,
                     justifyItems: "center",
-                    alignItems:"center",
-                    display:"flex",
-                    flexDirection:"column",
-                    width:"100%"
+                    alignItems: "center",
+                    display: "flex",
+                    flexDirection: "column",
+                    width: "100%"
                 }}>
                     <Typography variant='h2'>
                         Register Account
                     </Typography>
-                    <Box sx={{my:1}}>
-                    <Typography varient='h4'>
+                    <Box sx={{ my: 1 }}>
+                        <Typography varient='h4'>
                             Sign up as an...
-                    </Typography>
+                        </Typography>
                     </Box>
 
 
                     <Box sx={{
                         justifyItems: "center",
-                        alignItems:"center",
-                        display:"flex",
-                        flexDirection:"column",
-                        minWidth:"100%"
-                        }}>
+                        alignItems: "center",
+                        display: "flex",
+                        flexDirection: "column",
+                        minWidth: "100%"
+                    }}>
 
-                    <ButtonGroup
-                    minWidth="100%"
-                    disableElevation
-                    disableRipple
-                    >
-                    <Button onClick={()=>handleButtonClick(true)} variant={
-                        (isInstructor)? "contained":"outlined"
-                    } sx={{width:"150px"}}>Instructor</Button>
-
-
-
-                    <Button onClick={()=>handleButtonClick(false)}variant={
-                        (isInstructor)? "outlined":"contained"
-                    }sx={{width:"150px"}}>Student</Button>
+                        <ButtonGroup
+                            minWidth="100%"
+                            disableElevation
+                            disableRipple
+                        >
+                            <Button onClick={() => handleButtonClick("instructor")} variant={
+                                (role === "instructor") ? "contained" : "outlined"
+                            } sx={{ width: "150px" }}>Instructor</Button>
 
 
-                    </ButtonGroup>
 
-                    
+                            <Button onClick={() => handleButtonClick("student")} variant={
+                                (role === "student") ? "contained" : "outlined"
+                            } sx={{ width: "150px" }}>Student</Button>
+
+                            <Button onClick={() => handleButtonClick("admin")} variant={
+                                (role === "admin") ? "contained" : "outlined"
+                            } sx={{ width: "150px" }}>Admin</Button>
+
+
+                        </ButtonGroup>
+
+
                     </Box>
 
 
@@ -156,10 +168,10 @@ export default function RegisterUser() {
                         required
                         variant="standard"
                         color="secondary"
-                        sx={{ mb: 1.2}}
+                        sx={{ mb: 1.2 }}
                         fullWidth
-                        value={username} 
-                        />
+                        value={username}
+                    />
                     <TextField label="Full Name"
                         onChange={e => setRealName(e.target.value)}
                         required
@@ -168,14 +180,14 @@ export default function RegisterUser() {
                         sx={{ mb: 1.2 }}
                         fullWidth
                         value={real_name} />
-                    {(!isInstructor)?(<TextField label="Graduation Year"
+                    {(role === "student") ? (<TextField label="Graduation Year"
                         onChange={e => setGradYear(e.target.value)}
                         required
                         variant="standard"
                         color="secondary"
                         sx={{ mb: 1.2 }}
                         fullWidth
-                        value={gradYear} />):(<Box></Box>)}
+                        value={gradYear} />) : (<Box></Box>)}
 
                     <TextField label="School Email"
                         onChange={e => setEmail(e.target.value)}
@@ -213,13 +225,13 @@ export default function RegisterUser() {
                         flexDirection: "row",
                         justifyContent: "center",
                         alignItems: "center",
-                        my:2
+                        my: 2
                     }}>
                         <Button variant='contained' type='submit' disabled={loading} sx={{ mx: 1 }}>
                             Register
                         </Button>
 
-                        <Button component={Link} to="/login" sx={{ mx: 1, textTransform: 'none'}}>
+                        <Button component={Link} to="/login" sx={{ mx: 1, textTransform: 'none' }}>
                             Already have an Account? Login
                         </Button>
                     </Box>
