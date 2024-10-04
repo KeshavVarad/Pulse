@@ -1,8 +1,5 @@
 import { Container, Paper, Typography, Button, Box } from '@mui/material';
 import { Link } from 'react-router-dom';
-import aiTeachingAssistant from '../../demoGifs/aiTeachingAssistant.gif';
-import instructorFeedback from '../../demoGifs/instructorFeedback.gif';
-import analyticsDashboard from '../../demoGifs/analyticsDashboard.gif';
 
 const Home = () => {
     return (
@@ -34,7 +31,7 @@ const Home = () => {
                 </Typography>
                 {/* Instructor Feedback Demo */}
                 <Box sx={{ height: '300px', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                    <img src={instructorFeedback} alt="Instructor Feedback Demo" style={{ maxHeight: '100%', maxWidth: '100%', borderRadius: '8px' }} />
+                    <img src={"/demoGifs/instructorFeedback.gif"} alt="Instructor Feedback Demo" style={{ maxHeight: '100%', maxWidth: '100%', borderRadius: '8px' }} />
                 </Box>
             </Paper>
 
@@ -48,7 +45,7 @@ const Home = () => {
                 </Typography>
                 {/* AI Teaching Assistant Demo */}
                 <Box sx={{ height: '300px', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                    <img src={aiTeachingAssistant} alt="AI Teaching Assistant Demo" style={{ maxHeight: '100%', maxWidth: '100%', borderRadius: '8px' }} />
+                    <img src={"/demoGifs/aiTeachingAssistant.gif"} alt="AI Teaching Assistant Demo" style={{ maxHeight: '100%', maxWidth: '100%', borderRadius: '8px' }} />
                 </Box>
             </Paper>
 
@@ -62,7 +59,7 @@ const Home = () => {
                 </Typography>
                 {/* Analytics Dashboard Demo */}
                 <Box sx={{ height: '300px', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                    <img src={analyticsDashboard} alt="Admin Analytics Dashboard Demo" style={{ maxHeight: '100%', maxWidth: '100%', borderRadius: '8px' }} />
+                    <img src={"/demoGifs/analyticsDashboard.gif"} alt="Admin Analytics Dashboard Demo" style={{ maxHeight: '100%', maxWidth: '100%', borderRadius: '8px' }} />
                 </Box>
             </Paper>
 
