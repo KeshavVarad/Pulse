@@ -7,3 +7,4 @@ server/build/
 server/node_modules/
 server/app.yaml
 server/.env
+server/cors.json
