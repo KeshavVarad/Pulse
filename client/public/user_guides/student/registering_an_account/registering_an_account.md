@@ -1,4 +1,5 @@
-# Registering an Account (Instructor)
+# Registering an Account (Student)
+
 
 ---
 
@@ -10,13 +11,16 @@ From the Home Page navigate to "Register User" or follow this link: https://the-
 ---
 
 
-1. Select "sign up as an..." **Instructor**
-![Register User](./select_instructor.png){width="80%}
+1. Select "sign up as an..." **Student**
+![Register User](./select_student.png)
 
 2. Enter your **Username**.
 3. Enter your **Full Name**.
-4. Enter your **Work/School Email Address**
-5. Enter and confirm your **Password**
-![Instructor Data](./instructor_data.png){width="80%}
-6. Click **Register**
+4. Enter your **Graduation Year**.
+5. Enter your **Work/School Email Address**
+6. Enter and confirm your **Password**
+![Instructor Data](./student_data.png)
+7. Click **Register**
+
+
 
