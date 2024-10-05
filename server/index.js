@@ -71,7 +71,10 @@ app.use(express.urlencoded({ extended: false }));
 
 
 if (process.env.MODE != "dev") {
-    app.use(express.static(path.join(__dirname, "./build")));
+    app.use(express.static(path.join(__dirname, 'build'), {
+        maxAge: '1y', // Cache static assets for 1 year
+        immutable: true // Files with unique hashes are immutable
+    }));
 }
 
 
@@ -253,10 +256,9 @@ ${comments}
 });
 
 
-
-
 if (process.env.MODE != "dev") {
     app.get("*", (req, res, next) => {
+        res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
         res.sendFile(path.join(__dirname, "./build/index.html"))
     })
 }

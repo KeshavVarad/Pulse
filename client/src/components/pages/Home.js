@@ -31,7 +31,7 @@ const Home = () => {
                 </Typography>
                 {/* Instructor Feedback Demo */}
                 <Box sx={{ height: '300px', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                    <img src={"/demoGifs/instructorFeedback.gif"} alt="Instructor Feedback Demo" style={{ maxHeight: '100%', maxWidth: '100%', borderRadius: '8px' }} />
+                    <img src={"/demo_gifs/instructorFeedback.gif"} alt="Instructor Feedback Demo" style={{ maxHeight: '100%', maxWidth: '100%', borderRadius: '8px' }} />
                 </Box>
             </Paper>
 
@@ -45,7 +45,7 @@ const Home = () => {
                 </Typography>
                 {/* AI Teaching Assistant Demo */}
                 <Box sx={{ height: '300px', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                    <img src={"/demoGifs/aiTeachingAssistant.gif"} alt="AI Teaching Assistant Demo" style={{ maxHeight: '100%', maxWidth: '100%', borderRadius: '8px' }} />
+                    <img src={"/demo_gifs/aiTeachingAssistant.gif"} alt="AI Teaching Assistant Demo" style={{ maxHeight: '100%', maxWidth: '100%', borderRadius: '8px' }} />
                 </Box>
             </Paper>
 
@@ -59,7 +59,7 @@ const Home = () => {
                 </Typography>
                 {/* Analytics Dashboard Demo */}
                 <Box sx={{ height: '300px', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                    <img src={"/demoGifs/analyticsDashboard.gif"} alt="Admin Analytics Dashboard Demo" style={{ maxHeight: '100%', maxWidth: '100%', borderRadius: '8px' }} />
+                    <img src={"/demo_gifs/analyticsDashboard.gif"} alt="Admin Analytics Dashboard Demo" style={{ maxHeight: '100%', maxWidth: '100%', borderRadius: '8px' }} />
                 </Box>
             </Paper>
 
