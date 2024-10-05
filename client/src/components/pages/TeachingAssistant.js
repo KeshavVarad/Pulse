@@ -19,7 +19,7 @@ export default function TeachingAssistant() {
                 <Box sx={{
                     py: 5
                 }}>
-                    <Typography variant="h3"> AI Teaching Assistant </Typography>
+                    <Typography variant="h3"> Pulse Assistant </Typography>
                 </Box>
 
                 <ChatInterface />

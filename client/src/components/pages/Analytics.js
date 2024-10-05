@@ -1,12 +1,10 @@
-import { Card, CardContent, Box, Button, Container, Grid, List, Modal, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Typography } from '@mui/material'
+import { Box, Typography } from '@mui/material'
 import React, { useEffect, useState } from 'react'
 import { auth } from '../../config/firebase'
-import InfoIcon from '@mui/icons-material/Info';
-import { Radar } from 'react-chartjs-2';
 import { Chart as ChartJS, CategoryScale, LinearScale, Title, RadialLinearScale, PointElement, LineElement, Filler, Tooltip, Legend } from 'chart.js';
 import { Line } from "react-chartjs-2";
 import { Switch, Select, MenuItem, FormControl, InputLabel, Chip, Checkbox, ListItemText } from "@mui/material";
-
+import GenerateInsights from '../elements/GenerateInsights';
 
 ChartJS.register(RadialLinearScale, CategoryScale, LinearScale, Title, PointElement, LineElement, Filler, Tooltip, Legend);
 
@@ -341,61 +339,14 @@ const PracticalChart = ({ practicalData }) => {
     );
 };
 
-
 export default function Analytics() {
 
     const [schoolId, setSchoolId] = useState()
     const [taskData, setTaskData] = useState([])
-    const [cohortAvgs, setCohortAvgs] = useState([])
-    const [cohortYears, setCohortYears] = useState([])
-
-
-    const [loading, setLoading] = useState(true)
-
-    const [cohortGraphOpen, setCohortGraphOpen] = useState(false)
-    const [selectedCohort, setSelectedCohort] = useState()
-    const [selectedCohortInd, setSelectedCohortInd] = useState(-1)
-    const [cohortPlotData, setCohortPlotData] = useState([])
 
     const [isDemo, setDemo] = useState(false);
 
     const [isAdmin, setIsAdmin] = useState(true);
-
-
-    const testCohortPlotData = [[{
-        labels: ["Integrity", "Teamwork", "Communication"],
-        datasets: [
-            {
-                label: `Year 2024`,
-                data: [2.5, 4, 1.5],
-                backgroundColor: 'rgba(63, 81, 181, 0.2)',
-                borderColor: 'rgba(63, 81, 181, 1)',
-                borderWidth: 2,
-            }
-        ]
-    }, {
-        labels: ["Integrity", "Teamwork", "Communication"],
-        datasets: [
-            {
-                label: `Year 2025`,
-                data: [4.5, 3, 2],
-                backgroundColor: 'rgba(63, 81, 181, 0.2)',
-                borderColor: 'rgba(63, 81, 181, 1)',
-                borderWidth: 2,
-            }
-        ]
-    }]]
-
-    const options = {
-        scales: {
-            r: {
-                angleLines: { display: false },
-                suggestedMin: 0,
-                suggestedMax: 5,
-            },
-        },
-    };
-
 
     const [practicalPerformanceData, setPracticalPerformanceData] = useState([]);
 
@@ -460,8 +411,6 @@ export default function Analytics() {
 
                 };
 
-                setLoading(true)
-
                 const school_res = await fetch(`${process.env.REACT_APP_API_HOST}/api/school/${schoolId}`, requestOptions);
                 const school_data = await school_res.json()
 
@@ -471,66 +420,6 @@ export default function Analytics() {
                     task_data.push(data)
                 })
                 setTaskData(task_data)
-
-                let cohort_data = []
-                let cohort_years = []
-                school_data.task_data.map((cohort) => {
-
-                    if (cohort.data) {
-                        let total_tasks = 0
-                        let score_sum = 0
-                        cohort.data.map((year) => {
-                            year.data.map((task) => {
-                                score_sum += task.avg_rating
-                                total_tasks += 1
-                            })
-                        })
-
-                        cohort_data.push(score_sum / total_tasks)
-                        cohort_years.push(cohort.cohort_year)
-                    }
-
-                })
-
-                let cohorts_plot_data = []
-
-                school_data.task_data.map((cohort) => {
-                    let cohort_plot_data = []
-                    if (cohort.data) {
-                        cohort.data.map(year => {
-                            let labels = []
-                            let data = []
-
-                            year.data.map(task => {
-                                labels.push(task.name)
-                                data.push(task.avg_rating)
-                            })
-
-                            cohort_plot_data.push({
-                                labels: labels,
-                                datasets: [
-                                    {
-                                        label: `Year ${year.year}`,
-                                        data: data,
-                                        backgroundColor: 'rgba(63, 81, 181, 0.2)',
-                                        borderColor: 'rgba(63, 81, 181, 1)',
-                                        borderWidth: 2,
-                                    }
-                                ]
-                            })
-                        })
-
-                        cohorts_plot_data.push(cohort_plot_data)
-                    }
-
-
-                })
-
-                setCohortPlotData(cohorts_plot_data)
-
-                setCohortYears(cohort_years)
-                setCohortAvgs(cohort_data)
-                setLoading(false)
 
 
             } catch (e) {
@@ -638,6 +527,8 @@ export default function Analytics() {
                     }}>
                         <PracticalChart practicalData={practicalPerformanceData} />
                     </Box>)}
+
+                {!isAdmin ? (<GenerateInsights />) : null}
 
 
             </Box>

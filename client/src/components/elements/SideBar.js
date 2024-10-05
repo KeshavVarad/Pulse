@@ -301,6 +301,7 @@ export default function SideBar() {
         }
     }
     const [isAdmin, setIsAdmin] = useState(false)
+    const [isInstructor, setIsInstructor] = useState(false)
     const [isStudent, setIsStudent] = useState(false)
 
     const [openBugModal, setBugOpenModal] = useState(false);
@@ -329,8 +330,12 @@ export default function SideBar() {
                 const user_res = await fetch(`${process.env.REACT_APP_API_HOST}/api/user/${userId}`, requestOptions);
                 const user_data = await user_res.json()
 
-                if (user_data.role === "admin" || user_data.role === "instructor") {
+                if (user_data.role === "admin") {
                     setIsAdmin(true);
+                }
+
+                if (user_data.role === "instructor") {
+                    setIsInstructor(true);
                 }
 
                 if (user_data.role === "student") {
@@ -385,16 +390,16 @@ export default function SideBar() {
                     </ListItemButton>
                 </ListItem>
 
-                {isStudent ?
-                    <ListItem key={"AI Teaching Assistant"} disablePadding>
+                {(isStudent || isInstructor) ?
+                    <ListItem key={"Pulse Assistant"} disablePadding>
                         <ListItemButton component={Link} to={"/aita"}
                             variant="contained" color="secondary">
                             <ListItemIcon><SmartToyIcon /></ListItemIcon>
-                            <ListItemText primary={"AI Teaching Assistant"} />
+                            <ListItemText primary={"Pulse Assistant"} />
                         </ListItemButton>
                     </ListItem> : <Box></Box>}
 
-                {isAdmin ?
+                {(isAdmin || isInstructor) ?
                     <ListItem key={"Make Practical"} disablePadding>
                         <ListItemButton component={Link} to={"/makepractical"}
                             variant="contained" color="secondary">

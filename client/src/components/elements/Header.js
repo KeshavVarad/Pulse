@@ -148,6 +148,8 @@ export default function Header() {
                                         PaperProps={{
                                             style: {
                                                 width: '300px',
+                                                borderRadius: '8px',
+                                                boxShadow: '0px 4px 20px rgba(0, 0, 0, 0.1)', // Subtle shadow for depth
                                             },
                                         }}
                                     >
@@ -160,26 +162,50 @@ export default function Header() {
                                                         display: 'flex',
                                                         flexDirection: 'column',
                                                         justifyContent: 'flex-start',
-                                                        padding: '10px',
+                                                        padding: '12px',
                                                         whiteSpace: 'normal',
                                                         overflow: 'hidden',
                                                         textOverflow: 'ellipsis',
+                                                        backgroundColor: notification.read_status ? 'transparent' : '#e3f2fd', // Light blue for unread notifications
+                                                        borderRadius: '4px',
+                                                        transition: 'background-color 0.3s ease',
+                                                        '&:hover': {
+                                                            backgroundColor: notification.read_status ? 'transparent' : '#bbdefb', // Darker blue on hover for unread notifications
+                                                        },
                                                     }}
                                                 >
-                                                    <Typography variant="subtitle1" component="strong" sx={{ overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                                                    <Typography
+                                                        variant="subtitle2" // Changed to subtitle2 for a more subtle emphasis
+                                                        component="strong"
+                                                        sx={{
+                                                            overflow: 'hidden',
+                                                            textOverflow: 'ellipsis',
+                                                            fontWeight: notification.read_status ? 'normal' : '500', // Semi-bold for unread notifications
+                                                        }}
+                                                    >
                                                         {notification.task}
                                                     </Typography>
-                                                    <Typography variant="body2" color="textSecondary" sx={{ overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                                                    <Typography
+                                                        variant="body2"
+                                                        color="textSecondary"
+                                                        sx={{
+                                                            overflow: 'hidden',
+                                                            textOverflow: 'ellipsis',
+                                                            marginTop: '4px',
+                                                        }}
+                                                    >
                                                         {notification.message}
                                                     </Typography>
                                                 </MenuItem>
                                             ))
                                         ) : (
                                             <MenuItem onClick={handleMenuClose}>
-                                                <Typography>No notifications</Typography>
+                                                <Typography variant="body1" color="textSecondary">No notifications</Typography>
                                             </MenuItem>
                                         )}
                                     </Menu>
+
+
                                 </Box>
                             )}
                     </Box>

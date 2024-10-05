@@ -1,30 +1,28 @@
-import React, { useEffect, useRef, useState } from 'react';
-import { TextField, Button, List, ListItem, ListItemText, Paper } from '@mui/material';
-import { useAuth } from '../../contexts/AuthContext';
+import React, { useEffect, useState } from 'react';
+import axios from 'axios';
 import { auth } from '../../config/firebase';
 import { format } from 'date-fns';
-import OpenAI from "openai";
+import { useAuth } from '../../contexts/AuthContext';
+import {
+    Paper,
+    Typography,
+    Button,
+    CircularProgress,
+    Alert,
+    Box,
+    Grid,
+    Divider,
+} from '@mui/material';
 import ReactMarkdown from 'react-markdown';
-import axios from 'axios';
 
-const ChatInterface = () => {
-    const { currentUser } = useAuth()
+const GenerateInsights = () => {
+    const { currentUser } = useAuth();
 
-    const [messages, setMessages] = useState([{
-        text: "Welcome to the Pulse Assitant! I’m here to assist you with your feedback and questions. Whether you want to summarize your feedback from practicals, explore ways to improve, or ask technical questions, feel free to reach out. Let’s make your learning experience as effective as possible.",
-        sender: 'ai'
-    }]);
-    const [input, setInput] = useState('');
-    const endOfMessagesRef = useRef(null);
-
+    const [insights, setInsights] = useState('');
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState(null);
+    const [role, setRole] = useState("");
     const [userPerfData, setUserPerfData] = useState();
-
-    const [currentAiMessage, setCurrentAiMessage] = useState('');
-    const [currentWordIndex, setCurrentWordIndex] = useState(0);
-    const [isAiTyping, setIsAiTyping] = useState(true);
-    const typingDelay = 100; // Delay between words in milliseconds
-
-
 
     useEffect(() => {
         async function fetchUserData() {
@@ -47,6 +45,8 @@ const ChatInterface = () => {
                 const userData = await user_res.json();
 
                 let cleaned_practical_data = [];
+
+                setRole(userData.role)
 
                 // Check if user is an instructor
                 if (userData.role === "instructor") {
@@ -105,7 +105,6 @@ const ChatInterface = () => {
 
                         cleaned_practical_data.push(cleanPractical);
                     }
-
                 } else {
                     // If the user is not an instructor (fetch practicals for a student)
                     const practical_res = await fetch(`${process.env.REACT_APP_API_HOST}/api/practical/student/${user.uid}`, requestOptions);
@@ -166,110 +165,71 @@ const ChatInterface = () => {
         }
     }, [currentUser]);
 
+    const handleGenerateInsights = async (role) => {
+        if (!userPerfData) return;
 
-    useEffect(() => {
-        if (endOfMessagesRef.current) {
-            endOfMessagesRef.current.scrollIntoView({ behavior: 'smooth' });
+        setLoading(true);
+        setError(null);
+
+        let prompt = "";
+
+        if (role === "student") {
+            prompt = `What specific strategies can I implement to improve in the following areas based on my performance data: ${JSON.stringify(userPerfData)}?`;
         }
-    }, [messages, currentWordIndex]);
 
-    useEffect(() => {
-        // Update the AI message one word at a time
-        if (isAiTyping) {
-            const words = messages[messages.length - 1].text.split(' '); // Get the latest AI message
-            if (currentWordIndex < words.length) {
-                const timer = setTimeout(() => {
-                    setCurrentAiMessage(prev => prev + (prev ? ' ' : '') + words[currentWordIndex]); // Add the next word to the message
-                    setCurrentWordIndex(prevIndex => prevIndex + 1); // Increment word index
-                }, typingDelay); // Adjust this for the desired typing speed
-
-                return () => clearTimeout(timer);
-            } else {
-                setIsAiTyping(false); // Stop typing when all words are displayed
-            }
+        if (role === "instructor") {
+            prompt = `What trends can be identified in my students' performance data, and how can I address any concerning patterns? Data: ${JSON.stringify(userPerfData)}`;
         }
-    }, [isAiTyping, currentWordIndex, messages]);
 
+        try {
+            const response = await axios.post(`${process.env.REACT_APP_API_HOST}/api/chat`, {
+                messages: [
+                    { role: 'system', content: "You are a helpful assistant." },
+                    { role: 'user', content: prompt }
+                ],
+                max_tokens: 250
+            });
 
-
-    const handleSendMessage = async () => {
-        if (input.trim()) {
-            const userMessage = { text: input, sender: 'user' };
-            setMessages(prevMessages => [...prevMessages, userMessage]);
-
-            const prompt = `Context: ${JSON.stringify(userPerfData)} User: ${input}`;
-            setInput('');
-
-            try {
-                const conversationHistory = messages.map(msg => ({
-                    role: msg.sender === 'user' ? 'user' : 'assistant',
-                    content: msg.text
-                }));
-
-                const response = await axios.post(`${process.env.REACT_APP_API_HOST}/api/chat`, {
-                    messages: [
-                        { role: 'system', content: "You are a helpful assistant." },
-                        ...conversationHistory,
-                        { role: 'user', content: prompt }
-                    ],
-                    max_tokens: 250
-                });
-
-                const aiMessageText = response.data.choices[0].message.content;
-
-                setMessages(prevMessages => [...prevMessages, { text: aiMessageText, sender: 'ai' }]); // Add the AI message
-                setCurrentAiMessage(''); // Reset current AI message
-                setCurrentWordIndex(0); // Reset word index
-                setIsAiTyping(true); // Start typing effect
-            } catch (error) {
-                console.error("Error calling API:", error);
-            }
+            const aiMessageText = response.data.choices[0].message.content;
+            setInsights(aiMessageText);
+        } catch (error) {
+            console.error("Error calling API:", error);
+            setError("Failed to generate insights. Please try again.");
+        } finally {
+            setLoading(false);
         }
     };
 
-    // Get the last AI message to determine if we should show the typing effect
-    const lastMessage = messages[messages.length - 1];
-    const aiMessageText = lastMessage.sender === 'ai' ? lastMessage.text : '';
-
     return (
-        <Paper elevation={3} style={{ width: "75%", padding: '20px', height: '500px', display: 'flex', flexDirection: 'column' }}>
-            <List style={{ flexGrow: 1, overflowY: 'auto', marginBottom: '10px' }}>
-                {messages.map((msg, index) => (
-                    <ListItem key={index} style={{
-                        justifyContent: msg.sender === 'user' ? 'flex-end' : 'flex-start',
-                        backgroundColor: msg.sender === 'user' ? '#d1e7dd' : '#f8d7da',
-                        borderRadius: '8px',
-                        margin: '5px',
-                        padding: '10px',
-                        maxWidth: '70%',
-                        alignSelf: msg.sender === 'user' ? 'flex-end' : 'flex-start',
-                    }}>
-                        <ListItemText
-                            primary={<span style={{ fontWeight: msg.sender === 'ai' ? 'bold' : 'normal' }}>
-                                {msg.sender === 'ai' ? "AI: " : "You: "}
-                                <ReactMarkdown>{msg.sender === 'ai' ? (msg.text === aiMessageText ? currentAiMessage : msg.text) : msg.text}</ReactMarkdown>
-                            </span>}
-                        />
-                    </ListItem>
-                ))}
-                {/* Empty div to scroll to */}
-                <div ref={endOfMessagesRef} />
-            </List>
-            <TextField
-                fullWidth
-                variant="outlined"
-                placeholder="Type your message..."
-                value={input}
-                onChange={(e) => setInput(e.target.value)}
-                onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
-            />
-            <Button variant="contained" color="primary" onClick={handleSendMessage} style={{ marginTop: '10px' }}>
-                Send
-            </Button>
-        </Paper>
+        <Grid container spacing={3} padding={3}>
+            <Grid item xs={12}>
+                <Paper elevation={3} sx={{ padding: 3, backgroundColor: '#f5f5f5' }}>
+                    <Typography variant="h5" sx={{ fontWeight: 'bold', mb: 2 }}>
+                        Insights on User Performance
+                    </Typography>
+                    {loading && <CircularProgress />}
+                    {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
+                    {insights && (
+                        <Box sx={{ mt: 2 }}>
+                            <Typography variant="h6">Generated Insights:</Typography>
+                            <ReactMarkdown>{insights}</ReactMarkdown>
+                        </Box>
+                    )}
+                    {!loading && !insights && (
+                        <Button
+                            variant="contained"
+                            color="primary"
+                            onClick={() => handleGenerateInsights(role)}
+                            sx={{ mt: 2 }}
+                        >
+                            Generate Insights
+                        </Button>
+                    )}
+                    <Divider sx={{ my: 2 }} />
+                </Paper>
+            </Grid>
+        </Grid>
     );
-
 };
 
-export default ChatInterface;
-
+export default GenerateInsights;
