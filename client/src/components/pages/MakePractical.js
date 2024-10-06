@@ -76,7 +76,11 @@ const UploadVideo = ({ setVideoLink, practicalId, schoolId, setVideoUploaded }) 
             <Box sx={{ mb: 2 }}><Typography variant="h6">Upload Video</Typography>
             </Box>
             <Box sx={{ width: "70%" }}>
-                <input type="file" accept="video/mp4" onChange={handleFileChange} sx={{}} />
+                <input
+                    type="file"
+                    accept="video/mp4, video/mov, video/quicktime, video/x-msvideo, video/webm, video/x-matroska, video/x-flv, video/x-ms-wmv, video/3gpp"
+                    onChange={handleFileChange}
+                />
             </Box>
 
 
