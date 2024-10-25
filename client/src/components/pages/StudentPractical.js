@@ -341,7 +341,7 @@ export default function StudentPractical() {
                                         <Typography variant="h7" sx={{
                                             textOverflow: "ellipsis",
                                             maxWidth: "60px"
-                                        }}>{task.name}</Typography>
+                                        }}>{task.name.split("/")[task.name.split("/").length - 1]}</Typography>
 
                                     </TableCell>
                                     <TableCell sx={{
@@ -349,7 +349,7 @@ export default function StudentPractical() {
                                         p: 0
                                     }}>
                                         <Box
-                                            key={task.name}
+                                            key={task.name.split("/")[task.name.split("/").length - 1]}
                                             sx={{
                                                 position: "relative",
                                                 width: "100%",
@@ -428,7 +428,7 @@ export default function StudentPractical() {
             let newTaskNames = []
 
             practical.tasks.map((t) => {
-                newTaskNames.push(t.name)
+                newTaskNames.push(t.name.split("/")[t.name.split("/").length - 1])
             })
 
             setTaskNames(newTaskNames)
@@ -599,40 +599,6 @@ export default function StudentPractical() {
                         tasks={tasks}
                     />
 
-
-
-
-
-                    {/* <Box sx={{
-                        display: "flex",
-                        flexDirection: "row",
-                        width: '100%'
-                    }}>
-
-                        <Box sx={{
-                            minWidth: "5%",
-                            height: "100%",
-                            flexDirection: "column",
-                        }}>
-                            {tasks.map((task, taskIndex) => (
-                                <Box
-                                    key={task.name}
-                                    sx={{
-                                        left: 0,
-                                        width: '100%',
-                                        height: '30px',
-                                        pt: "10px",
-                                    }}>
-                                    <Typography variant="h7">{task.name}</Typography>
-                                </Box>
-                            ))
-                            }
-
-                        </Box>
-
-
-                    </Box> */}
-
                     <Box sx={{
                         display: "flex",
                         width: "20%",
@@ -652,7 +618,7 @@ export default function StudentPractical() {
                                 onChange={handleChangeDisplayTask}
                             >
                                 {tasks.map((t, idx) => {
-                                    return (<MenuItem key={idx} value={t}>{t.name}</MenuItem>)
+                                    return (<MenuItem key={idx} value={t}>{t.name.split("/")[t.name.split("/").length - 1]}</MenuItem>)
                                 })}
                             </Select>
                         </FormControl>
@@ -700,7 +666,7 @@ export default function StudentPractical() {
                         }}>
                             <center>
                                 {currentTaskDiscussion ?
-                                    <Typography variant="h4">{currentTaskDiscussion.name} Discussion</Typography> :
+                                    <Typography variant="h4">{currentTaskDiscussion.name.split("/")[currentTaskDiscussion.name.split("/").length - 1]} Discussion</Typography> :
                                     <Typography variant="h4">No Task Selected</Typography>
                                 }
                             </center>

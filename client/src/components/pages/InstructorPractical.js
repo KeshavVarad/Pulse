@@ -13,10 +13,53 @@ import InsertCommentIcon from '@mui/icons-material/InsertComment';
 import SendIcon from '@mui/icons-material/Send';
 import GCloudVideoPlayer from "../elements/GCloudVideoPlayer.js";
 import CloseIcon from '@mui/icons-material/Close';
-import RedFlagIcon from '@mui/icons-material/Flag'; // Replace with your red indicator icon
-import YellowFlagIcon from '@mui/icons-material/Warning'; // Replace with your yellow indicator icon
-import GreenCheckIcon from '@mui/icons-material/CheckCircle'; // Replace with your green indicator icon
 
+const testTaskHierarchy = {
+    "rootTasks": [
+        {
+            "name": "General Task 1",
+            "red_count": 2,
+            "green_count": 0,
+            "yellow_count": 1,
+            "replies": []
+        },
+        {
+            "name": "General Task 2",
+            "red_count": 1,
+            "green_count": 1,
+            "yellow_count": 0,
+            "replies": []
+        }
+    ],
+    "categories": [
+        {
+            "name": "Communication",
+            "subCategories": [
+                {
+                    "name": "Verbal Communication",
+                    "subCategories": [],
+                    "tasks": [
+                        {
+                            "name": "Clarity",
+                            "red_count": 1,
+                            "green_count": 2,
+                            "yellow_count": 1,
+                            "replies": []
+                        },
+                        {
+                            "name": "Tone",
+                            "red_count": 0,
+                            "green_count": 3,
+                            "yellow_count": 1,
+                            "replies": []
+                        }
+                    ]
+                }
+            ],
+            "tasks": []
+        }
+    ]
+}
 
 
 export default function InstructorPractical() {
@@ -50,6 +93,10 @@ export default function InstructorPractical() {
     // Task state
     const [tasks, setTasks] = useState([])
     const [newTask, setNewTask] = useState("")
+    const [taskHierarchy, setTaskHierarchy] = useState({
+        "rootTasks": [],
+        "categories": []
+    });
 
     // Comment state
     const [comments, setComments] = useState([])
@@ -59,6 +106,7 @@ export default function InstructorPractical() {
 
     const [taskChatOpen, setTaskChatOpen] = useState(false)
     const [taskToDisplay, setTaskToDisplay] = useState()
+    const [pathToDisplayedTask, setPathToDisplayedTask] = useState("");
 
     // Message state
     const [curMessage, setMessage] = useState("")
@@ -67,6 +115,164 @@ export default function InstructorPractical() {
     const [gcloudVideoTimeStamp, setGcloudVideoTimeStamp] = useState(0);
     const [gcloudPlayer, setGcloudPlayer] = useState(null);
     const gcloudVideoRef = useRef(null);
+
+    const CategoryComponent = ({ category }) => (
+        <Box sx={{ pl: 3 }}>
+            <Typography variant="h6">{category.name}</Typography>
+
+            {/* Render tasks within this category */}
+            {category.tasks.map((task) => (
+                <Box
+                    key={task.name}
+                    sx={{
+                        width: "100%",
+                        display: "flex",
+                        flexDirection: "row",
+                        justifyContent: "space-between",
+                        alignItems: "center",
+                        pt: 1,
+                    }}
+                >
+                    <Box
+                        sx={{
+                            display: "flex",
+                            flexDirection: "row",
+                            width: "100%",
+                            justifyItems: "center",
+                            alignItems: "center",
+                            justifyContent: "center",
+                        }}
+                    >
+                        <Box
+                            sx={{
+                                minWidth: "160px",
+                                maxWidth: "160px",
+                                height: "100%",
+                                pl: 1,
+                                display: "flex",
+                            }}
+                        >
+                            <Typography variant="h7">{task.name}</Typography>
+                        </Box>
+
+                        <Box sx={{ minWidth: "180px", maxWidth: "180px", display: "flex" }}>
+                            <ButtonGroup variant="contained" aria-label="Basic button group">
+                                <Button
+                                    onClick={() => handleRating(task, 1, category.path + category.name + "/")}
+                                    variant="contained"
+                                    color="red"
+                                    disableElevation
+                                    sx={{ width: "60px", textTransform: "none" }}
+                                >
+                                    Red
+                                </Button>
+                                <Button
+                                    onClick={() => handleRating(task, 3, category.path + category.name + "/")}
+                                    variant="contained"
+                                    color="yellow"
+                                    disableElevation
+                                    sx={{ width: "60px", textTransform: "none" }}
+                                >
+                                    Yellow
+                                </Button>
+                                <Button
+                                    onClick={() => handleRating(task, 5, category.path + category.name + "/")}
+                                    variant="contained"
+                                    color="green"
+                                    disableElevation
+                                    sx={{ width: "60px", textTransform: "none" }}
+                                >
+                                    Green
+                                </Button>
+                            </ButtonGroup>
+                        </Box>
+
+                        <Box sx={{ width: "40px", px: 1 }}>
+                            <IconButton
+                                aria-label="chat"
+                                onClick={() => handleTaskChatButton(task, category.path + category.name + "/")}
+                            >
+                                <InsertCommentIcon />
+                            </IconButton>
+                        </Box>
+
+                        <Box sx={{ width: "40px", px: 1 }}>
+                            <IconButton
+                                aria-label="delete"
+                                onClick={() => handleRemoveTask(task, category.path + category.name + "/")}
+                            >
+                                <DeleteIcon />
+                            </IconButton>
+                        </Box>
+                    </Box>
+                </Box>
+            ))}
+
+            {/* Render subcategories recursively */}
+            {category.subCategories.map((subCategory) => (
+                <CategoryComponent key={subCategory.name} category={subCategory} />
+            ))}
+        </Box>
+    );
+
+    const convertTasksToHierarchy = (tasks) => {
+        const result = {
+            rootTasks: [],
+            categories: [],
+        };
+
+        const findOrCreateCategory = (categories, categoryName, path_name) => {
+            let category = categories.find(cat => cat.name === categoryName);
+
+            if (!category) {
+                category = { name: categoryName, path: path_name, subCategories: [], tasks: [] };
+                categories.push(category);
+            }
+            return category;
+        };
+
+        tasks.forEach(task => {
+            const pathParts = task.name.split('/');
+
+            if (pathParts.length === 1) {
+                // It's a root task
+                result.rootTasks.push({
+                    name: pathParts[0],
+                    red_count: task.red_count,
+                    green_count: task.green_count,
+                    yellow_count: task.yellow_count,
+                    replies: task.replies
+                });
+            } else {
+                // It's a task under categories/subcategories
+                let currentCategoryList = result.categories;
+                let cur_path = ""
+                for (let i = 0; i < pathParts.length - 1; i++) {
+                    const categoryName = pathParts[i];
+                    const category = findOrCreateCategory(currentCategoryList, categoryName, cur_path);
+
+                    if (i == pathParts.length - 2) {
+                        const taskName = pathParts[pathParts.length - 1];
+                        category.tasks.push({
+                            name: taskName,
+                            red_count: task.red_count,
+                            green_count: task.green_count,
+                            yellow_count: task.yellow_count,
+                            replies: task.replies
+                        });
+                    }
+                    else {
+                        cur_path = cur_path + categoryName + "/"
+                        currentCategoryList = category.subCategories;
+                    }
+                }
+
+
+            }
+        });
+
+        return result;
+    };
 
     const checkGCloudVideoTime = useCallback(() => {
         if (gcloudPlayer && gcloudPlayer.getCurrentTime) {
@@ -121,7 +327,6 @@ export default function InstructorPractical() {
             }
 
             const result = await response.text();
-            console.log(result); // You can handle success feedback here if needed
         } catch (error) {
             console.error("Error creating notification:", error);
         }
@@ -200,6 +405,7 @@ export default function InstructorPractical() {
             await fetch(`${process.env.REACT_APP_API_HOST}/api/updatePractical/${practicalId}`, requestOptions);
 
             setTasks(newTasks)
+            setTaskHierarchy(convertTasksToHierarchy(newTasks))
             setNewTask("")
 
         } catch (e) {
@@ -209,7 +415,7 @@ export default function InstructorPractical() {
 
     }
 
-    const handleRemoveTask = async (taskName) => {
+    const handleRemoveTask = async (taskName, taskPath) => {
         try {
             // Fetch the practical data
             const practical_res = await fetch(`${process.env.REACT_APP_API_HOST}/api/practical/${practicalId}`);
@@ -217,7 +423,7 @@ export default function InstructorPractical() {
 
             // Find the task in the practical's tasks
             let newTasks = practical.tasks.slice();
-            let taskIndex = newTasks.findIndex(t => t.name === taskName.name);
+            let taskIndex = newTasks.findIndex(t => t.name === taskPath + taskName.name);
 
             if (taskIndex === -1) {
                 console.log("Task not found");
@@ -226,7 +432,7 @@ export default function InstructorPractical() {
 
             // Remove all comments associated with the task
             let commentIdsToRemove = comments
-                .filter(comment => comment.task === taskName.name)
+                .filter(comment => comment.task === taskPath + taskName.name)
                 .map(comment => comment.id);
 
             let remainingComments = comments.filter(comment => !commentIdsToRemove.includes(comment.id));
@@ -257,7 +463,7 @@ export default function InstructorPractical() {
 
             // Update the school task data
             let newSchoolTaskData = schoolTaskData.slice();
-            let schoolDataTaskIndex = newSchoolTaskData[cohortInd].data[yearInd].data.findIndex(data => data.name === taskName.name);
+            let schoolDataTaskIndex = newSchoolTaskData[cohortInd].data[yearInd].data.findIndex(data => data.name === taskPath + taskName.name);
 
             if (schoolDataTaskIndex !== -1) {
                 let schoolDataTask = newSchoolTaskData[cohortInd].data[yearInd].data[schoolDataTaskIndex];
@@ -310,6 +516,7 @@ export default function InstructorPractical() {
 
             // Update local state after the task removal
             setTasks(newTasks);
+            setTaskHierarchy(convertTasksToHierarchy(newTasks))
             setComments(remainingComments);
             setSchoolTaskData(newSchoolTaskData);
 
@@ -366,7 +573,7 @@ export default function InstructorPractical() {
 
     // Comment functions
 
-    const handleRating = async (task, rating) => {
+    const handleRating = async (task, rating, taskPath) => {
 
         const practical_res = await fetch(`${process.env.REACT_APP_API_HOST}/api/practical/${practicalId}`);
         const practical = await practical_res.json()
@@ -375,7 +582,7 @@ export default function InstructorPractical() {
 
         const newComment = {
             id: commentId,
-            task: task.name,
+            task: taskPath + task.name,
             rating: rating,
             timestamp: getVideoSourceType(videoLink) === "youtube" ? videoTimeStamp : gcloudVideoTimeStamp,
             feedback: "",
@@ -405,8 +612,8 @@ export default function InstructorPractical() {
             let newTasks = practical.tasks
 
             let newSchoolTaskData = schoolTaskData.slice()
-            let taskIndex = newTasks.findIndex(t => t.name == task.name)
-            let schoolDataTaskIndex = newSchoolTaskData[cohortInd].data[yearInd].data.findIndex(data => data.name == task.name)
+            let taskIndex = newTasks.findIndex(t => t.name == taskPath + task.name)
+            let schoolDataTaskIndex = newSchoolTaskData[cohortInd].data[yearInd].data.findIndex(data => data.name == taskPath + task.name)
 
             let practicalUpdateData = { comments: newComments }
 
@@ -452,6 +659,7 @@ export default function InstructorPractical() {
 
             practicalUpdateData.tasks = newTasks
             setTasks(newTasks)
+            setTaskHierarchy(convertTasksToHierarchy(newTasks))
             setSchoolTaskData(newSchoolTaskData)
             // BUG HERE ABOVE
 
@@ -642,6 +850,8 @@ export default function InstructorPractical() {
 
             setComments(newComments)
             setTasks(newTasks)
+            setTaskHierarchy(convertTasksToHierarchy(newTasks))
+
 
         } catch (e) {
             console.log(e);
@@ -808,7 +1018,12 @@ export default function InstructorPractical() {
     }
 
 
-    const handleTaskChatButton = (task) => {
+    const handleTaskChatButton = (task, taskPath) => {
+        // let newTask = task
+        // if (taskPath) {
+        //     newTask.name = taskPath + task.name
+        // }
+        setPathToDisplayedTask(taskPath)
         setTaskToDisplay(task)
         setTaskChatOpen(true)
     }
@@ -816,6 +1031,7 @@ export default function InstructorPractical() {
     const handleTaskChatClose = (task) => {
         setTaskToDisplay(null)
         setTaskChatOpen(false)
+        setPathToDisplayedTask("")
     }
 
     const handleMessageInput = async () => {
@@ -843,7 +1059,10 @@ export default function InstructorPractical() {
             }
 
             newTaskToDisplay.replies.push(newReply)
-            newTasks[tasks.indexOf(taskToDisplay)] = newTaskToDisplay
+
+
+
+            newTasks[tasks.findIndex((t) => t.name === pathToDisplayedTask + taskToDisplay.name)] = newTaskToDisplay
 
 
             const requestOptions = {
@@ -903,6 +1122,11 @@ export default function InstructorPractical() {
 
             const tasks = practical.tasks
             setTasks(tasks)
+
+
+            const taskHierarchy = convertTasksToHierarchy(tasks)
+
+            setTaskHierarchy(taskHierarchy)
 
             const commentIds = practical.comments
 
@@ -1005,7 +1229,6 @@ export default function InstructorPractical() {
                                 />)}
 
                         </Box>
-
                         <Box
                             sx={{
                                 display: "flex",
@@ -1019,56 +1242,100 @@ export default function InstructorPractical() {
                         >
                             <Typography variant="h4">Make Comments</Typography>
 
-                            {tasks.map((task) => (
-                                <Box sx={{
-                                    width: "100%",
-                                    display: "flex",
-                                    flexDirection: "row",
-                                    justifyContent: "space-between",
-                                    alignItems: "center",
-                                    pt: 1,
-
-                                }}>
-                                    <Box sx={{
+                            {/* Render root tasks first */}
+                            {taskHierarchy.rootTasks.map((task) => (
+                                <Box
+                                    key={task.name}
+                                    sx={{
+                                        width: "100%",
                                         display: "flex",
                                         flexDirection: "row",
-                                        width: "100%",
-                                        justifyItems: "center",
+                                        justifyContent: "space-between",
                                         alignItems: "center",
-                                        justifyContent: "center",
-                                    }}>
-
-                                        <Box sx={{
-                                            minWidth: "160px",
-                                            maxWidth: "160px",
-                                            height: "100%",
-                                            pl: 1,
-                                            display: "flex"
-                                        }}>
+                                        pt: 1,
+                                    }}
+                                >
+                                    <Box
+                                        sx={{
+                                            display: "flex",
+                                            flexDirection: "row",
+                                            width: "100%",
+                                            justifyItems: "center",
+                                            alignItems: "center",
+                                            justifyContent: "center",
+                                        }}
+                                    >
+                                        <Box
+                                            sx={{
+                                                minWidth: "160px",
+                                                maxWidth: "160px",
+                                                height: "100%",
+                                                pl: 1,
+                                                display: "flex",
+                                            }}
+                                        >
                                             <Typography variant="h7">{task.name}</Typography>
                                         </Box>
 
                                         <Box sx={{ minWidth: "180px", maxWidth: "180px", display: "flex" }}>
-                                            <ButtonGroup variant="contained" aria-label="Basic button group" >
-                                                <Button onClick={() => { handleRating(task, 1) }} variant="contained" color="red" disableElevation sx={{ width: "60px", textTransform: 'none' }}>Red</Button>
-                                                <Button onClick={() => { handleRating(task, 3) }} variant="contained" color="yellow" disableElevation sx={{ width: "60px", textTransform: 'none' }}>Yellow</Button>
-                                                <Button onClick={() => { handleRating(task, 5) }} variant="contained" color="green" disableElevation sx={{ width: "60px", textTransform: 'none' }}>Green</Button>
+                                            <ButtonGroup variant="contained" aria-label="Basic button group">
+                                                <Button
+                                                    onClick={() => handleRating(task, 1)}
+                                                    variant="contained"
+                                                    color="red"
+                                                    disableElevation
+                                                    sx={{ width: "60px", textTransform: "none" }}
+                                                >
+                                                    Red
+                                                </Button>
+                                                <Button
+                                                    onClick={() => handleRating(task, 3)}
+                                                    variant="contained"
+                                                    color="yellow"
+                                                    disableElevation
+                                                    sx={{ width: "60px", textTransform: "none" }}
+                                                >
+                                                    Yellow
+                                                </Button>
+                                                <Button
+                                                    onClick={() => handleRating(task, 5)}
+                                                    variant="contained"
+                                                    color="green"
+                                                    disableElevation
+                                                    sx={{ width: "60px", textTransform: "none" }}
+                                                >
+                                                    Green
+                                                </Button>
                                             </ButtonGroup>
                                         </Box>
+
                                         <Box sx={{ width: "40px", px: 1 }}>
-                                            <IconButton aria-label="delete" onClick={() => handleTaskChatButton(task)}>
+                                            <IconButton
+                                                aria-label="chat"
+                                                onClick={() => handleTaskChatButton(task)}
+                                            >
                                                 <InsertCommentIcon />
                                             </IconButton>
                                         </Box>
+
                                         <Box sx={{ width: "40px", px: 1 }}>
-                                            <IconButton aria-label="delete" onClick={() => handleRemoveTask(task)}>
+                                            <IconButton
+                                                aria-label="delete"
+                                                onClick={() => handleRemoveTask(task)}
+                                            >
                                                 <DeleteIcon />
                                             </IconButton>
                                         </Box>
                                     </Box>
-
                                 </Box>
                             ))}
+
+                            {/* Recursive function to render categories and their tasks */}
+                            {taskHierarchy.categories.map((category) => {
+                                return (
+                                    <CategoryComponent key={category.name} category={category} />
+                                )
+                            })}
 
                             {/* New Task Section */}
                             <Box
@@ -1160,7 +1427,7 @@ export default function InstructorPractical() {
                                         sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
                                     >
                                         <TableCell component="th" scope="row">
-                                            {comment.task}
+                                            {comment.task.split("/")[comment.task.split("/").length - 1]}
                                         </TableCell>
                                         <TableCell align="right">{comment.rating}</TableCell>
                                         <TableCell align="right">{new Date(comment.timestamp * 1000).toISOString().substring(14, 19)}</TableCell>

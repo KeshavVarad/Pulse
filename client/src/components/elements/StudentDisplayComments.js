@@ -19,13 +19,13 @@ export default function StudentDisplayComments({ comments, currentIndex, onNext,
             p: 4,
             height: "100%",
             borderRadius: 5,
-            backgroundColor:"primary.light",
+            backgroundColor: "primary.light",
             alignContent: "space-evenly",
             justifyContent: "space-evenly",
         }}>
 
             <Typography variant="h5" >Current Feedback ({currentIndex + 1}/{comments.length})</Typography>
-            <Typography variant="h6"><strong>Task:</strong> {comment.task}</Typography>
+            <Typography variant="h6"><strong>Task:</strong> {comment.task.split("/")[comment.task.split("/").length - 1]}</Typography>
             <Typography variant="h6"><strong>Rating:</strong> {comment.rating}</Typography>
             <Typography variant="h6"><strong>Feedback:</strong> {comment.feedback}</Typography>
             <Typography variant="h6"><strong>Timestamp:</strong> {new Date(comment.timestamp * 1000).toISOString().substring(14, 19)}</Typography>
