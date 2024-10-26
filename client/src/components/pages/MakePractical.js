@@ -123,6 +123,30 @@ export default function MakePractical() {
     const [practicalId, setPracticalId] = useState();
     const [schoolId, setSchoolId] = useState();
 
+    const [templateData, setTemplateData] = useState(null);
+    const [selectedTemplate, setSelectedTemplate] = useState('');
+    const [templateList, setTemplateList] = useState([]);
+
+    useEffect(() => {
+        axios.get(`${process.env.REACT_APP_API_HOST}/api/templates`)
+            .then((response) => setTemplateList(response.data))
+            .catch((error) => console.error("Error loading template list:", error));
+    }, []);
+
+    useEffect(() => {
+        if (selectedTemplate) {
+            axios
+                .get(`${process.env.REACT_APP_API_HOST}/api/templates/${selectedTemplate}`)
+                .then((response) => {
+                    setTemplateData(response.data)
+                })
+                .catch((error) => console.error("Error loading template:", error));
+        }
+
+
+    }, [selectedTemplate]);
+
+
 
     useEffect(() => {
         if (!practicalId) {
@@ -229,6 +253,23 @@ export default function MakePractical() {
             };
 
             await fetch(`${process.env.REACT_APP_API_HOST}/api/updateUser/${user_instructor_id}`, updateInstructorOptions);
+
+
+            let tasks = [];
+
+            if (templateData) {
+                templateData.tasks.map((task_name) => {
+                    tasks.push({
+                        name: task_name,
+                        replies: [],
+                        red_count: 0,
+                        yellow_count: 0,
+                        green_count: 0
+                    })
+                })
+            }
+
+
             let newPracticalData = {
                 id: practicalId,
                 practical_name: practicalName,
@@ -238,7 +279,7 @@ export default function MakePractical() {
                 user_participants: user_participants,
                 user_instructor_id: user_instructor_id,
                 user_instructor_name: user_instructor_name,
-                tasks: [],
+                tasks: tasks,
                 comments: [],
                 chats: [],
                 red_count: 0,
@@ -484,6 +525,13 @@ export default function MakePractical() {
                         sx={{ mb: 2 }}
                         fullWidth
                         value={practicalName} />
+
+                    <select onChange={(e) => setSelectedTemplate(e.target.value)}>
+                        <option value="">Select a template</option>
+                        {templateList.map((templateName, index) => (
+                            <option key={index} value={templateName}>{templateName.replace('_', ' ')}</option>
+                        ))}
+                    </select>
 
 
                     <Box

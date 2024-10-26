@@ -14,53 +14,6 @@ import SendIcon from '@mui/icons-material/Send';
 import GCloudVideoPlayer from "../elements/GCloudVideoPlayer.js";
 import CloseIcon from '@mui/icons-material/Close';
 
-const testTaskHierarchy = {
-    "rootTasks": [
-        {
-            "name": "General Task 1",
-            "red_count": 2,
-            "green_count": 0,
-            "yellow_count": 1,
-            "replies": []
-        },
-        {
-            "name": "General Task 2",
-            "red_count": 1,
-            "green_count": 1,
-            "yellow_count": 0,
-            "replies": []
-        }
-    ],
-    "categories": [
-        {
-            "name": "Communication",
-            "subCategories": [
-                {
-                    "name": "Verbal Communication",
-                    "subCategories": [],
-                    "tasks": [
-                        {
-                            "name": "Clarity",
-                            "red_count": 1,
-                            "green_count": 2,
-                            "yellow_count": 1,
-                            "replies": []
-                        },
-                        {
-                            "name": "Tone",
-                            "red_count": 0,
-                            "green_count": 3,
-                            "yellow_count": 1,
-                            "replies": []
-                        }
-                    ]
-                }
-            ],
-            "tasks": []
-        }
-    ]
-}
-
 
 export default function InstructorPractical() {
 
@@ -116,104 +69,119 @@ export default function InstructorPractical() {
     const [gcloudPlayer, setGcloudPlayer] = useState(null);
     const gcloudVideoRef = useRef(null);
 
-    const CategoryComponent = ({ category }) => (
-        <Box sx={{ pl: 3 }}>
-            <Typography variant="h6">{category.name}</Typography>
+    const CategoryComponent = ({ category }) => {
+        // State to track whether tasks are visible or hidden
+        const [showTasks, setShowTasks] = useState(true);
 
-            {/* Render tasks within this category */}
-            {category.tasks.map((task) => (
-                <Box
-                    key={task.name}
-                    sx={{
-                        width: "100%",
-                        display: "flex",
-                        flexDirection: "row",
-                        justifyContent: "space-between",
-                        alignItems: "center",
-                        pt: 1,
-                    }}
-                >
+        // Toggle function for hiding and showing tasks
+        const toggleTasks = () => setShowTasks((prevShowTasks) => !prevShowTasks);
+
+        return (
+            <Box sx={{ pl: 3 }}>
+                <Box sx={{ display: "flex", alignItems: "center" }}>
+                    <Typography variant="h6">{category.name}</Typography>
+
+                    {/* Button to toggle task visibility */}
+                    <Button onClick={toggleTasks} sx={{ ml: 2 }}>
+                        {showTasks ? "Hide Tasks" : "Show Tasks"}
+                    </Button>
+                </Box>
+
+                {/* Conditionally render tasks based on showTasks state */}
+                {showTasks && category.tasks.map((task) => (
                     <Box
+                        key={task.name}
                         sx={{
+                            width: "100%",
                             display: "flex",
                             flexDirection: "row",
-                            width: "100%",
-                            justifyItems: "center",
+                            justifyContent: "space-between",
                             alignItems: "center",
-                            justifyContent: "center",
+                            pt: 1,
                         }}
                     >
                         <Box
                             sx={{
-                                minWidth: "160px",
-                                maxWidth: "160px",
-                                height: "100%",
-                                pl: 1,
                                 display: "flex",
+                                flexDirection: "row",
+                                width: "100%",
+                                justifyItems: "center",
+                                alignItems: "center",
+                                justifyContent: "center",
                             }}
                         >
-                            <Typography variant="h7">{task.name}</Typography>
-                        </Box>
-
-                        <Box sx={{ minWidth: "180px", maxWidth: "180px", display: "flex" }}>
-                            <ButtonGroup variant="contained" aria-label="Basic button group">
-                                <Button
-                                    onClick={() => handleRating(task, 1, category.path + category.name + "/")}
-                                    variant="contained"
-                                    color="red"
-                                    disableElevation
-                                    sx={{ width: "60px", textTransform: "none" }}
-                                >
-                                    Red
-                                </Button>
-                                <Button
-                                    onClick={() => handleRating(task, 3, category.path + category.name + "/")}
-                                    variant="contained"
-                                    color="yellow"
-                                    disableElevation
-                                    sx={{ width: "60px", textTransform: "none" }}
-                                >
-                                    Yellow
-                                </Button>
-                                <Button
-                                    onClick={() => handleRating(task, 5, category.path + category.name + "/")}
-                                    variant="contained"
-                                    color="green"
-                                    disableElevation
-                                    sx={{ width: "60px", textTransform: "none" }}
-                                >
-                                    Green
-                                </Button>
-                            </ButtonGroup>
-                        </Box>
-
-                        <Box sx={{ width: "40px", px: 1 }}>
-                            <IconButton
-                                aria-label="chat"
-                                onClick={() => handleTaskChatButton(task, category.path + category.name + "/")}
+                            <Box
+                                sx={{
+                                    minWidth: "160px",
+                                    maxWidth: "160px",
+                                    height: "100%",
+                                    pl: 1,
+                                    display: "flex",
+                                }}
                             >
-                                <InsertCommentIcon />
-                            </IconButton>
-                        </Box>
+                                <Typography variant="h7">{task.name}</Typography>
+                            </Box>
 
-                        <Box sx={{ width: "40px", px: 1 }}>
-                            <IconButton
-                                aria-label="delete"
-                                onClick={() => handleRemoveTask(task, category.path + category.name + "/")}
-                            >
-                                <DeleteIcon />
-                            </IconButton>
+                            <Box sx={{ minWidth: "180px", maxWidth: "180px", display: "flex" }}>
+                                <ButtonGroup variant="contained" aria-label="Basic button group">
+                                    <Button
+                                        onClick={() => handleRating(task, 1, category.path + category.name + "/")}
+                                        variant="contained"
+                                        color="red"
+                                        disableElevation
+                                        sx={{ width: "60px", textTransform: "none" }}
+                                    >
+                                        Red
+                                    </Button>
+                                    <Button
+                                        onClick={() => handleRating(task, 3, category.path + category.name + "/")}
+                                        variant="contained"
+                                        color="yellow"
+                                        disableElevation
+                                        sx={{ width: "60px", textTransform: "none" }}
+                                    >
+                                        Yellow
+                                    </Button>
+                                    <Button
+                                        onClick={() => handleRating(task, 5, category.path + category.name + "/")}
+                                        variant="contained"
+                                        color="green"
+                                        disableElevation
+                                        sx={{ width: "60px", textTransform: "none" }}
+                                    >
+                                        Green
+                                    </Button>
+                                </ButtonGroup>
+                            </Box>
+
+                            <Box sx={{ width: "40px", px: 1 }}>
+                                <IconButton
+                                    aria-label="chat"
+                                    onClick={() => handleTaskChatButton(task, category.path + category.name + "/")}
+                                >
+                                    <InsertCommentIcon />
+                                </IconButton>
+                            </Box>
+
+                            <Box sx={{ width: "40px", px: 1 }}>
+                                <IconButton
+                                    aria-label="delete"
+                                    onClick={() => handleRemoveTask(task, category.path + category.name + "/")}
+                                >
+                                    <DeleteIcon />
+                                </IconButton>
+                            </Box>
                         </Box>
                     </Box>
-                </Box>
-            ))}
+                ))}
 
-            {/* Render subcategories recursively */}
-            {category.subCategories.map((subCategory) => (
-                <CategoryComponent key={subCategory.name} category={subCategory} />
-            ))}
-        </Box>
-    );
+                {/* Render subcategories recursively */}
+                {category.subCategories.map((subCategory) => (
+                    <CategoryComponent key={subCategory.name} category={subCategory} />
+                ))}
+            </Box>
+        );
+    };
 
     const convertTasksToHierarchy = (tasks) => {
         const result = {

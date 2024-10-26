@@ -1,0 +1,21 @@
+{
+    "name": "ANTS Skill Assessment",
+    "description": "Assessment template for Anesthesia Non-Technical Skills (ANTS), used to evaluate non-technical skills in anesthesia clinical situations.",
+    "tasks": [
+        "Task Management/Planning and Preparation",
+        "Task Management/Prioritizing",
+        "Task Management/Providing and Maintaining Standards",
+        "Task Management/Identifying and Utilizing Resources",
+        "Teamwork/Coordinating Activities with Team Members",
+        "Teamwork/Exchanging Information",
+        "Teamwork/Using Authority and Assertiveness",
+        "Teamwork/Assessing Capabilities",
+        "Teamwork/Supporting Others",
+        "Situation Awareness/Gathering Information",
+        "Situation Awareness/Recognizing and Understanding the Situation",
+        "Situation Awareness/Anticipating Future States",
+        "Decision Making/Identifying Options",
+        "Decision Making/Balancing Risks and Selecting Options",
+        "Decision Making/Re-Evaluating"
+    ]
+}

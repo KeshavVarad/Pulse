@@ -51,8 +51,6 @@ const fileFilter = (req, file, cb) => {
     }
 };
 
-// Create multer instance with the defined storage and file filter
-const upload = multer({ storage: multer_storage, fileFilter: fileFilter });
 
 dotenv.config();
 
@@ -104,6 +102,34 @@ app.get('/api/user_guides/:role', (req, res) => {
     });
 });
 
+app.get('/api/templates', (req, res) => {
+    const templatesDir = path.join(__dirname, 'practical_templates');
+
+    fs.readdir(templatesDir, (err, files) => {
+        if (err) {
+            return res.status(500).json({ error: 'Could not list templates' });
+        }
+
+        // Filter to only include JSON files and remove the .json extension
+        const templateNames = files
+            .filter((file) => file.endsWith('.json'))
+            .map((file) => path.parse(file).name);
+
+        res.json(templateNames);
+    });
+});
+
+app.get('/api/templates/:templateName', (req, res) => {
+    const { templateName } = req.params;
+    const templatePath = path.join(__dirname, 'practical_templates', `${templateName}.json`);
+
+    fs.readFile(templatePath, 'utf8', (err, data) => {
+        if (err) {
+            return res.status(404).json({ error: 'Template not found' });
+        }
+        res.json(JSON.parse(data));
+    });
+});
 
 
 app.use('/api', userRoute);
