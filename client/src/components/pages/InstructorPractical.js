@@ -907,19 +907,31 @@ export default function InstructorPractical() {
             const commentIds = practical.comments
 
 
-            const commentsData = []
+            const commentsData = await Promise.all(
+                commentIds.map(async (commentId) => {
+                    try {
+                        const commentRes = await fetch(`${process.env.REACT_APP_API_HOST}/api/comment/${commentId}`);
+                        if (!commentRes.ok) {
+                            throw new Error(`HTTP error! status: ${commentRes.status}`);
+                        }
+                        return await commentRes.json();
+                    } catch (error) {
+                        console.warn(`Failed to fetch comment with ID ${commentId}:`, error);
+                        return null; // Return null for invalid comments
+                    }
+                })
+            );
 
-            commentIds.map(async (commentId, idx) => {
-                const commentRes = await fetch(`${process.env.REACT_APP_API_HOST}/api/comment/${commentId}`);
-                const commentData = await commentRes.json()
-                commentsData.push(commentData)
+            // Filter out invalid (null) comments
+            const validComments = commentsData.filter((comment) => comment !== null);
 
-            })
+            // Sort valid comments by timestamp
+            validComments.sort((a, b) => a.timestamp - b.timestamp);
 
-            commentsData.reverse()
+            // Update state with the fully fetched and sorted comments
+            setComments(validComments);
 
-            setComments(commentsData)
-
+            console.log(comments)
         }
 
         fetchPractical()
