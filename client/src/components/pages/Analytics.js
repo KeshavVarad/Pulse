@@ -233,9 +233,16 @@ const LineChartComponent = ({ data, isDemo }) => {
 
 
 const PracticalChart = ({ practicalData }) => {
-    const taskNames = Array.from(new Set(practicalData.flatMap((p) => p.tasks.map((t) => t.name))));
 
-    const [selectedTasks, setSelectedTasks] = useState([]);
+    const taskNames = Array.from(
+        new Set(
+            practicalData
+                .flatMap((p) => p.tasks.map((t) => t.name.split("/")[0].toLowerCase()))
+        )
+    ).map((name) =>
+        name.replace(/\b\w/g, (char) => char.toUpperCase())
+    );
+
     const [chartData, setChartData] = useState({
         labels: [], // No labels initially
         datasets: [] // No datasets initially
@@ -253,34 +260,43 @@ const PracticalChart = ({ practicalData }) => {
     const prepareChartData = (tasksToDisplay) => {
         const datasets = [];
 
-        tasksToDisplay.forEach((taskName) => {
-            const taskData = practicalData
+        tasksToDisplay.forEach((categoryName) => {
+            const categoryData = practicalData
                 .map((practical) => {
-                    const task = practical.tasks.find((t) => t.name === taskName);
-                    if (task) {
-                        if (calculatePerformance(task) === -1) {
-                            return null;
-                        }
+                    // Normalize category name to lowercase for case-insensitive comparison
+                    const normalizedCategoryName = categoryName.toLowerCase();
 
-                        // Round the date to the nearest day
-                        const roundedDate = new Date(practical.creation_date);
-                        roundedDate.setHours(0, 0, 0, 0); // Zero out the time part
+                    // Find all tasks within the current category, ignoring case
+                    const tasksInCategory = practical.tasks.filter((t) => t.name.split("/")[0].toLowerCase() === normalizedCategoryName);
+                    if (tasksInCategory.length === 0) return null;
 
-                        return {
-                            x: roundedDate, // Using rounded Date object for x-axis
-                            y: calculatePerformance(task),
-                        };
-                    }
-                    return null;
+                    // Calculate the performance for each task and aggregate them
+                    const validPerformances = tasksInCategory
+                        .map((task) => calculatePerformance(task))
+                        .filter((performance) => performance !== -1);
+
+                    if (validPerformances.length === 0) return null;
+
+                    // Average the performance scores within this category
+                    const averagePerformance = validPerformances.reduce((sum, val) => sum + val, 0) / validPerformances.length;
+
+                    // Round the date to the nearest day
+                    const roundedDate = new Date(practical.creation_date);
+                    roundedDate.setHours(0, 0, 0, 0); // Zero out the time part
+
+                    return {
+                        x: roundedDate, // Using rounded Date object for x-axis
+                        y: averagePerformance,
+                    };
                 })
                 .filter((entry) => entry !== null)
                 .sort((a, b) => a.x - b.x);
 
             // Aggregate points with the same day (x value)
-            const aggregatedTaskData = taskData.reduce((acc, curr) => {
+            const aggregatedCategoryData = categoryData.reduce((acc, curr) => {
                 const last = acc[acc.length - 1];
                 if (last && last.x.getTime() === curr.x.getTime()) {
-                    // If the current point has the same x (day) as the last one, average the y values
+                    // Average the y values if the current point has the same x (day) as the last one
                     last.y = (last.y + curr.y) / 2;
                 } else {
                     acc.push(curr);
@@ -289,8 +305,8 @@ const PracticalChart = ({ practicalData }) => {
             }, []);
 
             datasets.push({
-                label: taskName,
-                data: aggregatedTaskData,
+                label: categoryName,
+                data: aggregatedCategoryData,
                 fill: false,
                 borderColor: `#${Math.floor(Math.random() * 16777215).toString(16)}`, // Random color
                 tension: 0.1,
@@ -304,7 +320,6 @@ const PracticalChart = ({ practicalData }) => {
 
     useEffect(() => {
         if (taskNames.length > 0) {
-            setSelectedTasks(taskNames)
             prepareChartData(taskNames);
         }
         // Only run this effect when taskNames changes
@@ -413,10 +428,47 @@ export default function Analytics() {
 
                 const school_res = await fetch(`${process.env.REACT_APP_API_HOST}/api/school/${schoolId}`, requestOptions);
                 const school_data = await school_res.json()
+                const aggregated_school_task_data = school_data.task_data.map(cohort => {
+                    return {
+                        cohort_year: cohort.cohort_year,
+                        data: cohort.data.map(yearData => {
+                            // Create an object to hold category aggregates
+                            const categoryMap = {};
+
+                            yearData.data.forEach(task => {
+                                // Split name by "/" to separate category and task names
+                                const [category, taskName] = task.name.split('/');
+
+                                if (taskName) {
+                                    // If category exists, initialize or update its avg rating aggregate
+                                    if (!categoryMap[category]) {
+                                        categoryMap[category] = { name: category, total_rating: 0, count: 0 };
+                                    }
+                                    categoryMap[category].total_rating += task.avg_rating;
+                                    categoryMap[category].count += 1;
+                                } else {
+                                    // If no category, use task name directly
+                                    categoryMap[category] = { name: category, avg_rating: task.avg_rating };
+                                }
+                            });
+
+                            // Calculate avg_rating for each category
+                            const aggregatedTasks = Object.values(categoryMap).map(category => ({
+                                name: category.name,
+                                avg_rating: category.count ? (category.total_rating / category.count) : category.avg_rating,
+                            }));
+
+                            return {
+                                year: yearData.year,
+                                data: aggregatedTasks,
+                            };
+                        }),
+                    };
+                });
 
                 let task_data = []
 
-                school_data.task_data.map((data) => {
+                aggregated_school_task_data.map((data) => {
                     task_data.push(data)
                 })
                 setTaskData(task_data)

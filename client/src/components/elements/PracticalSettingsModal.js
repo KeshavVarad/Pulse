@@ -27,6 +27,8 @@ export default function PracticalSettingsModal({ openState, handleClose, practic
     const { setError } = useAuth()
 
     const handleDeleteButton = async () => {
+
+
         try {
             const user = auth.currentUser;
             const token = user && (await user.getIdToken());
@@ -35,6 +37,11 @@ export default function PracticalSettingsModal({ openState, handleClose, practic
             const practicalRes = await fetch(`${process.env.REACT_APP_API_HOST}/api/practical/${practicalId}`);
             const practical = await practicalRes.json();
             const practicalComments = practical.comments;
+
+            let taskPathPrefix = ""
+            if (practical.template && practical.template !== "Empty Template") {
+                taskPathPrefix = practical.template + "|"
+            }
 
             // Delete the practical
             const deletePracticalOptions = {
@@ -82,7 +89,7 @@ export default function PracticalSettingsModal({ openState, handleClose, practic
 
             practical.tasks.forEach(task => {
                 // Find the task in the school task data
-                let schoolDataTaskIndex = newSchoolTaskData[cohortInd].data[yearInd].data.findIndex(data => data.name === task.name);
+                let schoolDataTaskIndex = newSchoolTaskData[cohortInd].data[yearInd].data.findIndex(data => data.name === taskPathPrefix + task.name);
 
                 if (schoolDataTaskIndex !== -1) {
                     let schoolDataTask = newSchoolTaskData[cohortInd].data[yearInd].data[schoolDataTaskIndex];
@@ -162,6 +169,26 @@ export default function PracticalSettingsModal({ openState, handleClose, practic
         const token = user && (await user.getIdToken());
 
         const new_participant_ids = participantIds.slice().filter((id) => !removedParticpantIds.includes(id))
+
+        let newStudentYear = studentYear
+        if (!studentYear && new_participant_ids.length > 0) {
+            const firstParticipantId = new_participant_ids[0];
+
+            fetch(`${process.env.REACT_APP_API_HOST}/api/user/${firstParticipantId}`)
+                .then((response) => {
+                    if (!response.ok) {
+                        throw new Error("Failed to fetch participant data");
+                    }
+                    return response.json();
+                })
+                .then((participantData) => {
+                    newStudentYear = participantData.grad_year;
+                })
+                .catch((error) => {
+                    console.error("Error fetching participant data:", error);
+                });
+        }
+
         const updatePracticalOptions = {
             method: "PUT",
             mode: "cors",
@@ -169,7 +196,7 @@ export default function PracticalSettingsModal({ openState, handleClose, practic
                 "Content-Type": "application/json",
                 Authorization: `Bearer ${token}`,
             },
-            body: JSON.stringify({ user_participants: new_participant_ids })
+            body: JSON.stringify({ user_participants: new_participant_ids, cohort_year: newStudentYear })
         }
 
         await fetch(`${process.env.REACT_APP_API_HOST}/api/updatePractical/${practicalId}`, updatePracticalOptions);

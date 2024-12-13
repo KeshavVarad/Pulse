@@ -17,7 +17,8 @@ class Practical {
         avg_rating,
         school_id,
         cohort_year,
-        transcript_link
+        transcript_link,
+        template
     ) {
         (this.id = id),
             (this.practical_name = practical_name),
@@ -36,7 +37,8 @@ class Practical {
             (this.avg_rating = avg_rating),
             (this.school_id = school_id),
             (this.cohort_year = cohort_year),
-            (this.transcript_link = transcript_link);
+            (this.transcript_link = transcript_link),
+            (this.template = template);
     }
 }
 

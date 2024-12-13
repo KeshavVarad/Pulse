@@ -1,7 +1,7 @@
 import React from 'react'
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom';
-import { Box, Typography, TextField, Button, Input, LinearProgress, Snackbar } from '@mui/material'
+import { Box, Typography, TextField, Button, Input, LinearProgress, Snackbar, InputLabel, Select, MenuItem } from '@mui/material'
 import { useAuth } from '../../contexts/AuthContext';
 import { useEffect } from "react";
 import { auth } from "../../config/firebase.js";
@@ -124,7 +124,7 @@ export default function MakePractical() {
     const [schoolId, setSchoolId] = useState();
 
     const [templateData, setTemplateData] = useState(null);
-    const [selectedTemplate, setSelectedTemplate] = useState('');
+    const [selectedTemplate, setSelectedTemplate] = useState('Blank Template');
     const [templateList, setTemplateList] = useState([]);
 
     useEffect(() => {
@@ -134,7 +134,7 @@ export default function MakePractical() {
     }, []);
 
     useEffect(() => {
-        if (selectedTemplate) {
+        if (selectedTemplate !== "Blank Template") {
             axios
                 .get(`${process.env.REACT_APP_API_HOST}/api/templates/${selectedTemplate}`)
                 .then((response) => {
@@ -288,7 +288,8 @@ export default function MakePractical() {
                 avg_rating: 0,
                 school_id: instructorData[0].school_id,
                 cohort_year: participant_year,
-                transcript_link: "No Transcript"
+                transcript_link: "No Transcript",
+                template: templateData.name
             }
 
             const createNewPracticalOptions = {
@@ -526,12 +527,24 @@ export default function MakePractical() {
                         fullWidth
                         value={practicalName} />
 
-                    <select onChange={(e) => setSelectedTemplate(e.target.value)}>
-                        <option value="">Select a template</option>
+                    <InputLabel>Select a template</InputLabel>
+                    <Select
+                        value={selectedTemplate}
+                        onChange={(e) => setSelectedTemplate(e.target.value)}
+                        label="Select a template"
+                        sx={{
+                            width: "100%",
+                        }}
+                    >
+                        <MenuItem value="Blank Template">
+                            Blank Template
+                        </MenuItem>
                         {templateList.map((templateName, index) => (
-                            <option key={index} value={templateName}>{templateName.replace('_', ' ')}</option>
+                            <MenuItem key={index} value={templateName}>
+                                {templateName.replace('_', ' ')}
+                            </MenuItem>
                         ))}
-                    </select>
+                    </Select>
 
 
                     <Box
