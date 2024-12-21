@@ -52,6 +52,7 @@ const TutorialDashboard = () => {
                 justifyContent: "center",
                 justifyItems: "center",
                 display: "flex",
+
             }}>
                 <Typography variant="h3">
                     User Guides
@@ -62,7 +63,7 @@ const TutorialDashboard = () => {
 
 
 
-            <Grid container spacing={2} sx={{ my: 3 }}>
+            <Grid container spacing={2} sx={{ my: 3, px:20}}>
                 <Grid item xs={4} sx={{}}>
                     <Card>
                         <CardActionArea component={Link} to={`/user_guides/admin`} sx={{

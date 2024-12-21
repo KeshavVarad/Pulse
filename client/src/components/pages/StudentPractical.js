@@ -679,7 +679,7 @@ export default function StudentPractical() {
                     <Box sx={{
                         display: "flex",
                         flexDirection: "row",
-                        width: "100%"
+                        width: "100%",
                     }}>
 
                         <Box sx={{
@@ -695,6 +695,9 @@ export default function StudentPractical() {
                             <Box sx={{
                                 display: "flex",
                                 minWidth: "100%",
+                                minHeight: "50vh",
+                                alignContent:"center",
+                                alignItems:"center",
 
                             }}>
                                 <BarChart
@@ -737,7 +740,7 @@ export default function StudentPractical() {
                                             width: "100%",
                                         }}>
                                             <List sx={{
-                                                height: '20vh',
+                                                height: '45vh',
                                                 overflowY: 'auto',
                                             }}>
                                                 {currentTaskDiscussion ? currentTaskDiscussion.replies.map((reply, idx) => {

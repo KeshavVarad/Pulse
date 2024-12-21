@@ -4,7 +4,7 @@ import { Link } from 'react-router-dom';
 
 
 function formatString(str) {
-    const smallWords = ['a', 'an', 'the', 'and', 'or', 'but', 'on', 'in', 'with'];
+    const smallWords = ['a', 'an', 'the', 'and', 'or', 'but', 'on', 'in', 'with', 'to'];
 
     return str
         .replace(/_/g, ' ') // Replace all underscores with spaces
@@ -79,7 +79,7 @@ const TutorialStudent = () => {
             </Box>
             <Divider />
 
-            <Grid container spacing={3} sx={{ my: 3 }}>
+            <Grid container spacing={3} sx={{ my: 3,px:20}}>
                 {tutorials.map(({ tutorial }, index) => (
                     <Grid item xs={12} sm={6} md={3} key={index}>
                         <Card>
