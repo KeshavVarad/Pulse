@@ -406,7 +406,19 @@ export default function InstructorPractical() {
 
             let newSchoolTaskData = schoolTaskData.slice()
             let taskIndex = newTasks.findIndex(t => t.name == task.name)
-            let schoolDataTaskIndex = newSchoolTaskData[cohortInd].data[yearInd].data.findIndex(data => data.name == task.name)
+
+            let schoolDataTaskIndex = newSchoolTaskData[cohortInd].data[yearInd].data.findIndex(data => data.name == task.name);
+
+            if (schoolDataTaskIndex == -1) {
+                newSchoolTaskData[cohortInd].data[yearInd].data.push({
+                    name: task.name,
+                    red_count: 0,
+                    yellow_count: 0,
+                    green_count: 0,
+                    avg_rating: 0
+                })
+                schoolDataTaskIndex = newSchoolTaskData[cohortInd].data[yearInd].data.findIndex(data => data.name == task.name);
+            }
 
             let practicalUpdateData = { comments: newComments }
 

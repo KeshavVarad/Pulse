@@ -233,54 +233,60 @@ const LineChartComponent = ({ data, isDemo }) => {
 
 
 const PracticalChart = ({ practicalData }) => {
-    const taskNames = Array.from(new Set(practicalData.flatMap((p) => p.tasks.map((t) => t.name))));
+    // Derive a unique list of task names from the practical data.
+    const taskNames = Array.from(
+        new Set(practicalData.flatMap((p) => p.tasks.map((t) => t.name)))
+    );
 
-    const [selectedTasks, setSelectedTasks] = useState([]);
+    // Initialize selectedTasks with all available tasks.
+    const [selectedTasks, setSelectedTasks] = useState(taskNames);
     const [chartData, setChartData] = useState({
-        labels: [], // No labels initially
-        datasets: [] // No datasets initially
+        datasets: [],
     });
 
-
-    // Calculate the performance score
-    const calculatePerformance = (task) => {
-        if (task.red_count + task.yellow_count + task.green_count == 0) {
-            return -1
+    // A stable color generator that returns the same color for a given task name.
+    const getColorForTask = (taskName) => {
+        const colors = ['#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF', '#FF9F40'];
+        let hash = 0;
+        for (let i = 0; i < taskName.length; i++) {
+            hash = taskName.charCodeAt(i) + ((hash << 5) - hash);
         }
-        return (task.red_count + 3 * task.yellow_count + 5 * task.green_count) / (task.red_count + task.yellow_count + task.green_count);
+        const index = Math.abs(hash) % colors.length;
+        return colors[index];
     };
 
-    const prepareChartData = (tasksToDisplay) => {
-        const datasets = [];
+    // Function to calculate the performance score.
+    const calculatePerformance = (task) => {
+        const total = task.red_count + task.yellow_count + task.green_count;
+        if (total === 0) {
+            return -1;
+        }
+        return (task.red_count + 3 * task.yellow_count + 5 * task.green_count) / total;
+    };
 
-        tasksToDisplay.forEach((taskName) => {
+    // Prepare chart data based on the selected tasks.
+    const prepareChartData = (tasksToDisplay) => {
+        const datasets = tasksToDisplay.map((taskName) => {
             const taskData = practicalData
                 .map((practical) => {
                     const task = practical.tasks.find((t) => t.name === taskName);
                     if (task) {
-                        if (calculatePerformance(task) === -1) {
-                            return null;
-                        }
-
-                        // Round the date to the nearest day
+                        const performance = calculatePerformance(task);
+                        if (performance === -1) return null;
+                        // Round the date to the nearest day.
                         const roundedDate = new Date(practical.creation_date);
-                        roundedDate.setHours(0, 0, 0, 0); // Zero out the time part
-
-                        return {
-                            x: roundedDate, // Using rounded Date object for x-axis
-                            y: calculatePerformance(task),
-                        };
+                        roundedDate.setHours(0, 0, 0, 0);
+                        return { x: roundedDate, y: performance };
                     }
                     return null;
                 })
                 .filter((entry) => entry !== null)
                 .sort((a, b) => a.x - b.x);
 
-            // Aggregate points with the same day (x value)
+            // Aggregate points with the same day (x value).
             const aggregatedTaskData = taskData.reduce((acc, curr) => {
                 const last = acc[acc.length - 1];
                 if (last && last.x.getTime() === curr.x.getTime()) {
-                    // If the current point has the same x (day) as the last one, average the y values
                     last.y = (last.y + curr.y) / 2;
                 } else {
                     acc.push(curr);
@@ -288,54 +294,78 @@ const PracticalChart = ({ practicalData }) => {
                 return acc;
             }, []);
 
-            datasets.push({
+            return {
                 label: taskName,
                 data: aggregatedTaskData,
                 fill: false,
-                borderColor: `#${Math.floor(Math.random() * 16777215).toString(16)}`, // Random color
+                borderColor: getColorForTask(taskName),
                 tension: 0.1,
-            });
+            };
         });
 
-        setChartData({
-            datasets: datasets,
-        });
+        setChartData({ datasets });
     };
 
+    // Update chart data whenever selectedTasks or practicalData changes.
     useEffect(() => {
         if (taskNames.length > 0) {
-            setSelectedTasks(taskNames)
-            prepareChartData(taskNames);
+            prepareChartData(selectedTasks);
         }
-        // Only run this effect when taskNames changes
-    }, [taskNames.length]);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [selectedTasks, practicalData]);
 
     return (
-        <div>
+        <Box>
+            {/* Task Select Dropdown */}
+            <FormControl fullWidth margin="normal">
+                <InputLabel id="practical-task-select-label" shrink={selectedTasks.length > 0}>
+                    Select Tasks
+                </InputLabel>
+                <Select
+                    labelId="practical-task-select-label"
+                    multiple
+                    value={selectedTasks}
+                    onChange={(e) => {
+                        setSelectedTasks(e.target.value);
+                    }}
+                    renderValue={(selected) => selected.join(', ')}
+                >
+                    {taskNames.map((task) => (
+                        <MenuItem key={task} value={task}>
+                            <Checkbox checked={selectedTasks.indexOf(task) > -1} />
+                            <ListItemText primary={task} />
+                        </MenuItem>
+                    ))}
+                </Select>
+            </FormControl>
 
-            {/* Chart component */}
-            <Line
-                data={chartData}
-                options={{
-                    responsive: true,
-                    scales: {
-                        x: {
-                            type: 'time', // Time-based x-axis
-                            title: {
-                                display: true,
-                                text: 'Date',
+            {/* Practical Line Chart */}
+            <Box mt={4}>
+                <Line
+                    data={chartData}
+                    options={{
+                        responsive: true,
+                        // Disable animations to keep the chart stable.
+                        animation: { duration: 0 },
+                        scales: {
+                            x: {
+                                type: 'time',
+                                title: {
+                                    display: true,
+                                    text: 'Date',
+                                },
+                            },
+                            y: {
+                                title: {
+                                    display: true,
+                                    text: 'Performance',
+                                },
                             },
                         },
-                        y: {
-                            title: {
-                                display: true,
-                                text: 'Performance',
-                            },
-                        },
-                    },
-                }}
-            />
-        </div>
+                    }}
+                />
+            </Box>
+        </Box>
     );
 };
 
