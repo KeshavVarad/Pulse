@@ -7,7 +7,26 @@ import path from "path"
 import axios from "axios"
 import multer from "multer"
 import fs from "fs"
+import { v4 as uuidv4 } from "uuid"
 
+import { Pinecone } from '@pinecone-database/pinecone';
+import {
+    START,
+    END,
+    MessagesAnnotation,
+    StateGraph,
+    MemorySaver,
+    Annotation
+} from '@langchain/langgraph';
+import { ChatOpenAI } from '@langchain/openai';
+import { index } from "./config/pineconeInit.js";
+
+const StateAnnotation = Annotation.Root({
+    messages: Annotation({
+        reducer: (prev, curr) => prev.concat(curr),
+    }),
+    config: Annotation(),
+});
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -58,6 +77,23 @@ dotenv.config();
 
 const PORT = process.env.PORT || 8080;
 const OPENAI_API_KEY = process.env.OPEN_AI_API_KEY;
+
+async function computeEmbedding(text) {
+    const response = await axios.post(
+        "https://api.openai.com/v1/embeddings",
+        {
+            model: "text-embedding-ada-002",
+            input: text,
+        },
+        {
+            headers: {
+                "Authorization": `Bearer ${OPENAI_API_KEY}`,
+                "Content-Type": "application/json",
+            },
+        }
+    );
+    return response.data.data[0].embedding;
+}
 
 
 const app = express();
@@ -149,26 +185,162 @@ app.post('/api/getUploadUrl', async (req, res) => {
 });
 
 
+const callModel = async (state) => {
+    // console.log("State in callModel:", state);
+    const { userId, role, filter } = state.config?.configurable || {};
+
+    if (!userId || !role) {
+        throw new Error("Missing userId or role in configuration");
+    }
+
+    const messages = state.messages;
+    const currentUserQuery = messages[messages.length - 1].content;
+
+    // 1. Compute the embedding for the current query.
+    const queryEmbedding = await computeEmbedding(currentUserQuery);
+
+    const practicalNamespace = index.namespace("practicals");
+    const commentsNamespace = index.namespace("comments");
+
+    let baseFilter = {};
+    if (role === 'student') {
+        baseFilter = { user_participants: { $in: [userId] } };
+    } else if (role === 'instructor') {
+        baseFilter = { "user_instructor_id": { "$eq": userId } };
+    }
+
+    // 4. Query the "practicals" namespace by filtering on a metadata field.
+    const practicalQueryResponse = await practicalNamespace.query({
+        vector: queryEmbedding,
+        topK: 100,
+        includeMetadata: true,
+        filter: { ...baseFilter }
+    });
+
+    // 5. Extract comment IDs (as before).
+    let commentIds = [];
+    if (practicalQueryResponse.matches) {
+        for (const match of practicalQueryResponse.matches) {
+            let practicalComments = match.metadata.comments;
+            if (typeof practicalComments === 'string') {
+                try {
+                    practicalComments = JSON.parse(practicalComments);
+                } catch (e) {
+                    practicalComments = [];
+                }
+            }
+            commentIds = commentIds.concat(practicalComments);
+        }
+    }
+    commentIds = [...new Set(commentIds)];
+
+    // 6. Query the "comments" namespace similarly using a metadata filter.
+    let commentsQueryResponse = { matches: [] };
+    if (commentIds.length > 0) {
+        let commentFilter = {
+            "comment_id": { "$in": commentIds },
+        };
+        if (filter) {
+            commentFilter = {
+                "comment_id": { "$in": commentIds },
+                ...filter
+            }
+        }
+
+
+        commentsQueryResponse = await commentsNamespace.query({
+            vector: queryEmbedding,
+            topK: 50,
+            filter: commentFilter,
+            includeMetadata: true
+        });
+    }
+
+    // 7. Combine and build retrieved context.
+    const combinedMatches = [
+        ...(practicalQueryResponse.matches || []),
+        ...(commentsQueryResponse.matches || []),
+    ];
+    // console.log(combinedMatches);
+
+    const retrievedContext = combinedMatches
+        .map(match => match.metadata.text || JSON.stringify(match.metadata))
+        .join("\n");
+
+    // 8. Build an augmented prompt with conversation history and retrieved context.
+    const prompt = `
+      You are a helpful teaching assistant for practical healthcare education.
+      Answer the user's question using the context below.
+      
+      Retrieved Context:
+      --------------------
+      ${retrievedContext}
+      --------------------
+      
+      Conversation History:
+      ${messages.map(m => `${m.role}: ${m.content}`).join("\n")}
+      
+      Provide a detailed answer.
+    `;
+
+    // 9. Call the Chat model.
+    const llm = new ChatOpenAI({
+        openAIApiKey: process.env.OPEN_AI_API_KEY,
+        modelName: 'gpt-4o-mini',
+        temperature: 0,
+    });
+    const result = await llm.invoke([{ role: "system", content: prompt }]);
+    return { messages: messages.concat({ role: "assistant", content: result.content }) };
+};
+
+// Construct the state graph by adding our node and defining the flow.
+const graph = new StateGraph(StateAnnotation)
+    .addNode("model", callModel)
+    .addEdge(START, "model")
+    .addEdge("model", END);
+
+// Compile the graph with a checkpointer for state persistence.
+const memory = new MemorySaver();
+const graphApp = graph.compile({ checkpointer: memory });
+
+
 app.post('/api/chat', async (req, res) => {
-    const { messages } = req.body;
+    const { messages, userId, role, threadId, filter } = req.body;
+    const conversationId = threadId || uuidv4();
+
+    // Merge configuration into the input state.
+    const input = {
+        messages,
+        config: {
+            configurable: {
+                userId,
+                role,
+                filter
+            }
+        }
+    };
+
+    const config = {
+        configurable: {
+            thread_id: conversationId,
+        },
+    };
 
     try {
-        const response = await axios.post('https://api.openai.com/v1/chat/completions', {
-            model: 'gpt-4o-mini',
-            messages,
-        }, {
-            headers: {
-                'Authorization': `Bearer ${OPENAI_API_KEY}`,
-                'Content-Type': 'application/json',
-            },
+        const output = await graphApp.invoke(input, config);
+        const assistantMessage = output.messages[output.messages.length - 1];
+        res.json({
+            threadId: conversationId,
+            response: assistantMessage,
+            chatHistory: output.messages
         });
-
-        res.json(response.data);
     } catch (error) {
-        console.error('Error calling OpenAI API:', error);
-        res.status(500).send('Error calling OpenAI API');
+        console.error("Error in chat endpoint:", error);
+        res.status(500).send("Error processing query");
     }
 });
+
+
 
 const GITHUB_TOKEN = process.env.GITHUB_TOKEN; // Store the GitHub token in environment variables
 const REPO_OWNER = process.env.GITHUB_REPO_OWNER; // Change to the owner of the repo

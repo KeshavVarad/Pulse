@@ -16,6 +16,7 @@ import CloseIcon from '@mui/icons-material/Close';
 import RedFlagIcon from '@mui/icons-material/Flag'; // Replace with your red indicator icon
 import YellowFlagIcon from '@mui/icons-material/Warning'; // Replace with your yellow indicator icon
 import GreenCheckIcon from '@mui/icons-material/CheckCircle'; // Replace with your green indicator icon
+import { MentionsInput, Mention } from 'react-mentions';
 
 
 
@@ -31,6 +32,7 @@ export default function InstructorPractical() {
     const [practicalName, setPracticalName] = useState("");
 
     const [participants, setParticipants] = useState([]);
+    const [participantInfo, setParticipantInfo] = useState([]);
 
     const [schoolId, setSchoolId] = useState();
     const [studentYear, setStudentYear] = useState();
@@ -78,6 +80,51 @@ export default function InstructorPractical() {
     const handleGCloudVideoChange = (playedSeconds) => {
         setGcloudVideoTimeStamp(playedSeconds); // Set the current timestamp directly
     };
+
+    const mentionInputStyle = {
+        control: {
+            backgroundColor: "#fff",
+            fontSize: 16,
+            fontWeight: "normal",
+            width: "60%",
+            border: "1px solid #ccc",
+            borderRadius: "4px",
+            padding: "8px",
+        },
+        highlighter: {
+            overflow: "hidden",
+        },
+        input: {
+            margin: 0,
+            padding: 0,
+        },
+        // Custom styles for the suggestions dropdown.
+        suggestions: {
+            list: {
+                backgroundColor: "white",
+                border: "1px solid rgba(0,0,0,0.15)",
+                fontSize: 14,
+                overflow: "auto",
+                maxHeight: 150,
+            },
+            item: {
+                padding: "5px 10px",
+                borderBottom: "1px solid #eee",
+                "&focused": {
+                    backgroundColor: "#cee4e5",
+                },
+            },
+        },
+    };
+
+    function formatFeedback(feedback) {
+        // Replace mention markup like @[username](id) with a styled span.
+        // WARNING: Ensure feedback is sanitized if it can contain untrusted data.
+        return feedback.replace(/@\[(.*?)\]\(.*?\)/g, (match, real_name) => {
+            return `<span style="color: #007bff; font-weight: bold;">@${real_name}</span>`;
+        });
+    }
+
 
 
     useEffect(() => {
@@ -791,6 +838,50 @@ export default function InstructorPractical() {
         }
     }, [schoolId])
 
+    useEffect(() => {
+        async function fetchStudentData() {
+            try {
+                const auth_user = auth.currentUser;
+                const token = auth_user && (await auth_user.getIdToken());
+                const userId = currentUser.uid; // (if needed)
+
+                const requestOptions = {
+                    method: "GET",
+                    mode: "cors",
+                    headers: {
+                        "Content-Type": "application/json",
+                        Authorization: `Bearer ${token}`,
+                    },
+                };
+
+                const curParticipantInfo = await Promise.all(
+                    participants.map(async (participantId) => {
+                        const participantRes = await fetch(
+                            `${process.env.REACT_APP_API_HOST}/api/user/${participantId}`,
+                            requestOptions
+                        );
+                        const participantData = await participantRes.json();
+                        return {
+                            id: participantId,
+                            name: participantData.real_name,
+                            username: participantData.username,
+                            email: participantData.email,
+                        };
+                    })
+                );
+
+                setParticipantInfo(curParticipantInfo);
+            } catch (e) {
+                console.log(e);
+            }
+        }
+
+        if (participants.length > 0) {
+            fetchStudentData();
+        }
+    }, [participants]);
+
+
 
     // Chat functions
     const now = new Date();
@@ -818,6 +909,8 @@ export default function InstructorPractical() {
             });
         }
     }
+
+
 
 
     const handleTaskChatButton = (task) => {
@@ -1179,36 +1272,44 @@ export default function InstructorPractical() {
                             </TableHead>
                             <TableBody>
                                 {comments.map((comment, idx) => (
-                                    <TableRow
-                                        key={comment.id}
-                                        sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
-                                    >
+                                    <TableRow key={comment.id} sx={{ '&:last-child td, &:last-child th': { border: 0 } }}>
                                         <TableCell component="th" scope="row">
                                             {comment.task}
                                         </TableCell>
                                         <TableCell align="right">{comment.rating}</TableCell>
-                                        <TableCell align="right">{new Date(comment.timestamp * 1000).toISOString().substring(14, 19)}</TableCell>
-                                        {
-                                            (idx != editableCommentIdx) ?
-                                                (<TableCell align="right">
-                                                    <Typography onClick={() => handleEditButton(idx)} >
-                                                        {(comment.feedback == "") ? "NO COMMENT" : comment.feedback}
-                                                    </Typography>
-                                                </TableCell>) :
-                                                (<TableCell align="right">
-                                                    <TextField label="Feedback"
-                                                        onChange={e => setCommentEdit(e.target.value)}
-                                                        variant="outlined"
-                                                        color="secondary"
-                                                        size="small"
-                                                        sx={{
-
-                                                            width: "60%"
-                                                        }}
-
-                                                        value={commentEdit} />
-                                                </TableCell>)
-                                        }
+                                        <TableCell align="right">
+                                            {new Date(comment.timestamp * 1000).toISOString().substring(14, 19)}
+                                        </TableCell>
+                                        {idx !== editableCommentIdx ? (
+                                            <TableCell align="right">
+                                                <Typography
+                                                    onClick={() => handleEditButton(idx)}
+                                                    // Render the formatted comment feedback as HTML.
+                                                    dangerouslySetInnerHTML={{
+                                                        __html: comment.feedback === "" ? "NO COMMENT" : formatFeedback(comment.feedback),
+                                                    }}
+                                                />
+                                            </TableCell>
+                                        ) : (
+                                            <TableCell align="right">
+                                                <MentionsInput
+                                                    value={commentEdit}
+                                                    onChange={(e) => setCommentEdit(e.target.value)}
+                                                    style={mentionInputStyle}
+                                                    placeholder="Feedback"
+                                                >
+                                                    <Mention
+                                                        trigger="@"
+                                                        data={participantInfo.map((p) => ({
+                                                            id: p.email,
+                                                            display: p.name,
+                                                        }))}
+                                                        markup="@[{__display__}]({__id__})"
+                                                        displayTransform={(id, display) => `@${display}`}
+                                                    />
+                                                </MentionsInput>
+                                            </TableCell>
+                                        )}
                                         <TableCell align="right">
                                             <Button onClick={() => handleDeleteComment(idx)}>
                                                 <DeleteIcon />
@@ -1216,6 +1317,8 @@ export default function InstructorPractical() {
                                         </TableCell>
                                     </TableRow>
                                 ))}
+
+
                             </TableBody>
                         </Table>
                     </TableContainer>

@@ -6,6 +6,8 @@ import { format } from 'date-fns';
 import OpenAI from "openai";
 import ReactMarkdown from 'react-markdown';
 import axios from 'axios';
+import { MentionsInput, Mention } from 'react-mentions';
+
 
 const ChatInterface = () => {
     const { currentUser } = useAuth()
@@ -18,13 +20,80 @@ const ChatInterface = () => {
     const endOfMessagesRef = useRef(null);
 
     const [userPerfData, setUserPerfData] = useState();
+    const [userRole, setUserRole] = useState("student");
 
     const [currentAiMessage, setCurrentAiMessage] = useState('');
     const [currentWordIndex, setCurrentWordIndex] = useState(0);
     const [isAiTyping, setIsAiTyping] = useState(true);
     const typingDelay = 100; // Delay between words in milliseconds
 
+    const [students, setStudents] = useState([]);
+    const [schoolId, setSchoolId] = useState([]);
 
+    const mentionInputStyle = {
+        control: {
+            backgroundColor: "#fff",
+            fontSize: 16,
+            fontWeight: "normal",
+            width: "60%",
+            border: "1px solid #ccc",
+            borderRadius: "4px",
+            padding: "8px",
+        },
+        highlighter: {
+            overflow: "hidden",
+        },
+        input: {
+            margin: 0,
+            padding: 0,
+        },
+        // Custom styles for the suggestions dropdown.
+        suggestions: {
+            list: {
+                backgroundColor: "white",
+                border: "1px solid rgba(0,0,0,0.15)",
+                fontSize: 14,
+                overflow: "auto",
+                maxHeight: 150,
+            },
+            item: {
+                padding: "5px 10px",
+                borderBottom: "1px solid #eee",
+                "&focused": {
+                    backgroundColor: "#cee4e5",
+                },
+            },
+        },
+    };
+
+    useEffect(() => {
+        async function fetchSchoolData() {
+            try {
+                const user = auth.currentUser;
+                const token = user && (await user.getIdToken());
+
+                const requestOptions = {
+                    method: "GET",
+                    mode: "cors",
+                    headers: {
+                        "Content-Type": "application/json",
+                        Authorization: `Bearer ${token}`,
+                    },
+                };
+                const school_res = await fetch(`${process.env.REACT_APP_API_HOST}/api/school/${schoolId}`, requestOptions);
+                const school_data = await school_res.json()
+
+                setStudents(school_data.students);
+
+            } catch (e) {
+                console.log(e);
+            }
+        }
+
+        if (schoolId) {
+            fetchSchoolData()
+        }
+    }, [schoolId]);
 
     useEffect(() => {
         async function fetchUserData() {
@@ -46,7 +115,11 @@ const ChatInterface = () => {
                 const user_res = await fetch(`${process.env.REACT_APP_API_HOST}/api/user/${userId}`, requestOptions);
                 const userData = await user_res.json();
 
+                setUserRole(userData.role);
+                setSchoolId(userData.school_id);
+
                 let cleaned_practical_data = [];
+
 
                 // Check if user is an instructor
                 if (userData.role === "instructor") {
@@ -191,41 +264,82 @@ const ChatInterface = () => {
     }, [isAiTyping, currentWordIndex, messages]);
 
 
-
     const handleSendMessage = async () => {
         if (input.trim()) {
+            // Append the new user message locally.
             const userMessage = { text: input, sender: 'user' };
             setMessages(prevMessages => [...prevMessages, userMessage]);
 
-            const prompt = `Context: ${JSON.stringify(userPerfData)} User: ${input}`;
+            // Prepare the prompt.
+            const prompt = `User: ${input}`;
             setInput('');
 
             try {
+                // Convert local messages (stored as { text, sender }) into the format expected by the backend.
                 const conversationHistory = messages.map(msg => ({
                     role: msg.sender === 'user' ? 'user' : 'assistant',
                     content: msg.text
                 }));
 
-                const response = await axios.post(`${process.env.REACT_APP_API_HOST}/api/chat`, {
+                // Check if the prompt includes a tag like @[{student6}]({student6@pulse.edu})
+                const tagRegex = /@\[(.*?)\]\((.*?)\)/;
+                const tagMatch = prompt.match(tagRegex);
+                let customFilter = {};
+                if (tagMatch) {
+                    // Build a string that matches the stored metadata format:
+                    // "{student6}|{student6@pulse.edu}"
+                    const studentName = tagMatch[1].replace(/[{}]/g, "").trim();
+                    const studentEmail = tagMatch[2].replace(/[{}]/g, "").trim();
+                    const tagString = `${studentName}|${studentEmail}`;
+
+
+
+                    customFilter = { "student_tag": { "$in": [...new Set([tagString])] } };
+                }
+
+                // Build the payload. Include filter only if a tag was found.
+                const payload = {
                     messages: [
-                        { role: 'system', content: "You are a helpful assistant." },
+                        {
+                            role: 'system',
+                            content:
+                                "You are a helpful teaching assistant for practical healthcare education. " +
+                                "Answer using data from practicals that are relevant to the user based on their id."
+                        },
                         ...conversationHistory,
                         { role: 'user', content: prompt }
                     ],
-                    max_tokens: 250
-                });
+                    userId: currentUser.uid,
+                    role: userRole,
+                    ...(Object.keys(customFilter).length > 0 ? { filter: customFilter } : {})
+                };
 
-                const aiMessageText = response.data.choices[0].message.content;
+                const response = await axios.post(
+                    `${process.env.REACT_APP_API_HOST}/api/chat`,
+                    payload
+                );
 
-                setMessages(prevMessages => [...prevMessages, { text: aiMessageText, sender: 'ai' }]); // Add the AI message
-                setCurrentAiMessage(''); // Reset current AI message
-                setCurrentWordIndex(0); // Reset word index
-                setIsAiTyping(true); // Start typing effect
+                console.log(response.data);
+                // According to the new response format:
+                // response.response is the assistant's message,
+                // response.chatHistory is the updated conversation history,
+                // response.threadId is the conversation id.
+                const aiMessage = response.data.response;
+                setMessages(prevMessages => [
+                    ...prevMessages,
+                    { text: aiMessage.content, sender: 'ai' }
+                ]);
+
+                // Reset any typing state.
+                setCurrentAiMessage('');
+                setCurrentWordIndex(0);
+                setIsAiTyping(true);
             } catch (error) {
                 console.error("Error calling API:", error);
             }
         }
     };
+
 
     // Get the last AI message to determine if we should show the typing effect
     const lastMessage = messages[messages.length - 1];
@@ -255,14 +369,24 @@ const ChatInterface = () => {
                 {/* Empty div to scroll to */}
                 <div ref={endOfMessagesRef} />
             </List>
-            <TextField
-                fullWidth
-                variant="outlined"
-                placeholder="Type your message..."
+
+            <MentionsInput
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
-                onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
-            />
+                style={mentionInputStyle}
+                placeholder="Type your message..."
+                fullWidth
+            >
+                <Mention
+                    trigger="@"
+                    data={students.map((p) => ({
+                        id: p.email,
+                        display: p.real_name,
+                    }))}
+                    markup="@[{__display__}]({__id__})"
+                    displayTransform={(id, display) => `@${display}`}
+                />
+            </MentionsInput>
             <Button variant="contained" color="primary" onClick={handleSendMessage} style={{ marginTop: '10px' }}>
                 Send
             </Button>

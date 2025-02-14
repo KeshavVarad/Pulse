@@ -1,6 +1,9 @@
-import firebase from "../config/firebase.js"
-import Practical from '../models/practicalModel.js';
+// practicalController.js
 
+import firebase from "../config/firebase.js";
+import Practical from "../models/practicalModel.js";
+import axios from "axios";
+import dotenv from "dotenv";
 import {
     getFirestore,
     collection,
@@ -13,21 +16,133 @@ import {
     deleteDoc,
     where,
     query
-} from 'firebase/firestore';
+} from "firebase/firestore";
+import { index } from "../config/pineconeInit.js";
+
+dotenv.config();
 
 const db = getFirestore(firebase);
+const OPENAI_API_KEY = process.env.OPEN_AI_API_KEY;
+const NAMESPACE = "practicals"; // Pinecone namespace for practicals
 
+/**
+ * Compute embedding using OpenAI's API.
+ */
+async function computeEmbedding(text) {
+    const response = await axios.post(
+        "https://api.openai.com/v1/embeddings",
+        {
+            model: "text-embedding-ada-002",
+            input: text,
+        },
+        {
+            headers: {
+                "Authorization": `Bearer ${OPENAI_API_KEY}`,
+                "Content-Type": "application/json",
+            },
+        }
+    );
+    return response.data.data[0].embedding;
+}
+
+/**
+ * Build a text summary for the practical data used for embedding generation.
+ */
+function buildPracticalText(data) {
+    let summary = `Practical: ${data.practical_name || data.name}. `;
+
+    if (data.creation_date) {
+        const date = new Date(data.creation_date);
+        summary += `Created on ${date.toISOString()}. `;
+    }
+    if (data.avg_rating !== undefined) {
+        summary += `Average Rating: ${data.avg_rating}. `;
+    }
+    if (data.tasks && Array.isArray(data.tasks)) {
+        const tasksSummary = data.tasks.map(task => {
+            const tName = task.name || "";
+            const red = task.red_count !== undefined ? task.red_count : "";
+            const green = task.green_count !== undefined ? task.green_count : "";
+            return `Task: ${tName} (Red: ${red}, Green: ${green})`;
+        }).join(". ");
+        summary += `Tasks: ${tasksSummary}. `;
+    }
+    if (data.comments && Array.isArray(data.comments)) {
+        const commentsSummary = data.comments.join(", ");
+        summary += `Comments: ${commentsSummary}. `;
+    }
+    if (data.chats && Array.isArray(data.chats)) {
+        const chatsSummary = data.chats.map(chat => chat.message || "").join(" | ");
+        summary += `Chats: ${chatsSummary}. `;
+    }
+    if (data.replies && Array.isArray(data.replies)) {
+        const repliesSummary = data.replies.map(reply => JSON.stringify(reply)).join(" | ");
+        summary += `Replies: ${repliesSummary}. `;
+    }
+    if (data.school_id) {
+        summary += `School ID: ${data.school_id}. `;
+    }
+    if (data.cohort_year) {
+        summary += `Cohort Year: ${data.cohort_year}. `;
+    }
+    return summary;
+}
+
+/**
+ * Create a practical in Firestore and upsert its embedding in Pinecone.
+ */
 export const createPractical = async (req, res, next) => {
-
     try {
         const data = req.body;
+        // Save practical to Firestore
         await setDoc(doc(db, 'practicals', data.id), data);
+
+        // Build text summary for embedding
+        const text = buildPracticalText(data);
+        if (text.trim()) {
+            try {
+                const embedding = await computeEmbedding(text);
+                // Upsert vector record to Pinecone
+                await index.namespace(NAMESPACE).upsert([
+                    {
+                        id: data.id,
+                        values: embedding,
+                        metadata: {
+                            practical_name: data.practical_name || data.name,
+                            creation_date: data.creation_date,
+                            video_link: data.video_link,
+                            user_creator: data.user_creator,
+                            user_participants: data.user_participants ? JSON.stringify(data.user_participants) : "NA",
+                            user_instructor_id: data.user_instructor_id,
+                            user_instructor_name: data.user_instructor_name,
+                            tasks: data.tasks ? JSON.stringify(data.tasks) : "NA",
+                            comments: data.comments ? JSON.stringify(data.comments) : "NA",
+                            chats: data.chats ? JSON.stringify(data.chats) : "NA",
+                            red_count: data.red_count,
+                            yellow_count: data.yellow_count,
+                            green_count: data.green_count,
+                            avg_rating: data.avg_rating,
+                            school_id: data.school_id,
+                            cohort_year: data.cohort_year ? data.cohort_year : "NA",
+                            transcript_link: data.transcript_link,
+                        },
+                    },
+                ]);
+            } catch (pineconeError) {
+                console.error(`Error upserting vector for practical ${data.id}:`, pineconeError);
+            }
+        } else {
+            console.warn(`Empty text summary for practical ${data.id}; skipping Pinecone upsert.`);
+        }
         res.status(200).send('Practical created successfully');
     } catch (error) {
         res.status(400).send(error.message);
     }
 };
 
+/**
+ * Get all practicals.
+ */
 export const getPracticals = async (req, res, next) => {
     try {
         const practicals = await getDocs(collection(db, 'practicals'));
@@ -36,30 +151,29 @@ export const getPracticals = async (req, res, next) => {
         if (practicals.empty) {
             res.status(400).send('No Practicals found');
         } else {
-            practicals.forEach((doc) => {
+            practicals.forEach((docSnap) => {
                 const practical = new Practical(
-                    doc.id,
-                    doc.data().name,
-                    doc.data().real_name,
-                    doc.data().email,
-                    doc.data().createdPracticals,
-                    doc.data().inPracticals,
-                    doc.data().user_instructor_id,
-                    doc.data().user_instructor_name,
-                    doc.data().tasks,
-                    doc.data().comments,
-                    doc.data().chats,
-                    doc.data().red_count,
-                    doc.data().yellow_count,
-                    doc.data().green_count,
-                    doc.data().avg_rating,
-                    doc.data().school_id,
-                    doc.data().cohort_year,
-                    doc.data().transcript_link
+                    docSnap.id,
+                    docSnap.data().name,
+                    docSnap.data().real_name,
+                    docSnap.data().email,
+                    docSnap.data().createdPracticals,
+                    docSnap.data().inPracticals,
+                    docSnap.data().user_instructor_id,
+                    docSnap.data().user_instructor_name,
+                    docSnap.data().tasks,
+                    docSnap.data().comments,
+                    docSnap.data().chats,
+                    docSnap.data().red_count,
+                    docSnap.data().yellow_count,
+                    docSnap.data().green_count,
+                    docSnap.data().avg_rating,
+                    docSnap.data().school_id,
+                    docSnap.data().cohort_year,
+                    docSnap.data().transcript_link
                 );
                 practicalArray.push(practical);
             });
-
             res.status(200).send(practicalArray);
         }
     } catch (error) {
@@ -67,11 +181,14 @@ export const getPracticals = async (req, res, next) => {
     }
 };
 
+/**
+ * Get a specific practical.
+ */
 export const getPractical = async (req, res, next) => {
     try {
         const id = req.params.id;
-        const practical = doc(db, 'practicals', id);
-        const data = await getDoc(practical);
+        const practicalRef = doc(db, 'practicals', id);
+        const data = await getDoc(practicalRef);
         if (data.exists()) {
             res.status(200).send(data.data());
         } else {
@@ -82,40 +199,39 @@ export const getPractical = async (req, res, next) => {
     }
 };
 
+/**
+ * Get practicals for a given student.
+ */
 export const getStudentPracticals = async (req, res, next) => {
     try {
         const userId = req.params.id;
-
-        const practicalQuery = query(collection(db, 'practicals'), where("user_participants", "array-contains", userId))
-
-
+        const practicalQuery = query(collection(db, 'practicals'), where("user_participants", "array-contains", userId));
         const data = await getDocs(practicalQuery);
-
         const practicalArray = [];
 
         if (data.empty) {
             res.status(201).send([]);
         } else {
-            data.forEach((doc) => {
+            data.forEach((docSnap) => {
                 const practical = new Practical(
-                    doc.id,
-                    doc.data().practical_name,
-                    doc.data().creation_date,
-                    doc.data().video_link,
-                    doc.data().user_creator,
-                    doc.data().user_participants,
-                    doc.data().user_instructor_id,
-                    doc.data().user_instructor_name,
-                    doc.data().tasks,
-                    doc.data().comments,
-                    doc.data().chats,
-                    doc.data().red_count,
-                    doc.data().yellow_count,
-                    doc.data().green_count,
-                    doc.data().avg_rating,
-                    doc.data().school_id,
-                    doc.data().cohort_year,
-                    doc.data().transcript_link
+                    docSnap.id,
+                    docSnap.data().practical_name,
+                    docSnap.data().creation_date,
+                    docSnap.data().video_link,
+                    docSnap.data().user_creator,
+                    docSnap.data().user_participants,
+                    docSnap.data().user_instructor_id,
+                    docSnap.data().user_instructor_name,
+                    docSnap.data().tasks,
+                    docSnap.data().comments,
+                    docSnap.data().chats,
+                    docSnap.data().red_count,
+                    docSnap.data().yellow_count,
+                    docSnap.data().green_count,
+                    docSnap.data().avg_rating,
+                    docSnap.data().school_id,
+                    docSnap.data().cohort_year,
+                    docSnap.data().transcript_link
                 );
                 practicalArray.push(practical);
             });
@@ -126,46 +242,42 @@ export const getStudentPracticals = async (req, res, next) => {
     }
 };
 
-
+/**
+ * Get practicals for a given instructor.
+ */
 export const getInstructorPracticals = async (req, res, next) => {
     try {
         const userId = req.params.id;
-
-
-        const practicalQuery = query(collection(db, 'practicals'), where("user_instructor_id", "==", userId))
-
-
+        const practicalQuery = query(collection(db, 'practicals'), where("user_instructor_id", "==", userId));
         const data = await getDocs(practicalQuery);
-
         const practicalArray = [];
 
         if (data.empty) {
             res.status(201).send([]);
         } else {
-            data.forEach((doc) => {
+            data.forEach((docSnap) => {
                 const practical = new Practical(
-                    doc.id,
-                    doc.data().practical_name,
-                    doc.data().creation_date,
-                    doc.data().video_link,
-                    doc.data().user_creator,
-                    doc.data().user_participants,
-                    doc.data().user_instructor_id,
-                    doc.data().user_instructor_name,
-                    doc.data().tasks,
-                    doc.data().comments,
-                    doc.data().chats,
-                    doc.data().red_count,
-                    doc.data().yellow_count,
-                    doc.data().green_count,
-                    doc.data().avg_rating,
-                    doc.data().school_id,
-                    doc.data().cohort_year,
-                    doc.data().transcript_link
+                    docSnap.id,
+                    docSnap.data().practical_name,
+                    docSnap.data().creation_date,
+                    docSnap.data().video_link,
+                    docSnap.data().user_creator,
+                    docSnap.data().user_participants,
+                    docSnap.data().user_instructor_id,
+                    docSnap.data().user_instructor_name,
+                    docSnap.data().tasks,
+                    docSnap.data().comments,
+                    docSnap.data().chats,
+                    docSnap.data().red_count,
+                    docSnap.data().yellow_count,
+                    docSnap.data().green_count,
+                    docSnap.data().avg_rating,
+                    docSnap.data().school_id,
+                    docSnap.data().cohort_year,
+                    docSnap.data().transcript_link
                 );
                 practicalArray.push(practical);
             });
-
             res.status(200).send(practicalArray);
         }
     } catch (error) {
@@ -173,23 +285,75 @@ export const getInstructorPracticals = async (req, res, next) => {
     }
 };
 
+/**
+ * Update a practical in Firestore and upsert its updated embedding to Pinecone.
+ */
 export const updatePractical = async (req, res, next) => {
     try {
         const id = req.params.id;
         const data = req.body;
+        const practicalRef = doc(db, 'practicals', id);
 
-        const practical = doc(db, 'practicals', id);
-        await updateDoc(practical, data);
+        // Update Firestore document
+        await updateDoc(practicalRef, data);
+
+        // Build text summary from updated data and update Pinecone vector if text is valid
+        const text = buildPracticalText(data);
+        if (text.trim()) {
+            try {
+                const embedding = await computeEmbedding(text);
+                await index.namespace(NAMESPACE).upsert([
+                    {
+                        id: id,
+                        values: embedding,
+                        metadata: {
+                            practical_name: data.practical_name || data.name,
+                            creation_date: data.creation_date,
+                            video_link: data.video_link,
+                            user_creator: data.user_creator,
+                            user_participants: data.user_participants ? JSON.stringify(data.user_participants) : "NA",
+                            user_instructor_id: data.user_instructor_id,
+                            user_instructor_name: data.user_instructor_name,
+                            tasks: data.tasks ? JSON.stringify(data.tasks) : "NA",
+                            comments: data.comments ? JSON.stringify(data.comments) : "NA",
+                            chats: data.chats ? JSON.stringify(data.chats) : "NA",
+                            red_count: data.red_count,
+                            yellow_count: data.yellow_count,
+                            green_count: data.green_count,
+                            avg_rating: data.avg_rating,
+                            school_id: data.school_id,
+                            cohort_year: data.cohort_year ? data.cohort_year : "NA",
+                            transcript_link: data.transcript_link,
+                        },
+                    },
+                ]);
+            } catch (pineconeError) {
+                console.error(`Error updating vector for practical ${id}:`, pineconeError);
+            }
+        } else {
+            console.warn(`Empty text summary for practical ${id}; skipping Pinecone upsert.`);
+        }
         res.status(200).send('Practical updated successfully');
     } catch (error) {
         res.status(400).send(error.message);
     }
 };
 
+/**
+ * Delete a practical from Firestore and remove its vector from Pinecone.
+ */
 export const deletePractical = async (req, res, next) => {
     try {
         const id = req.params.id;
+        // Delete document from Firestore
         await deleteDoc(doc(db, 'practicals', id));
+
+        // Delete vector from Pinecone
+        try {
+            await index.namespace(NAMESPACE).delete([id]);
+        } catch (pineconeError) {
+            console.error(`Error deleting vector for practical ${id}:`, pineconeError);
+        }
         res.status(200).send('Practical deleted successfully');
     } catch (error) {
         res.status(400).send(error.message);
