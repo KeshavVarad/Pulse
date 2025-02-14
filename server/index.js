@@ -187,7 +187,7 @@ app.post('/api/getUploadUrl', async (req, res) => {
 
 const callModel = async (state) => {
     // console.log("State in callModel:", state);
-    const { userId, role, filter } = state.config?.configurable || {};
+    const { userId, role, filter, isChat } = state.config?.configurable || {};
 
     if (!userId || !role) {
         throw new Error("Missing userId or role in configuration");
@@ -204,7 +204,7 @@ const callModel = async (state) => {
 
     let baseFilter = {};
     if (role === 'student') {
-        baseFilter = { user_participants: { $in: [userId] } };
+        baseFilter = { "user_participant": { "$eq": userId } };
     } else if (role === 'instructor') {
         baseFilter = { "user_instructor_id": { "$eq": userId } };
     }
@@ -315,7 +315,8 @@ app.post('/api/chat', async (req, res) => {
             configurable: {
                 userId,
                 role,
-                filter
+                filter,
+                isChat: true,
             }
         }
     };
@@ -339,6 +340,47 @@ app.post('/api/chat', async (req, res) => {
         res.status(500).send("Error processing query");
     }
 });
+
+
+app.post('/api/insights', async (req, res) => {
+    const { messages, userId, role, threadId } = req.body;
+    const conversationId = threadId || uuidv4();
+
+    // Merge configuration into the input state.
+    // Here, we include userId, role, and filter (if any) in the configurable section.
+    const input = {
+        messages,
+        config: {
+            configurable: {
+                userId,
+                role,
+                isChat: false,
+            }
+        }
+    };
+
+    // Pass the thread_id as part of the external config.
+    const config = {
+        configurable: {
+            thread_id: conversationId,
+        },
+    };
+
+    try {
+        const output = await graphApp.invoke(input, config);
+        const assistantMessage = output.messages[output.messages.length - 1];
+        res.json({
+            threadId: conversationId,
+            response: assistantMessage,
+            chatHistory: output.messages
+        });
+    } catch (error) {
+        console.error("Error in insights endpoint:", error);
+        res.status(500).send("Error processing insights query");
+    }
+});
+
+
 
 
 

@@ -48,6 +48,7 @@ export default function Dashboard() {
                 };
 
                 const user_res = await fetch(`${process.env.REACT_APP_API_HOST}/api/user/${userId}`, requestOptions);
+
                 const user_data = await user_res.json()
 
                 if (user_data.role === "admin") {

@@ -109,7 +109,6 @@ async function runMigration() {
     const batchRecords = [];
 
     for (const docSnap of snapshot.docs) {
-        // console.log(`Processing practical ${docSnap.id}`);
         const data = docSnap.data();
 
         // Build a text summary from practical data
@@ -128,31 +127,61 @@ async function runMigration() {
                 continue;
             }
 
-            // Create a record including metadata (convert arrays/objects to strings if needed)
-            batchRecords.push({
-                id: docSnap.id,
-                values: embedding,
-                metadata: {
-                    practical_id: docSnap.id,
-                    practical_name: data.practical_name || data.name,
-                    creation_date: data.creation_date,
-                    video_link: data.video_link,
-                    user_creator: data.user_creator,
-                    user_participants: data.user_participants ? JSON.stringify(data.user_participants) : "NA",
-                    user_instructor_id: data.user_instructor_id,
-                    user_instructor_name: data.user_instructor_name,
-                    tasks: data.tasks ? JSON.stringify(data.tasks) : "NA",
-                    comments: data.comments ? JSON.stringify(data.comments) : "NA",
-                    chats: data.chats ? JSON.stringify(data.chats) : "NA",
-                    red_count: data.red_count,
-                    yellow_count: data.yellow_count,
-                    green_count: data.green_count,
-                    avg_rating: data.avg_rating,
-                    school_id: data.school_id,
-                    cohort_year: data.cohort_year ? data.cohort_year : "NA",
-                    transcript_link: data.transcript_link,
-                },
-            });
+            // If there is a non-empty user_participants array, create one record per participant.
+            if (Array.isArray(data.user_participants) && data.user_participants.length > 0) {
+                data.user_participants.forEach((participant, index) => {
+                    batchRecords.push({
+                        id: `${docSnap.id}_${index}`,
+                        values: embedding,
+                        metadata: {
+                            practical_id: docSnap.id,
+                            practical_name: data.practical_name || data.name,
+                            creation_date: data.creation_date,
+                            video_link: data.video_link,
+                            user_creator: data.user_creator,
+                            user_participant: participant,
+                            user_instructor_id: data.user_instructor_id,
+                            user_instructor_name: data.user_instructor_name,
+                            tasks: data.tasks ? JSON.stringify(data.tasks) : "NA",
+                            comments: data.comments ? JSON.stringify(data.comments) : "NA",
+                            chats: data.chats ? JSON.stringify(data.chats) : "NA",
+                            red_count: data.red_count,
+                            yellow_count: data.yellow_count,
+                            green_count: data.green_count,
+                            avg_rating: data.avg_rating,
+                            school_id: data.school_id,
+                            cohort_year: data.cohort_year ? data.cohort_year : "NA",
+                            transcript_link: data.transcript_link,
+                        },
+                    });
+                });
+            } else {
+                // No user participants array: add a single record with "NA" for user_participant.
+                batchRecords.push({
+                    id: docSnap.id,
+                    values: embedding,
+                    metadata: {
+                        practical_id: docSnap.id,
+                        practical_name: data.practical_name || data.name,
+                        creation_date: data.creation_date,
+                        video_link: data.video_link,
+                        user_creator: data.user_creator,
+                        user_participant: "NA",
+                        user_instructor_id: data.user_instructor_id,
+                        user_instructor_name: data.user_instructor_name,
+                        tasks: data.tasks ? JSON.stringify(data.tasks) : "NA",
+                        comments: data.comments ? JSON.stringify(data.comments) : "NA",
+                        chats: data.chats ? JSON.stringify(data.chats) : "NA",
+                        red_count: data.red_count,
+                        yellow_count: data.yellow_count,
+                        green_count: data.green_count,
+                        avg_rating: data.avg_rating,
+                        school_id: data.school_id,
+                        cohort_year: data.cohort_year ? data.cohort_year : "NA",
+                        transcript_link: data.transcript_link,
+                    },
+                });
+            }
 
             // If batch size is reached, upsert and clear the batch array.
             if (batchRecords.length >= BATCH_SIZE) {
