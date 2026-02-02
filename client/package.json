@@ -26,6 +26,7 @@
     "react-dom": "^18.3.1",
     "react-joyride": "^2.8.2",
     "react-markdown": "^9.0.1",
+    "react-mentions": "^4.4.10",
     "react-player": "^2.16.0",
     "react-router-dom": "^6.23.1",
     "react-scripts": "5.0.1",

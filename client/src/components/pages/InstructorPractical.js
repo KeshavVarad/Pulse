@@ -13,118 +13,11 @@ import InsertCommentIcon from '@mui/icons-material/InsertComment';
 import SendIcon from '@mui/icons-material/Send';
 import GCloudVideoPlayer from "../elements/GCloudVideoPlayer.js";
 import CloseIcon from '@mui/icons-material/Close';
+import RedFlagIcon from '@mui/icons-material/Flag'; // Replace with your red indicator icon
+import YellowFlagIcon from '@mui/icons-material/Warning'; // Replace with your yellow indicator icon
+import GreenCheckIcon from '@mui/icons-material/CheckCircle'; // Replace with your green indicator icon
+import { MentionsInput, Mention } from 'react-mentions';
 
-const CategoryComponent = ({ category, handleRating, handleTaskChatButton, practicalTemplate, handleRemoveTask }) => {
-    // State to track whether tasks are visible or hidden
-    const [showTasks, setShowTasks] = useState(true);
-
-    // Toggle function for hiding and showing tasks
-    const toggleTasks = () => setShowTasks((prevShowTasks) => !prevShowTasks);
-
-    return (
-        <Box sx={{ pl: 3 }}>
-            <Box sx={{ display: "flex", alignItems: "center" }}>
-                <Typography variant="h6">{category.name}</Typography>
-
-                {/* Button to toggle task visibility */}
-                <Button onClick={toggleTasks} sx={{ ml: 2 }}>
-                    {showTasks ? "Hide Tasks" : "Show Tasks"}
-                </Button>
-            </Box>
-
-            {/* Conditionally render tasks based on showTasks state */}
-            {showTasks && category.tasks.map((task) => (
-                <Box
-                    key={task.name}
-                    sx={{
-                        width: "100%",
-                        display: "flex",
-                        flexDirection: "row",
-                        justifyContent: "space-between",
-                        alignItems: "center",
-                        pt: 1,
-                    }}
-                >
-                    <Box
-                        sx={{
-                            display: "flex",
-                            flexDirection: "row",
-                            width: "100%",
-                            justifyItems: "center",
-                            alignItems: "center",
-                            justifyContent: "center",
-                        }}
-                    >
-                        <Box
-                            sx={{
-                                minWidth: "160px",
-                                maxWidth: "160px",
-                                height: "100%",
-                                pl: 1,
-                                display: "flex",
-                            }}
-                        >
-                            <Typography variant="h7">{task.name}</Typography>
-                        </Box>
-
-                        <Box sx={{ minWidth: "180px", maxWidth: "180px", display: "flex" }}>
-                            <ButtonGroup variant="contained" aria-label="Basic button group">
-                                <Button
-                                    onClick={() => handleRating(task, 1, category.path + category.name + "/")}
-                                    variant="contained"
-                                    color="red"
-                                    disableElevation
-                                    sx={{ width: "60px", textTransform: "none" }}
-                                >
-                                    Red
-                                </Button>
-                                <Button
-                                    onClick={() => handleRating(task, 3, category.path + category.name + "/")}
-                                    variant="contained"
-                                    color="yellow"
-                                    disableElevation
-                                    sx={{ width: "60px", textTransform: "none" }}
-                                >
-                                    Yellow
-                                </Button>
-                                <Button
-                                    onClick={() => handleRating(task, 5, category.path + category.name + "/")}
-                                    variant="contained"
-                                    color="green"
-                                    disableElevation
-                                    sx={{ width: "60px", textTransform: "none" }}
-                                >
-                                    Green
-                                </Button>
-                            </ButtonGroup>
-                        </Box>
-
-                        <Box sx={{ width: "40px", px: 1 }}>
-                            <IconButton
-                                aria-label="chat"
-                                onClick={() => handleTaskChatButton(task, category.path + category.name + "/")}
-                            >
-                                <InsertCommentIcon />
-                            </IconButton>
-                        </Box>
-
-                        {(!practicalTemplate || practicalTemplate === "Blank Template") ? (
-                            <Box sx={{ width: "40px", px: 1 }}>
-                                <IconButton
-                                    aria-label="delete"
-                                    onClick={() => handleRemoveTask(task, category.path + category.name + "/")}
-                                >
-                                    <DeleteIcon />
-                                </IconButton>
-                            </Box>) : <></>}
-
-
-                    </Box>
-                </Box>
-            ))}
-        </Box>
-    );
-};
 
 
 export default function InstructorPractical() {
@@ -139,6 +32,7 @@ export default function InstructorPractical() {
     const [practicalName, setPracticalName] = useState("");
 
     const [participants, setParticipants] = useState([]);
+    const [participantInfo, setParticipantInfo] = useState([]);
 
     const [schoolId, setSchoolId] = useState();
     const [studentYear, setStudentYear] = useState();
@@ -146,8 +40,6 @@ export default function InstructorPractical() {
     const [cohortInd, setCohortInd] = useState(-1)
     const [yearInd, setYearInd] = useState(-1)
     const [schoolTaskPool, setSchoolTaskPool] = useState([]);
-
-    const [practicalTemplate, setPracticalTemplate] = useState("");
 
 
     // Video state
@@ -160,10 +52,6 @@ export default function InstructorPractical() {
     // Task state
     const [tasks, setTasks] = useState([])
     const [newTask, setNewTask] = useState("")
-    const [taskHierarchy, setTaskHierarchy] = useState({
-        "rootTasks": [],
-        "categories": []
-    });
 
     // Comment state
     const [comments, setComments] = useState([])
@@ -173,7 +61,6 @@ export default function InstructorPractical() {
 
     const [taskChatOpen, setTaskChatOpen] = useState(false)
     const [taskToDisplay, setTaskToDisplay] = useState()
-    const [pathToDisplayedTask, setPathToDisplayedTask] = useState("");
 
     // Message state
     const [curMessage, setMessage] = useState("")
@@ -182,67 +69,6 @@ export default function InstructorPractical() {
     const [gcloudVideoTimeStamp, setGcloudVideoTimeStamp] = useState(0);
     const [gcloudPlayer, setGcloudPlayer] = useState(null);
     const gcloudVideoRef = useRef(null);
-
-
-
-    const convertTasksToHierarchy = (tasks) => {
-        const result = {
-            rootTasks: [],
-            categories: [],
-        };
-
-        const findOrCreateCategory = (categories, categoryName, path_name) => {
-            let category = categories.find(cat => cat.name === categoryName);
-
-            if (!category) {
-                category = { name: categoryName, path: path_name, subCategories: [], tasks: [] };
-                categories.push(category);
-            }
-            return category;
-        };
-
-        tasks.forEach(task => {
-            const pathParts = task.name.split('/');
-
-            if (pathParts.length === 1) {
-                // It's a root task
-                result.rootTasks.push({
-                    name: pathParts[0],
-                    red_count: task.red_count,
-                    green_count: task.green_count,
-                    yellow_count: task.yellow_count,
-                    replies: task.replies
-                });
-            } else {
-                // It's a task under categories/subcategories
-                let currentCategoryList = result.categories;
-                let cur_path = ""
-                for (let i = 0; i < pathParts.length - 1; i++) {
-                    const categoryName = pathParts[i];
-                    const category = findOrCreateCategory(currentCategoryList, categoryName, cur_path);
-
-                    if (i == pathParts.length - 2) {
-                        const taskName = pathParts[pathParts.length - 1];
-                        category.tasks.push({
-                            name: taskName,
-                            red_count: task.red_count,
-                            green_count: task.green_count,
-                            yellow_count: task.yellow_count,
-                            replies: task.replies
-                        });
-                    }
-                    else {
-                        cur_path = cur_path + categoryName + "/"
-                        currentCategoryList = category.subCategories;
-                    }
-                }
-
-
-            }
-        });
-
-        return result;
-    };
 
     const checkGCloudVideoTime = useCallback(() => {
         if (gcloudPlayer && gcloudPlayer.getCurrentTime) {
@@ -254,6 +80,51 @@ export default function InstructorPractical() {
     const handleGCloudVideoChange = (playedSeconds) => {
         setGcloudVideoTimeStamp(playedSeconds); // Set the current timestamp directly
     };
+
+    const mentionInputStyle = {
+        control: {
+            backgroundColor: "#fff",
+            fontSize: 16,
+            fontWeight: "normal",
+            width: "60%",
+            border: "1px solid #ccc",
+            borderRadius: "4px",
+            padding: "8px",
+        },
+        highlighter: {
+            overflow: "hidden",
+        },
+        input: {
+            margin: 0,
+            padding: 0,
+        },
+        // Custom styles for the suggestions dropdown.
+        suggestions: {
+            list: {
+                backgroundColor: "white",
+                border: "1px solid rgba(0,0,0,0.15)",
+                fontSize: 14,
+                overflow: "auto",
+                maxHeight: 150,
+            },
+            item: {
+                padding: "5px 10px",
+                borderBottom: "1px solid #eee",
+                "&focused": {
+                    backgroundColor: "#cee4e5",
+                },
+            },
+        },
+    };
+
+    function formatFeedback(feedback) {
+        // Replace mention markup like @[username](id) with a styled span.
+        // WARNING: Ensure feedback is sanitized if it can contain untrusted data.
+        return feedback.replace(/@\[(.*?)\]\(.*?\)/g, (match, real_name) => {
+            return `<span style="color: #007bff; font-weight: bold;">@${real_name}</span>`;
+        });
+    }
+
 
 
     useEffect(() => {
@@ -297,6 +168,7 @@ export default function InstructorPractical() {
             }
 
             const result = await response.text();
+            console.log(result); // You can handle success feedback here if needed
         } catch (error) {
             console.error("Error creating notification:", error);
         }
@@ -314,10 +186,7 @@ export default function InstructorPractical() {
         var newTasks = tasks.slice()
         newTasks.push({ name: newTask, replies: [], red_count: 0, yellow_count: 0, green_count: 0 })
 
-        let schoolDataTaskIndex = -1
-        if (studentYear) {
-            schoolDataTaskIndex = schoolTaskData[cohortInd].data[yearInd].data.findIndex((d) => d.name == newTask)
-        }
+        let schoolDataTaskIndex = schoolTaskData[cohortInd].data[yearInd].data.findIndex((d) => d.name == newTask)
 
         let schoolTaskPoolIndex = schoolTaskPool.findIndex((t) => t == newTask)
 
@@ -350,7 +219,7 @@ export default function InstructorPractical() {
 
         }
 
-        if (studentYear && schoolDataTaskIndex == -1) {
+        if (schoolDataTaskIndex == -1) {
             let newSchoolTaskData = schoolTaskData.slice()
             newSchoolTaskData[cohortInd].data[yearInd].data.push({
                 name: newTask,
@@ -378,7 +247,6 @@ export default function InstructorPractical() {
             await fetch(`${process.env.REACT_APP_API_HOST}/api/updatePractical/${practicalId}`, requestOptions);
 
             setTasks(newTasks)
-            setTaskHierarchy(convertTasksToHierarchy(newTasks))
             setNewTask("")
 
         } catch (e) {
@@ -388,7 +256,7 @@ export default function InstructorPractical() {
 
     }
 
-    const handleRemoveTask = async (taskName, taskPath) => {
+    const handleRemoveTask = async (taskName) => {
         try {
             // Fetch the practical data
             const practical_res = await fetch(`${process.env.REACT_APP_API_HOST}/api/practical/${practicalId}`);
@@ -396,7 +264,7 @@ export default function InstructorPractical() {
 
             // Find the task in the practical's tasks
             let newTasks = practical.tasks.slice();
-            let taskIndex = newTasks.findIndex(t => t.name === taskPath + taskName.name);
+            let taskIndex = newTasks.findIndex(t => t.name === taskName.name);
 
             if (taskIndex === -1) {
                 console.log("Task not found");
@@ -405,7 +273,7 @@ export default function InstructorPractical() {
 
             // Remove all comments associated with the task
             let commentIdsToRemove = comments
-                .filter(comment => comment.task === taskPath + taskName.name)
+                .filter(comment => comment.task === taskName.name)
                 .map(comment => comment.id);
 
             let remainingComments = comments.filter(comment => !commentIdsToRemove.includes(comment.id));
@@ -436,30 +304,26 @@ export default function InstructorPractical() {
 
             // Update the school task data
             let newSchoolTaskData = schoolTaskData.slice();
+            let schoolDataTaskIndex = newSchoolTaskData[cohortInd].data[yearInd].data.findIndex(data => data.name === taskName.name);
 
-            if (studentYear) {
-                let schoolDataTaskIndex = newSchoolTaskData[cohortInd].data[yearInd].data.findIndex(data => data.name === taskPath + taskName.name);
+            if (schoolDataTaskIndex !== -1) {
+                let schoolDataTask = newSchoolTaskData[cohortInd].data[yearInd].data[schoolDataTaskIndex];
 
-                if (schoolDataTaskIndex !== -1) {
-                    let schoolDataTask = newSchoolTaskData[cohortInd].data[yearInd].data[schoolDataTaskIndex];
+                // Subtract the counts associated with the removed task
+                schoolDataTask.red_count -= practical.red_count;
+                schoolDataTask.yellow_count -= practical.yellow_count;
+                schoolDataTask.green_count -= practical.green_count;
 
-                    // Subtract the counts associated with the removed task
-                    schoolDataTask.red_count -= practical.red_count;
-                    schoolDataTask.yellow_count -= practical.yellow_count;
-                    schoolDataTask.green_count -= practical.green_count;
+                // Recalculate the average rating based on the remaining practicals
+                let totalPracticalCount = schoolDataTask.red_count + schoolDataTask.yellow_count + schoolDataTask.green_count;
+                schoolDataTask.avg_rating = totalPracticalCount > 0
+                    ? ((schoolDataTask.green_count * 5) + (schoolDataTask.yellow_count * 3) + (schoolDataTask.red_count * 1)) / totalPracticalCount
+                    : 0;
 
-                    // Recalculate the average rating based on the remaining practicals
-                    let totalPracticalCount = schoolDataTask.red_count + schoolDataTask.yellow_count + schoolDataTask.green_count;
-                    schoolDataTask.avg_rating = totalPracticalCount > 0
-                        ? ((schoolDataTask.green_count * 5) + (schoolDataTask.yellow_count * 3) + (schoolDataTask.red_count * 1)) / totalPracticalCount
-                        : 0;
-
-                    // Check if all counts are zero, then remove the task from school data
-                    if (schoolDataTask.red_count === 0 && schoolDataTask.yellow_count === 0 && schoolDataTask.green_count === 0) {
-                        newSchoolTaskData[cohortInd].data[yearInd].data.splice(schoolDataTaskIndex, 1);
-                    }
+                // Check if all counts are zero, then remove the task from school data
+                if (schoolDataTask.red_count === 0 && schoolDataTask.yellow_count === 0 && schoolDataTask.green_count === 0) {
+                    newSchoolTaskData[cohortInd].data[yearInd].data.splice(schoolDataTaskIndex, 1);
                 }
-
             }
 
             // Send the updated practical data to the server
@@ -493,7 +357,6 @@ export default function InstructorPractical() {
 
             // Update local state after the task removal
             setTasks(newTasks);
-            setTaskHierarchy(convertTasksToHierarchy(newTasks))
             setComments(remainingComments);
             setSchoolTaskData(newSchoolTaskData);
 
@@ -550,16 +413,7 @@ export default function InstructorPractical() {
 
     // Comment functions
 
-    const handleRating = async (task, rating, taskPath) => {
-
-        if (!taskPath) {
-            taskPath = ""
-        }
-
-        let taskPathPrefix = ""
-        if (practicalTemplate && practicalTemplate !== "Empty Template") {
-            taskPathPrefix = practicalTemplate + "|"
-        }
+    const handleRating = async (task, rating) => {
 
         const practical_res = await fetch(`${process.env.REACT_APP_API_HOST}/api/practical/${practicalId}`);
         const practical = await practical_res.json()
@@ -568,7 +422,7 @@ export default function InstructorPractical() {
 
         const newComment = {
             id: commentId,
-            task: taskPath + task.name,
+            task: task.name,
             rating: rating,
             timestamp: getVideoSourceType(videoLink) === "youtube" ? videoTimeStamp : gcloudVideoTimeStamp,
             feedback: "",
@@ -598,40 +452,31 @@ export default function InstructorPractical() {
             let newTasks = practical.tasks
 
             let newSchoolTaskData = schoolTaskData.slice()
+            let taskIndex = newTasks.findIndex(t => t.name == task.name)
 
+            let schoolDataTaskIndex = newSchoolTaskData[cohortInd].data[yearInd].data.findIndex(data => data.name == task.name);
 
-            let taskIndex = newTasks.findIndex(t => t.name == taskPath + task.name)
-
-            let schoolDataTaskIndex = -1
-
-            if (studentYear) {
-                schoolDataTaskIndex = newSchoolTaskData[cohortInd].data[yearInd].data.findIndex(data => data.name == taskPathPrefix + taskPath + task.name)
-
-                if (schoolDataTaskIndex === -1) {
-                    newSchoolTaskData[cohortInd].data[yearInd].data.push({
-                        name: taskPathPrefix + taskPath + task.name,
-                        red_count: 0,
-                        yellow_count: 0,
-                        green_count: 0,
-                        avg_rating: 0
-                    })
-                }
-
-                schoolDataTaskIndex = newSchoolTaskData[cohortInd].data[yearInd].data.findIndex(data => data.name == taskPathPrefix + taskPath + task.name)
+            if (schoolDataTaskIndex == -1) {
+                newSchoolTaskData[cohortInd].data[yearInd].data.push({
+                    name: task.name,
+                    red_count: 0,
+                    yellow_count: 0,
+                    green_count: 0,
+                    avg_rating: 0
+                })
+                schoolDataTaskIndex = newSchoolTaskData[cohortInd].data[yearInd].data.findIndex(data => data.name == task.name);
             }
 
-
             let practicalUpdateData = { comments: newComments }
+
+
 
             let rating_sum = 1 * practical.red_count + 3 * practical.yellow_count + 5 * practical.green_count
 
             if (rating == 1) {
                 practicalUpdateData.red_count = practical.red_count + 1
                 newTasks[taskIndex].red_count += 1
-
-                if (studentYear) {
-                    newSchoolTaskData[cohortInd].data[yearInd].data[schoolDataTaskIndex].red_count += 1
-                }
+                newSchoolTaskData[cohortInd].data[yearInd].data[schoolDataTaskIndex].red_count += 1
                 rating_sum += 1
 
             }
@@ -639,10 +484,7 @@ export default function InstructorPractical() {
             if (rating == 3) {
                 practicalUpdateData.yellow_count = practical.yellow_count + 1
                 newTasks[taskIndex].yellow_count += 1
-
-                if (studentYear) {
-                    newSchoolTaskData[cohortInd].data[yearInd].data[schoolDataTaskIndex].yellow_count += 1
-                }
+                newSchoolTaskData[cohortInd].data[yearInd].data[schoolDataTaskIndex].yellow_count += 1
 
                 rating_sum += 3
             }
@@ -650,28 +492,25 @@ export default function InstructorPractical() {
             if (rating == 5) {
                 practicalUpdateData.green_count = practical.green_count + 1
                 newTasks[taskIndex].green_count += 1
-                if (studentYear) {
-                    newSchoolTaskData[cohortInd].data[yearInd].data[schoolDataTaskIndex].green_count += 1
-                }
+                newSchoolTaskData[cohortInd].data[yearInd].data[schoolDataTaskIndex].green_count += 1
+
                 rating_sum += 5
             }
-
-            if (studentYear) {
-                newSchoolTaskData[cohortInd].data[yearInd].data[schoolDataTaskIndex].avg_rating = (
+            newSchoolTaskData[cohortInd].data[yearInd].data[schoolDataTaskIndex].avg_rating = (
+                newSchoolTaskData[cohortInd].data[yearInd].data[schoolDataTaskIndex].red_count +
+                newSchoolTaskData[cohortInd].data[yearInd].data[schoolDataTaskIndex].yellow_count * 3 +
+                newSchoolTaskData[cohortInd].data[yearInd].data[schoolDataTaskIndex].green_count * 5) / (
                     newSchoolTaskData[cohortInd].data[yearInd].data[schoolDataTaskIndex].red_count +
-                    newSchoolTaskData[cohortInd].data[yearInd].data[schoolDataTaskIndex].yellow_count * 3 +
-                    newSchoolTaskData[cohortInd].data[yearInd].data[schoolDataTaskIndex].green_count * 5) / (
-                        newSchoolTaskData[cohortInd].data[yearInd].data[schoolDataTaskIndex].red_count +
-                        newSchoolTaskData[cohortInd].data[yearInd].data[schoolDataTaskIndex].yellow_count +
-                        newSchoolTaskData[cohortInd].data[yearInd].data[schoolDataTaskIndex].green_count
-                    )
-            }
+                    newSchoolTaskData[cohortInd].data[yearInd].data[schoolDataTaskIndex].yellow_count +
+                    newSchoolTaskData[cohortInd].data[yearInd].data[schoolDataTaskIndex].green_count
+                )
+
+
 
             practicalUpdateData.avg_rating = rating_sum / newComments.length
 
             practicalUpdateData.tasks = newTasks
             setTasks(newTasks)
-            setTaskHierarchy(convertTasksToHierarchy(newTasks))
             setSchoolTaskData(newSchoolTaskData)
             // BUG HERE ABOVE
 
@@ -762,12 +601,6 @@ export default function InstructorPractical() {
     }
 
     const handleDeleteComment = async (idx) => {
-
-        let taskPathPrefix = ""
-        if (practicalTemplate && practicalTemplate !== "Empty Template") {
-            taskPathPrefix = practicalTemplate + "|"
-        }
-
         const practical_res = await fetch(`${process.env.REACT_APP_API_HOST}/api/practical/${practicalId}`);
         const practical = await practical_res.json()
 
@@ -800,21 +633,14 @@ export default function InstructorPractical() {
 
             let taskIndex = newTasks.findIndex(t => t.name == comments[idx].task)
 
-            let schoolDataTaskIndex = -1
-
-            if (studentYear) {
-                schoolDataTaskIndex = newSchoolTaskData[cohortInd].data[yearInd].data.findIndex(data => data.name == taskPathPrefix + comments[idx].task)
-            }
+            let schoolDataTaskIndex = newSchoolTaskData[cohortInd].data[yearInd].data.findIndex(data => data.name == comments[idx].task)
 
             let rating_sum = 1 * practical.red_count + 3 * practical.yellow_count + 5 * practical.green_count
 
             if (comment_rating == 1) {
                 practicalUpdateData.red_count = practical.red_count - 1
                 newTasks[taskIndex].red_count -= 1
-
-                if (studentYear) {
-                    newSchoolTaskData[cohortInd].data[yearInd].data[schoolDataTaskIndex].red_count -= 1
-                }
+                newSchoolTaskData[cohortInd].data[yearInd].data[schoolDataTaskIndex].red_count -= 1
 
                 rating_sum -= 1
             }
@@ -822,10 +648,7 @@ export default function InstructorPractical() {
             if (comment_rating == 3) {
                 practicalUpdateData.yellow_count = practical.yellow_count - 1
                 newTasks[taskIndex].yellow_count -= 1
-
-                if (studentYear) {
-                    newSchoolTaskData[cohortInd].data[yearInd].data[schoolDataTaskIndex].yellow_count -= 1
-                }
+                newSchoolTaskData[cohortInd].data[yearInd].data[schoolDataTaskIndex].yellow_count -= 1
 
                 rating_sum -= 3
             }
@@ -833,24 +656,19 @@ export default function InstructorPractical() {
             if (comment_rating == 5) {
                 practicalUpdateData.green_count = practical.green_count - 1
                 newTasks[taskIndex].green_count -= 1
-                if (studentYear) {
-                    newSchoolTaskData[cohortInd].data[yearInd].data[schoolDataTaskIndex].green_count -= 1
-                }
+                newSchoolTaskData[cohortInd].data[yearInd].data[schoolDataTaskIndex].green_count -= 1
 
                 rating_sum -= 5
             }
 
-            if (studentYear) {
-                newSchoolTaskData[cohortInd].data[yearInd].data[schoolDataTaskIndex].avg_rating = (
+            newSchoolTaskData[cohortInd].data[yearInd].data[schoolDataTaskIndex].avg_rating = (
+                newSchoolTaskData[cohortInd].data[yearInd].data[schoolDataTaskIndex].red_count +
+                newSchoolTaskData[cohortInd].data[yearInd].data[schoolDataTaskIndex].yellow_count * 3 +
+                newSchoolTaskData[cohortInd].data[yearInd].data[schoolDataTaskIndex].green_count * 5) / (
                     newSchoolTaskData[cohortInd].data[yearInd].data[schoolDataTaskIndex].red_count +
-                    newSchoolTaskData[cohortInd].data[yearInd].data[schoolDataTaskIndex].yellow_count * 3 +
-                    newSchoolTaskData[cohortInd].data[yearInd].data[schoolDataTaskIndex].green_count * 5) / (
-                        newSchoolTaskData[cohortInd].data[yearInd].data[schoolDataTaskIndex].red_count +
-                        newSchoolTaskData[cohortInd].data[yearInd].data[schoolDataTaskIndex].yellow_count +
-                        newSchoolTaskData[cohortInd].data[yearInd].data[schoolDataTaskIndex].green_count
-                    )
-            }
-
+                    newSchoolTaskData[cohortInd].data[yearInd].data[schoolDataTaskIndex].yellow_count +
+                    newSchoolTaskData[cohortInd].data[yearInd].data[schoolDataTaskIndex].green_count
+                )
 
             practicalUpdateData.tasks = newTasks
             practicalUpdateData.avg_rating = rating_sum / comments.length
@@ -883,8 +701,6 @@ export default function InstructorPractical() {
 
             setComments(newComments)
             setTasks(newTasks)
-            setTaskHierarchy(convertTasksToHierarchy(newTasks))
-
 
         } catch (e) {
             console.log(e);
@@ -982,44 +798,33 @@ export default function InstructorPractical() {
                 const school_res = await fetch(`${process.env.REACT_APP_API_HOST}/api/school/${schoolId}`, requestOptions);
                 const school_data = await school_res.json()
 
-                console.log(studentYear)
+                const school_task_data = school_data.task_data
 
-                if (studentYear) {
-                    const school_task_data = school_data.task_data
+                let schoolDataCohortIndex = school_task_data.findIndex((data) => data.cohort_year == studentYear)
 
-                    let schoolDataCohortIndex = school_task_data.findIndex((data) => data.cohort_year == studentYear)
+                if (schoolDataCohortIndex == -1) {
+                    school_task_data.push({
+                        cohort_year: studentYear,
+                        data: []
+                    })
+                    schoolDataCohortIndex = school_task_data.length - 1
+                }
+                setCohortInd(schoolDataCohortIndex)
 
-                    if (schoolDataCohortIndex == -1) {
-                        school_task_data.push({
-                            cohort_year: studentYear,
-                            data: []
-                        })
-                        schoolDataCohortIndex = school_task_data.length - 1
-                    }
+                const currentYear = new Date().getFullYear().toString();
+                let schoolDataYearIndex = school_task_data[schoolDataCohortIndex].data.findIndex((d) => d.year == currentYear)
 
-
-                    setCohortInd(schoolDataCohortIndex)
-
-                    const currentYear = new Date().getFullYear().toString();
-                    let schoolDataYearIndex = school_task_data[schoolDataCohortIndex].data.findIndex((d) => d.year == currentYear)
-
-                    if (schoolDataYearIndex == -1) {
-                        school_task_data[schoolDataCohortIndex].data.push({
-                            year: currentYear,
-                            data: []
-                        })
-                        schoolDataYearIndex = school_task_data[schoolDataCohortIndex].data.length - 1
-                    }
-
-                    console.log(school_task_data)
-
-
-                    setYearInd(schoolDataYearIndex)
-
-                    setSchoolTaskData(school_task_data)
+                if (schoolDataYearIndex == -1) {
+                    school_task_data[schoolDataCohortIndex].data.push({
+                        year: currentYear,
+                        data: []
+                    })
+                    schoolDataYearIndex = school_task_data[schoolDataCohortIndex].data.length - 1
                 }
 
+                setYearInd(schoolDataYearIndex)
 
+                setSchoolTaskData(school_task_data)
 
             }
             catch (e) {
@@ -1031,7 +836,51 @@ export default function InstructorPractical() {
         if (schoolId) {
             fetchSchoolData()
         }
-    }, [schoolId, studentYear])
+    }, [schoolId])
+
+    useEffect(() => {
+        async function fetchStudentData() {
+            try {
+                const auth_user = auth.currentUser;
+                const token = auth_user && (await auth_user.getIdToken());
+                const userId = currentUser.uid; // (if needed)
+
+                const requestOptions = {
+                    method: "GET",
+                    mode: "cors",
+                    headers: {
+                        "Content-Type": "application/json",
+                        Authorization: `Bearer ${token}`,
+                    },
+                };
+
+                const curParticipantInfo = await Promise.all(
+                    participants.map(async (participantId) => {
+                        const participantRes = await fetch(
+                            `${process.env.REACT_APP_API_HOST}/api/user/${participantId}`,
+                            requestOptions
+                        );
+                        const participantData = await participantRes.json();
+                        return {
+                            id: participantId,
+                            name: participantData.real_name,
+                            username: participantData.username,
+                            email: participantData.email,
+                        };
+                    })
+                );
+
+                setParticipantInfo(curParticipantInfo);
+            } catch (e) {
+                console.log(e);
+            }
+        }
+
+        if (participants.length > 0) {
+            fetchStudentData();
+        }
+    }, [participants]);
+
 
 
     // Chat functions
@@ -1062,12 +911,9 @@ export default function InstructorPractical() {
     }
 
 
-    const handleTaskChatButton = (task, taskPath) => {
-        // let newTask = task
-        // if (taskPath) {
-        //     newTask.name = taskPath + task.name
-        // }
-        setPathToDisplayedTask(taskPath)
+
+
+    const handleTaskChatButton = (task) => {
         setTaskToDisplay(task)
         setTaskChatOpen(true)
     }
@@ -1075,7 +921,6 @@ export default function InstructorPractical() {
     const handleTaskChatClose = (task) => {
         setTaskToDisplay(null)
         setTaskChatOpen(false)
-        setPathToDisplayedTask("")
     }
 
     const handleMessageInput = async () => {
@@ -1103,10 +948,7 @@ export default function InstructorPractical() {
             }
 
             newTaskToDisplay.replies.push(newReply)
-
-
-
-            newTasks[tasks.findIndex((t) => t.name === pathToDisplayedTask + taskToDisplay.name)] = newTaskToDisplay
+            newTasks[tasks.indexOf(taskToDisplay)] = newTaskToDisplay
 
 
             const requestOptions = {
@@ -1158,46 +1000,6 @@ export default function InstructorPractical() {
             setParticipants(practical.user_participants)
 
 
-            if (!practical.cohort_year && practical.user_participants.length > 0) {
-                const firstParticipantId = practical.user_participants[0];
-
-                let grad_year = null
-
-                fetch(`${process.env.REACT_APP_API_HOST}/api/user/${firstParticipantId}`)
-                    .then((response) => {
-                        if (!response.ok) {
-                            throw new Error("Failed to fetch participant data");
-                        }
-                        return response.json();
-                    })
-                    .then((participantData) => {
-                        grad_year = participantData.grad_year
-                    })
-                    .catch((error) => {
-                        console.error("Error fetching participant data:", error);
-                    });
-
-                const user = auth.currentUser;
-                const token = user && (await user.getIdToken());
-                const requestOptions = {
-                    method: "PUT",
-                    mode: "cors",
-                    headers: {
-                        "Content-Type": "application/json",
-                        Authorization: `Bearer ${token}`,
-                    },
-                    body: JSON.stringify({ cohort_year: grad_year })
-
-                };
-                await fetch(`${process.env.REACT_APP_API_HOST}/api/updatePractical/${practicalId}`, requestOptions);
-
-                setStudentYear(grad_year)
-
-            }
-
-            setPracticalTemplate(practical.template)
-
-
             const videoParams = practical.video_link.split("/")
             setVideoId(videoParams[videoParams.length - 1])
 
@@ -1207,27 +1009,34 @@ export default function InstructorPractical() {
             const tasks = practical.tasks
             setTasks(tasks)
 
-
-            const taskHierarchy = convertTasksToHierarchy(tasks)
-
-            setTaskHierarchy(taskHierarchy)
-
             const commentIds = practical.comments
 
 
-            const commentsData = []
+            const commentsData = await Promise.all(
+                commentIds.map(async (commentId) => {
+                    try {
+                        const commentRes = await fetch(`${process.env.REACT_APP_API_HOST}/api/comment/${commentId}`);
+                        if (!commentRes.ok) {
+                            throw new Error(`HTTP error! status: ${commentRes.status}`);
+                        }
+                        return await commentRes.json();
+                    } catch (error) {
+                        console.warn(`Failed to fetch comment with ID ${commentId}:`, error);
+                        return null; // Return null for invalid comments
+                    }
+                })
+            );
 
-            commentIds.map(async (commentId, idx) => {
-                const commentRes = await fetch(`${process.env.REACT_APP_API_HOST}/api/comment/${commentId}`);
-                const commentData = await commentRes.json()
-                commentsData.push(commentData)
+            // Filter out invalid (null) comments
+            const validComments = commentsData.filter((comment) => comment !== null);
 
-            })
+            // Sort valid comments by timestamp
+            validComments.sort((a, b) => a.timestamp - b.timestamp);
 
-            commentsData.reverse()
+            // Update state with the fully fetched and sorted comments
+            setComments(validComments);
 
-            setComments(commentsData)
-
+            console.log(comments)
         }
 
         fetchPractical()
@@ -1313,6 +1122,7 @@ export default function InstructorPractical() {
                                 />)}
 
                         </Box>
+
                         <Box
                             sx={{
                                 display: "flex",
@@ -1326,160 +1136,112 @@ export default function InstructorPractical() {
                         >
                             <Typography variant="h4">Make Comments</Typography>
 
-                            {/* Render root tasks first */}
-                            {taskHierarchy.rootTasks.map((task) => (
-                                <Box
-                                    key={task.name}
-                                    sx={{
-                                        width: "100%",
+                            {tasks.map((task) => (
+                                <Box sx={{
+                                    width: "100%",
+                                    display: "flex",
+                                    flexDirection: "row",
+                                    justifyContent: "space-between",
+                                    alignItems: "center",
+                                    pt: 1,
+
+                                }}>
+                                    <Box sx={{
                                         display: "flex",
                                         flexDirection: "row",
-                                        justifyContent: "space-between",
+                                        width: "100%",
+                                        justifyItems: "center",
                                         alignItems: "center",
-                                        pt: 1,
-                                    }}
-                                >
-                                    <Box
-                                        sx={{
-                                            display: "flex",
-                                            flexDirection: "row",
-                                            width: "100%",
-                                            justifyItems: "center",
-                                            alignItems: "center",
-                                            justifyContent: "center",
-                                        }}
-                                    >
-                                        <Box
-                                            sx={{
-                                                minWidth: "160px",
-                                                maxWidth: "160px",
-                                                height: "100%",
-                                                pl: 1,
-                                                display: "flex",
-                                            }}
-                                        >
+                                        justifyContent: "center",
+                                    }}>
+
+                                        <Box sx={{
+                                            minWidth: "160px",
+                                            maxWidth: "160px",
+                                            height: "100%",
+                                            pl: 1,
+                                            display: "flex"
+                                        }}>
                                             <Typography variant="h7">{task.name}</Typography>
                                         </Box>
 
                                         <Box sx={{ minWidth: "180px", maxWidth: "180px", display: "flex" }}>
-                                            <ButtonGroup variant="contained" aria-label="Basic button group">
-                                                <Button
-                                                    onClick={() => handleRating(task, 1)}
-                                                    variant="contained"
-                                                    color="red"
-                                                    disableElevation
-                                                    sx={{ width: "60px", textTransform: "none" }}
-                                                >
-                                                    Red
-                                                </Button>
-                                                <Button
-                                                    onClick={() => handleRating(task, 3)}
-                                                    variant="contained"
-                                                    color="yellow"
-                                                    disableElevation
-                                                    sx={{ width: "60px", textTransform: "none" }}
-                                                >
-                                                    Yellow
-                                                </Button>
-                                                <Button
-                                                    onClick={() => handleRating(task, 5)}
-                                                    variant="contained"
-                                                    color="green"
-                                                    disableElevation
-                                                    sx={{ width: "60px", textTransform: "none" }}
-                                                >
-                                                    Green
-                                                </Button>
+                                            <ButtonGroup variant="contained" aria-label="Basic button group" >
+                                                <Button onClick={() => { handleRating(task, 1) }} variant="contained" color="red" disableElevation sx={{ width: "60px", textTransform: 'none' }}>Red</Button>
+                                                <Button onClick={() => { handleRating(task, 3) }} variant="contained" color="yellow" disableElevation sx={{ width: "60px", textTransform: 'none' }}>Yellow</Button>
+                                                <Button onClick={() => { handleRating(task, 5) }} variant="contained" color="green" disableElevation sx={{ width: "60px", textTransform: 'none' }}>Green</Button>
                                             </ButtonGroup>
                                         </Box>
-
                                         <Box sx={{ width: "40px", px: 1 }}>
-                                            <IconButton
-                                                aria-label="chat"
-                                                onClick={() => handleTaskChatButton(task)}
-                                            >
+                                            <IconButton aria-label="delete" onClick={() => handleTaskChatButton(task)}>
                                                 <InsertCommentIcon />
                                             </IconButton>
                                         </Box>
-                                        {(!practicalTemplate || practicalTemplate === "Blank Template") ? (<Box sx={{ width: "40px", px: 1 }}>
-                                            <IconButton
-                                                aria-label="delete"
-                                                onClick={() => handleRemoveTask(task)}
-                                            >
+                                        <Box sx={{ width: "40px", px: 1 }}>
+                                            <IconButton aria-label="delete" onClick={() => handleRemoveTask(task)}>
                                                 <DeleteIcon />
                                             </IconButton>
-                                        </Box>) : <></>}
-
+                                        </Box>
                                     </Box>
+
                                 </Box>
                             ))}
 
-                            {/* Recursive function to render categories and their tasks */}
-                            {taskHierarchy.categories.map((category) => {
-                                return (
-                                    <CategoryComponent key={category.name} category={category} handleRating={handleRating} handleTaskChatButton={handleTaskChatButton} practicalTemplate={practicalTemplate} handleRemoveTask={handleRemoveTask} />
-                                )
-                            })}
-
                             {/* New Task Section */}
-
-                            {(!practicalTemplate || practicalTemplate === "Blank Template") ?
-                                (<Box
+                            <Box
+                                sx={{
+                                    display: "flex",
+                                    justifyContent: "center",
+                                    alignItems: "center",
+                                    width: "100%",
+                                    mt: 2, // Add some margin at the top
+                                }}
+                            >
+                                <Autocomplete
                                     sx={{
-                                        display: "flex",
-                                        justifyContent: "center",
-                                        alignItems: "center",
-                                        width: "100%",
-                                        mt: 2, // Add some margin at the top
+                                        width: "50%",
+                                        size: "small",
                                     }}
-                                >
-                                    <Autocomplete
-                                        sx={{
-                                            width: "50%",
-                                            size: "small",
-                                        }}
-                                        id="free-solo-demo"
-                                        freeSolo
-                                        options={schoolTaskPool}
-                                        value={newTask}
-                                        onInputChange={(event, newInputValue) => {
-                                            setNewTask(newInputValue);
-                                        }}
-                                        renderInput={(params) => (
-                                            <TextField
-                                                {...params}
-                                                label="New Task"
-                                                variant="outlined"
-                                                color="secondary"
-                                                value={newTask}
-                                            />
-                                        )}
-                                        renderOption={(props, option, { inputValue }) => (
-                                            <li {...props} key={option}>
-                                                <Box sx={{ display: "flex", justifyContent: "space-between", width: "100%" }}>
-                                                    <span>{option}</span>
-                                                    <IconButton
-                                                        size="small"
-                                                        color="error"
-                                                        onClick={(event) => {
-                                                            event.stopPropagation(); // Prevent selecting the option when clicking the icon
-                                                            handleRemoveTaskPoolOption(option);
-                                                        }}
-                                                    >
-                                                        <CloseIcon />
-                                                    </IconButton>
-                                                </Box>
-                                            </li>
-                                        )}
-                                        size="small"
-                                    />
+                                    id="free-solo-demo"
+                                    freeSolo
+                                    options={schoolTaskPool}
+                                    value={newTask}
+                                    onInputChange={(event, newInputValue) => {
+                                        setNewTask(newInputValue);
+                                    }}
+                                    renderInput={(params) => (
+                                        <TextField
+                                            {...params}
+                                            label="New Task"
+                                            variant="outlined"
+                                            color="secondary"
+                                            value={newTask}
+                                        />
+                                    )}
+                                    renderOption={(props, option, { inputValue }) => (
+                                        <li {...props} key={option}>
+                                            <Box sx={{ display: "flex", justifyContent: "space-between", width: "100%" }}>
+                                                <span>{option}</span>
+                                                <IconButton
+                                                    size="small"
+                                                    color="error"
+                                                    onClick={(event) => {
+                                                        event.stopPropagation(); // Prevent selecting the option when clicking the icon
+                                                        handleRemoveTaskPoolOption(option);
+                                                    }}
+                                                >
+                                                    <CloseIcon />
+                                                </IconButton>
+                                            </Box>
+                                        </li>
+                                    )}
+                                    size="small"
+                                />
 
-                                    <Button variant="contained" size="large" onClick={handleNewTaskChange}>
-                                        Add Task
-                                    </Button>
-
-                                </Box>) : <></>}
-
+                                <Button variant="contained" size="large" onClick={handleNewTaskChange}>
+                                    Add Task
+                                </Button>
+                            </Box>
                         </Box>
 
 
@@ -1510,36 +1272,44 @@ export default function InstructorPractical() {
                             </TableHead>
                             <TableBody>
                                 {comments.map((comment, idx) => (
-                                    <TableRow
-                                        key={comment.id}
-                                        sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
-                                    >
+                                    <TableRow key={comment.id} sx={{ '&:last-child td, &:last-child th': { border: 0 } }}>
                                         <TableCell component="th" scope="row">
-                                            {comment.task.split("/")[comment.task.split("/").length - 1]}
+                                            {comment.task}
                                         </TableCell>
                                         <TableCell align="right">{comment.rating}</TableCell>
-                                        <TableCell align="right">{new Date(comment.timestamp * 1000).toISOString().substring(14, 19)}</TableCell>
-                                        {
-                                            (idx != editableCommentIdx) ?
-                                                (<TableCell align="right">
-                                                    <Typography onClick={() => handleEditButton(idx)} >
-                                                        {(comment.feedback == "") ? "NO COMMENT" : comment.feedback}
-                                                    </Typography>
-                                                </TableCell>) :
-                                                (<TableCell align="right">
-                                                    <TextField label="Feedback"
-                                                        onChange={e => setCommentEdit(e.target.value)}
-                                                        variant="outlined"
-                                                        color="secondary"
-                                                        size="small"
-                                                        sx={{
-
-                                                            width: "60%"
-                                                        }}
-
-                                                        value={commentEdit} />
-                                                </TableCell>)
-                                        }
+                                        <TableCell align="right">
+                                            {new Date(comment.timestamp * 1000).toISOString().substring(14, 19)}
+                                        </TableCell>
+                                        {idx !== editableCommentIdx ? (
+                                            <TableCell align="right">
+                                                <Typography
+                                                    onClick={() => handleEditButton(idx)}
+                                                    // Render the formatted comment feedback as HTML.
+                                                    dangerouslySetInnerHTML={{
+                                                        __html: comment.feedback === "" ? "NO COMMENT" : formatFeedback(comment.feedback),
+                                                    }}
+                                                />
+                                            </TableCell>
+                                        ) : (
+                                            <TableCell align="right">
+                                                <MentionsInput
+                                                    value={commentEdit}
+                                                    onChange={(e) => setCommentEdit(e.target.value)}
+                                                    style={mentionInputStyle}
+                                                    placeholder="Feedback"
+                                                >
+                                                    <Mention
+                                                        trigger="@"
+                                                        data={participantInfo.map((p) => ({
+                                                            id: p.email,
+                                                            display: p.name,
+                                                        }))}
+                                                        markup="@[{__display__}]({__id__})"
+                                                        displayTransform={(id, display) => `@${display}`}
+                                                    />
+                                                </MentionsInput>
+                                            </TableCell>
+                                        )}
                                         <TableCell align="right">
                                             <Button onClick={() => handleDeleteComment(idx)}>
                                                 <DeleteIcon />
@@ -1547,6 +1317,8 @@ export default function InstructorPractical() {
                                         </TableCell>
                                     </TableRow>
                                 ))}
+
+
                             </TableBody>
                         </Table>
                     </TableContainer>

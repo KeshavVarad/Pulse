@@ -7,7 +7,7 @@ import AdminTutorials from '../elements/AdminTutorials';
 
 const UserGuide = () => {
     return (
-        <Box sx={{ padding: 3, paddingTop: 12 }}> {/* Increased paddingTop value */}
+        <Box sx={{ padding: 3, paddingTop: 12, mx:10}}> {/* Increased paddingTop value */}
             <Typography variant="h4" align="center" gutterBottom>
                 User Guide
             </Typography>

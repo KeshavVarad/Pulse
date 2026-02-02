@@ -1,161 +1,163 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { TextField, Button, List, ListItem, ListItemText, Paper } from '@mui/material';
+import { Button, List, ListItem, ListItemText, Paper } from '@mui/material';
 import { useAuth } from '../../contexts/AuthContext';
 import { auth } from '../../config/firebase';
 import { format } from 'date-fns';
-import OpenAI from "openai";
 import ReactMarkdown from 'react-markdown';
 import axios from 'axios';
+import { MentionsInput, Mention } from 'react-mentions';
 
 const ChatInterface = () => {
-    const { currentUser } = useAuth()
+    const { currentUser } = useAuth();
 
-    const [messages, setMessages] = useState([{
-        text: "Welcome to the Pulse Assitant! I’m here to assist you with your feedback and questions. Whether you want to summarize your feedback from practicals, explore ways to improve, or ask technical questions, feel free to reach out. Let’s make your learning experience as effective as possible.",
-        sender: 'ai'
-    }]);
+    const [messages, setMessages] = useState([
+        {
+            text: "Welcome to the Pulse Assistant! I’m here to assist you with your feedback and questions. Whether you want to summarize your feedback from practicals, explore ways to improve, or ask technical questions, feel free to reach out. Let’s make your learning experience as effective as possible.",
+            sender: 'ai',
+        },
+    ]);
     const [input, setInput] = useState('');
     const endOfMessagesRef = useRef(null);
 
-    const [userPerfData, setUserPerfData] = useState();
-
+    const [userRole, setUserRole] = useState('student');
+    const [isAiTyping, setIsAiTyping] = useState(true);
     const [currentAiMessage, setCurrentAiMessage] = useState('');
     const [currentWordIndex, setCurrentWordIndex] = useState(0);
-    const [isAiTyping, setIsAiTyping] = useState(true);
-    const typingDelay = 100; // Delay between words in milliseconds
+    const typingDelay = 100; // Delay between words in ms
 
+    const [students, setStudents] = useState([]);
+    const [practicals, setPracticals] = useState([]);
+    const [schoolId, setSchoolId] = useState(null);
 
+    /**
+     * Styles for the MentionsInput & mentions
+     */
+    const mentionInputStyle = {
+        control: {
+            backgroundColor: '#fff',
+            fontSize: 16,
+            fontWeight: 'normal',
+            width: '60%',
+            border: '1px solid #ccc',
+            borderRadius: '4px',
+            padding: '8px',
+        },
+        highlighter: {
+            overflow: 'hidden',
+        },
+        input: {
+            margin: 0,
+            padding: 0,
+        },
+        mention: {
+            // This styles the mention text (both @ and #)
+            backgroundColor: '#e0e0e0',
+            borderRadius: '4px',
+            padding: '2px 4px',
+            fontWeight: 'bold',
+            color: '#333',
+        },
+        suggestions: {
+            list: {
+                backgroundColor: 'white',
+                border: '1px solid rgba(0,0,0,0.15)',
+                fontSize: 14,
+                overflow: 'auto',
+                maxHeight: 150,
+            },
+            item: {
+                padding: '5px 10px',
+                borderBottom: '1px solid #eee',
+                '&focused': {
+                    backgroundColor: '#cee4e5',
+                },
+            },
+        },
+    };
 
+    /**
+     * Fetch school data (including students) once we have a schoolId
+     */
     useEffect(() => {
-        async function fetchUserData() {
+        async function fetchSchoolData() {
             try {
                 const user = auth.currentUser;
                 const token = user && (await user.getIdToken());
-                const userId = user.uid;
 
                 const requestOptions = {
-                    method: "GET",
-                    mode: "cors",
+                    method: 'GET',
+                    mode: 'cors',
                     headers: {
-                        "Content-Type": "application/json",
+                        'Content-Type': 'application/json',
                         Authorization: `Bearer ${token}`,
                     },
                 };
 
-                // Fetch user data to check if they are an instructor
-                const user_res = await fetch(`${process.env.REACT_APP_API_HOST}/api/user/${userId}`, requestOptions);
-                const userData = await user_res.json();
+                if (!schoolId) return;
+                const schoolRes = await fetch(
+                    `${process.env.REACT_APP_API_HOST}/api/school/${schoolId}`,
+                    requestOptions
+                );
+                const schoolData = await schoolRes.json();
 
-                let cleaned_practical_data = [];
+                setStudents(schoolData.students || []);
+            } catch (e) {
+                console.log(e);
+            }
+        }
 
-                // Check if user is an instructor
-                if (userData.role === "instructor") {
-                    // Fetch instructor's practicals
-                    const practical_res = await fetch(`${process.env.REACT_APP_API_HOST}/api/practical/instructor/${user.uid}`, requestOptions);
-                    const instructorPracticals = await practical_res.json();
+        fetchSchoolData();
+    }, [schoolId]);
 
-                    // Process each practical and organize by student
-                    for (let practical of instructorPracticals) {
-                        const participants = practical.user_participants;
-                        let studentsData = {};
+    /**
+     * Fetch user data (role, school, practicals) once
+     */
+    useEffect(() => {
+        async function fetchUserData() {
+            try {
+                const user = auth.currentUser;
+                if (!user) return;
+                const token = await user.getIdToken();
+                const userId = user.uid;
 
-                        // Fetch each student's details
-                        for (let studentId of participants) {
-                            const student_res = await fetch(`${process.env.REACT_APP_API_HOST}/api/user/${studentId}`, requestOptions);
-                            const studentData = await student_res.json();
-
-                            // Clean tasks
-                            let cleaned_tasks = practical.tasks.map((task) => ({
-                                name: task.name,
-                                red_count: task.red_count,
-                                yellow_count: task.yellow_count,
-                                green_count: task.green_count,
-                                comments: [],
-                            }));
-
-                            // Fetch and organize comments for each task
-                            for (let commentId of practical.comments) {
-                                const comment_res = await fetch(`${process.env.REACT_APP_API_HOST}/api/comment/${commentId}`, requestOptions);
-                                const commentData = await comment_res.json();
-
-                                if (commentData.feedback !== "") {
-                                    let task_index = cleaned_tasks.findIndex((task) => task.name === commentData.task);
-                                    if (task_index !== -1) {
-                                        cleaned_tasks[task_index].comments.push({
-                                            rating: commentData.rating,
-                                            feedback: commentData.feedback,
-                                        });
-                                    }
-                                }
-                            }
-
-                            // Add cleaned tasks under each student
-                            studentsData[studentData.real_name] = {
-                                name: studentData.real_name,
-                                tasks: cleaned_tasks,
-                            };
-                        }
-
-                        // Clean practical data for each student
-                        let cleanPractical = {
-                            practical_name: practical.practical_name,
-                            creation_date: format(practical.creation_date, 'MMMM do yyyy, h:mm:ss a'),
-                            students: studentsData,  // Organize by student names
-                        };
-
-                        cleaned_practical_data.push(cleanPractical);
-                    }
-
-                } else {
-                    // If the user is not an instructor (fetch practicals for a student)
-                    const practical_res = await fetch(`${process.env.REACT_APP_API_HOST}/api/practical/student/${user.uid}`, requestOptions);
-                    const practicalData = await practical_res.json();
-
-                    // Clean practicals for student
-                    practicalData.map((practical) => {
-                        let cleaned_tasks = practical.tasks.map((task) => ({
-                            name: task.name,
-                            red_count: task.red_count,
-                            yellow_count: task.yellow_count,
-                            green_count: task.green_count,
-                            comments: [],
-                        }));
-
-                        practical.comments.map(async (commentId) => {
-                            const comment_res = await fetch(`${process.env.REACT_APP_API_HOST}/api/comment/${commentId}`, requestOptions);
-                            const commentData = await comment_res.json();
-
-                            if (commentData.feedback === "") return;
-
-                            let task_index = cleaned_tasks.findIndex((task) => task.name === commentData.task);
-                            if (task_index !== -1) {
-                                cleaned_tasks[task_index].comments.push({
-                                    rating: commentData.rating,
-                                    feedback: commentData.feedback,
-                                });
-                            }
-                        });
-
-                        let cleanPractical = {
-                            name: practical.practical_name,
-                            creation_date: format(practical.creation_date, 'MMMM do yyyy, h:mm:ss a'),
-                            avg_rating: practical.avg_rating,
-                            tasks: cleaned_tasks,
-                        };
-
-                        cleaned_practical_data.push(cleanPractical);
-                    });
-                }
-
-                // Construct cleaned data to be set in state
-                const cleanedData = {
-                    name: userData.real_name,
-                    role: userData.role,
-                    cohort_year: userData.grad_year,
-                    practicals: cleaned_practical_data,
+                const requestOptions = {
+                    method: 'GET',
+                    mode: 'cors',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        Authorization: `Bearer ${token}`,
+                    },
                 };
 
-                setUserPerfData(cleanedData);
+                // 1. Fetch user doc
+                const userRes = await fetch(
+                    `${process.env.REACT_APP_API_HOST}/api/user/${userId}`,
+                    requestOptions
+                );
+                const userData = await userRes.json();
+
+                setUserRole(userData.role);
+                setSchoolId(userData.school_id);
+
+                // 2. Based on role, fetch relevant practicals
+                let practicalRes;
+                if (userData.role === 'instructor') {
+                    practicalRes = await fetch(
+                        `${process.env.REACT_APP_API_HOST}/api/practical/instructor/${userId}`,
+                        requestOptions
+                    );
+                } else {
+                    // Student
+                    practicalRes = await fetch(
+                        `${process.env.REACT_APP_API_HOST}/api/practical/student/${userId}`,
+                        requestOptions
+                    );
+                }
+                const practicalData = await practicalRes.json();
+
+                // 3. Extract just the practical names (with spaces)
+                const practicalNames = practicalData.map((p) => p.practical_name);
+                setPracticals(practicalNames);
             } catch (e) {
                 console.log(e);
             }
@@ -166,110 +168,256 @@ const ChatInterface = () => {
         }
     }, [currentUser]);
 
-
+    /**
+     * Autoscroll to bottom when messages change
+     */
     useEffect(() => {
         if (endOfMessagesRef.current) {
             endOfMessagesRef.current.scrollIntoView({ behavior: 'smooth' });
         }
     }, [messages, currentWordIndex]);
 
+    /**
+     * Typewriter effect for AI messages
+     */
     useEffect(() => {
-        // Update the AI message one word at a time
-        if (isAiTyping) {
-            const words = messages[messages.length - 1].text.split(' '); // Get the latest AI message
+        if (!isAiTyping) return;
+
+        const lastMsg = messages[messages.length - 1];
+        const isLatestAi = lastMsg && lastMsg.sender === 'ai';
+
+        if (isLatestAi) {
+            const words = lastMsg.text.split(' ');
             if (currentWordIndex < words.length) {
                 const timer = setTimeout(() => {
-                    setCurrentAiMessage(prev => prev + (prev ? ' ' : '') + words[currentWordIndex]); // Add the next word to the message
-                    setCurrentWordIndex(prevIndex => prevIndex + 1); // Increment word index
-                }, typingDelay); // Adjust this for the desired typing speed
+                    setCurrentAiMessage((prev) => (prev ? prev + ' ' : '') + words[currentWordIndex]);
+                    setCurrentWordIndex((prevIndex) => prevIndex + 1);
+                }, typingDelay);
 
                 return () => clearTimeout(timer);
             } else {
-                setIsAiTyping(false); // Stop typing when all words are displayed
+                setIsAiTyping(false);
             }
+        } else {
+            setIsAiTyping(false);
         }
     }, [isAiTyping, currentWordIndex, messages]);
 
-
-
+    /**
+     * Handle sending user message
+     */
     const handleSendMessage = async () => {
-        if (input.trim()) {
-            const userMessage = { text: input, sender: 'user' };
-            setMessages(prevMessages => [...prevMessages, userMessage]);
+        if (!input.trim()) return;
 
-            const prompt = `Context: ${JSON.stringify(userPerfData)} User: ${input}`;
-            setInput('');
+        // 1. Temporarily store the user message in local state
+        //    We'll also do a final "clean up" to remove mention markup from displayed text
+        const userMessageRaw = input; // raw with mention markup
+        let userMessageClean = userMessageRaw;
 
-            try {
-                const conversationHistory = messages.map(msg => ({
-                    role: msg.sender === 'user' ? 'user' : 'assistant',
-                    content: msg.text
-                }));
+        // 2. Replace mention markup for practicals => e.g. "#[Blood Draw 101](Blood Draw 101)" => "#BloodDraw101"
+        userMessageClean = userMessageClean.replace(/#\[(.*?)\]\((.*?)\)/g, (match, p1) => {
+            return '#' + p1.replace(/\s+/g, '');
+        });
 
-                const response = await axios.post(`${process.env.REACT_APP_API_HOST}/api/chat`, {
-                    messages: [
-                        { role: 'system', content: "You are a helpful assistant." },
-                        ...conversationHistory,
-                        { role: 'user', content: prompt }
-                    ],
-                    max_tokens: 250
-                });
+        // 3. Replace mention markup for students => e.g. "@[Jane Doe](jane@pulse.edu)" => "@JaneDoe"
+        userMessageClean = userMessageClean.replace(/@\[(.*?)\]\((.*?)\)/g, (match, p1) => {
+            // remove spaces from the display name if you prefer, or keep them
+            return '@' + p1.replace(/\s+/g, '');
+        });
 
-                const aiMessageText = response.data.choices[0].message.content;
+        // Add the user message to local chat
+        const userMessageObj = {
+            text: userMessageClean,
+            sender: 'user',
+        };
+        setMessages((prev) => [...prev, userMessageObj]);
 
-                setMessages(prevMessages => [...prevMessages, { text: aiMessageText, sender: 'ai' }]); // Add the AI message
-                setCurrentAiMessage(''); // Reset current AI message
-                setCurrentWordIndex(0); // Reset word index
-                setIsAiTyping(true); // Start typing effect
-            } catch (error) {
-                console.error("Error calling API:", error);
+        // Clear the input
+        setInput('');
+
+        // 4. Build the user prompt for the backend
+        const prompt = `User: ${userMessageRaw}`;
+        // (We pass the raw text w/ mention markup to parse filters.)
+
+        try {
+            // Convert local messages into the format the backend expects
+            const conversationHistory = messages.map((msg) => ({
+                role: msg.sender === 'user' ? 'user' : 'assistant',
+                content: msg.text,
+            }));
+
+            // -------------------------
+            // PARSE STUDENT TAGS (raw)
+            // -------------------------
+            const studentTagRegex = /@\[(.*?)\]\((.*?)\)/g;
+            let studentTags = [];
+            let match;
+            while ((match = studentTagRegex.exec(prompt)) !== null) {
+                // match[1] = "Jane Doe", match[2] = "jane@pulse.edu"
+                studentTags.push(`${match[1].trim()}|${match[2].trim()}`);
             }
+            studentTags = [...new Set(studentTags)];
+
+            // -------------------------
+            // PARSE PRACTICAL TAGS (raw)
+            // => "#[Blood Draw 101](Blood Draw 101)"
+            // -------------------------
+            const practicalTagRegex = /#\[(.*?)\]\((.*?)\)/g;
+            let practicalTags = [];
+            let pMatch;
+            while ((pMatch = practicalTagRegex.exec(prompt)) !== null) {
+                // pMatch[1] = "Blood Draw 101"
+                // pMatch[2] = "Blood Draw 101"
+                practicalTags.push(pMatch[1].trim());
+            }
+            practicalTags = [...new Set(practicalTags)];
+
+            // Build filter
+            let customFilter = {};
+            if (studentTags.length > 0) {
+                customFilter['student_tag'] = { $in: studentTags };
+            }
+            if (practicalTags.length > 0) {
+                customFilter['practical_name'] = { $in: practicalTags };
+            }
+
+            // 5. Build the payload
+            const payload = {
+                messages: [
+                    {
+                        role: 'system',
+                        content:
+                            "You are a helpful teaching assistant for practical healthcare education. " +
+                            "Answer using data from practicals that are relevant to the user based on their id.",
+                    },
+                    ...conversationHistory,
+                    { role: 'user', content: prompt },
+                ],
+                userId: currentUser.uid,
+                role: userRole,
+                ...(Object.keys(customFilter).length > 0 ? { filter: customFilter } : {}),
+            };
+
+            // 6. Send to backend
+            const response = await axios.post(`${process.env.REACT_APP_API_HOST}/api/chat`, payload);
+
+            // 7. Receive the AI response, store in local state
+            const aiMessage = response.data.response;
+            setMessages((prev) => [...prev, { text: aiMessage.content, sender: 'ai' }]);
+
+            // Reset typing effect for the new AI message
+            setCurrentAiMessage('');
+            setCurrentWordIndex(0);
+            setIsAiTyping(true);
+        } catch (error) {
+            console.error('Error calling API:', error);
         }
     };
 
-    // Get the last AI message to determine if we should show the typing effect
+    // Get the last AI message to see if we show typewriter
     const lastMessage = messages[messages.length - 1];
     const aiMessageText = lastMessage.sender === 'ai' ? lastMessage.text : '';
 
     return (
-        <Paper elevation={3} style={{ width: "75%", padding: '20px', height: '500px', display: 'flex', flexDirection: 'column' }}>
+        <Paper
+            elevation={3}
+            style={{
+                width: '75%',
+                padding: '20px',
+                height: '500px',
+                display: 'flex',
+                flexDirection: 'column',
+            }}
+        >
+            {/* Chat Messages */}
             <List style={{ flexGrow: 1, overflowY: 'auto', marginBottom: '10px' }}>
-                {messages.map((msg, index) => (
-                    <ListItem key={index} style={{
-                        justifyContent: msg.sender === 'user' ? 'flex-end' : 'flex-start',
-                        backgroundColor: msg.sender === 'user' ? '#d1e7dd' : '#f8d7da',
-                        borderRadius: '8px',
-                        margin: '5px',
-                        padding: '10px',
-                        maxWidth: '70%',
-                        alignSelf: msg.sender === 'user' ? 'flex-end' : 'flex-start',
-                    }}>
-                        <ListItemText
-                            primary={<span style={{ fontWeight: msg.sender === 'ai' ? 'bold' : 'normal' }}>
-                                {msg.sender === 'ai' ? "AI: " : "You: "}
-                                <ReactMarkdown>{msg.sender === 'ai' ? (msg.text === aiMessageText ? currentAiMessage : msg.text) : msg.text}</ReactMarkdown>
-                            </span>}
-                        />
-                    </ListItem>
-                ))}
-                {/* Empty div to scroll to */}
+                {messages.map((msg, index) => {
+                    const isUser = msg.sender === 'user';
+                    const isAi = msg.sender === 'ai';
+                    return (
+                        <ListItem
+                            key={index}
+                            style={{
+                                justifyContent: isUser ? 'flex-end' : 'flex-start',
+                                backgroundColor: isUser ? '#d1e7dd' : '#f8d7da',
+                                borderRadius: '8px',
+                                margin: '5px',
+                                padding: '10px',
+                                maxWidth: '70%',
+                                alignSelf: isUser ? 'flex-end' : 'flex-start',
+                            }}
+                        >
+                            <ListItemText
+                                primary={
+                                    <span style={{ fontWeight: isAi ? 'bold' : 'normal' }}>
+                                        {isAi ? 'AI: ' : 'You: '}
+                                        <ReactMarkdown>
+                                            {isAi
+                                                ? // If it's the most recent AI message being typed out:
+                                                msg.text === aiMessageText
+                                                    ? currentAiMessage
+                                                    : msg.text
+                                                : msg.text}
+                                        </ReactMarkdown>
+                                    </span>
+                                }
+                            />
+                        </ListItem>
+                    );
+                })}
                 <div ref={endOfMessagesRef} />
             </List>
-            <TextField
-                fullWidth
-                variant="outlined"
-                placeholder="Type your message..."
+
+            {/* Mentions Input */}
+            <MentionsInput
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
-                onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
-            />
-            <Button variant="contained" color="primary" onClick={handleSendMessage} style={{ marginTop: '10px' }}>
+                style={mentionInputStyle}
+                placeholder="Type your message..."
+                allowSuggestionsAboveCursor
+            >
+                {/* Mention for Students */}
+                <Mention
+                    trigger="@"
+                    data={students.map((s) => ({
+                        id: s.email,
+                        display: s.real_name,
+                    }))}
+                    // Example markup: "@[Jane Doe](jane@pulse.edu)"
+                    markup="@[__display__](__id__)"
+                    displayTransform={(id, display) => '@' + display.replace(/\s+/g, '')}
+                />
+
+                {/* Mention for Practicals */}
+                <Mention
+                    trigger="#"
+                    data={practicals.map((p) => ({
+                        // "id" stores the full spaced name for the backend filter
+                        id: p,
+                        // "display" is the same spaced name you see in the suggestions
+                        display: p,
+                    }))}
+                    // We store bracket-based markup so we can parse the spaced name later:
+                    // e.g. "#[Blood Draw 101](Blood Draw 101)"
+                    markup="#[__id__](__id__)"
+                    // But visually in the input, we remove spaces:
+                    displayTransform={(id) => '#' + id.replace(/\s+/g, '')}
+                    // If your practicals have spaces, let user keep typing after space:
+                    allowSpaceInQuery
+                />
+            </MentionsInput>
+
+            {/* Send Button */}
+            <Button
+                variant="contained"
+                color="primary"
+                onClick={handleSendMessage}
+                style={{ marginTop: '10px' }}
+            >
                 Send
             </Button>
         </Paper>
     );
-
 };
 
 export default ChatInterface;
-

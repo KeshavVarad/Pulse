@@ -467,16 +467,31 @@ export default function StudentPractical() {
             try {
                 const commentsData = await Promise.all(
                     commentIds.map(async (commentId) => {
-                        const commentRes = await fetch(`${process.env.REACT_APP_API_HOST}/api/comment/${commentId}`);
-                        return await commentRes.json();
+                        try {
+                            const commentRes = await fetch(`${process.env.REACT_APP_API_HOST}/api/comment/${commentId}`);
+                            if (!commentRes.ok) {
+                                throw new Error(`HTTP error! status: ${commentRes.status}`);
+                            }
+                            return await commentRes.json();
+                        } catch (error) {
+                            console.warn(`Failed to fetch comment with ID ${commentId}:`, error);
+                            return null; // Return null for invalid comments
+                        }
                     })
                 );
-                // Sort comments by timestamp
-                commentsData.sort((a, b) => a.timestamp - b.timestamp);
-                // Update state with the fully fetched and sorted comments
-                setComments(commentsData);
 
-                if (commentsData.length > 0) {
+                // Filter out invalid (null) comments
+                const validComments = commentsData.filter((comment) => comment !== null);
+
+                // Sort valid comments by timestamp
+                validComments.sort((a, b) => a.timestamp - b.timestamp);
+
+                console.log(validComments)
+
+                // Update state with the fully fetched and sorted comments
+                setComments(validComments);
+
+                if (validComments.length > 0) {
                     setCurrentCommentIndex(0);
                 }
             } catch (error) {
@@ -630,7 +645,7 @@ export default function StudentPractical() {
                     <Box sx={{
                         display: "flex",
                         flexDirection: "row",
-                        width: "100%"
+                        width: "100%",
                     }}>
 
                         <Box sx={{
@@ -646,6 +661,9 @@ export default function StudentPractical() {
                             <Box sx={{
                                 display: "flex",
                                 minWidth: "100%",
+                                minHeight: "50vh",
+                                alignContent:"center",
+                                alignItems:"center",
 
                             }}>
                                 <BarChart
@@ -688,7 +706,7 @@ export default function StudentPractical() {
                                             width: "100%",
                                         }}>
                                             <List sx={{
-                                                height: '20vh',
+                                                height: '45vh',
                                                 overflowY: 'auto',
                                             }}>
                                                 {currentTaskDiscussion ? currentTaskDiscussion.replies.map((reply, idx) => {

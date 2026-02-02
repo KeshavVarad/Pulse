@@ -9,6 +9,7 @@ import Dashboard from './components/pages/Dashboard';
 import { AuthProvider } from './contexts/AuthContext';
 import ErrorMessage from './components/layouts/ErrorMessage';
 import WithPrivateRoute from './utils/WithPrivateRoute';
+import WithPublicRoute from './utils/WithPublicRoute';
 import MakePractical from './components/pages/MakePractical';
 import Layout from './components/layouts/Layout';
 import Analytics from './components/pages/Analytics';
@@ -53,8 +54,18 @@ function App() {
                 <Route path="/user_guides/student" exact element={<TutorialStudent />} />
                 <Route path="/user_guides/:role/:tutorial" element={<MarkdownDisplay />} />
                 
-                <Route exact path="/dashboard" element={<Dashboard />} />
-                <Route exact path="/" element={<Home />} />
+                <Route exact path="/dashboard" element={
+                     <WithPrivateRoute>
+                     <Dashboard />
+                    </WithPrivateRoute>
+
+                } />
+                <Route exact path="/" element={
+                     <WithPublicRoute>
+                     <Home />
+                    </WithPublicRoute>
+                  
+                } />
                 <Route exact path="/register_school" element={<Register />} />
                 <Route exact path="/register_user" element={<RegisterUser />} />
                 <Route exact path="/login" element={<Login />} />
