@@ -20,12 +20,17 @@ const GCloudVideoPlayer = forwardRef(({ videoLink, onPlayerReady, onVideoChange 
     }));
 
     return (
-        <div>
+        <div style={{
+            width: '768px',
+            position: 'relative',
+            paddingTop: '56.25%' // 16:9 aspect ratio (9/16 = 0.5625)
+        }}>
             <ReactPlayer
                 ref={playerRef}
                 url={videoLink}
                 width="100%"
-                height="auto"
+                height="100%"
+                style={{ position: 'absolute', top: 0, left: 0 }}
                 controls
                 onReady={onPlayerReady} // Triggered when the player is ready
                 onProgress={({ playedSeconds }) => {
