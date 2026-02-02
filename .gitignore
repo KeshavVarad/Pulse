@@ -8,3 +8,4 @@ server/node_modules/
 server/app.yaml
 server/.env
 server/cors.json
+claude_notes/
