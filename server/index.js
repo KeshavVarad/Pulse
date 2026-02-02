@@ -41,6 +41,8 @@ import adminRoute from "./routes/adminRoutes.js"
 import schoolRoute from "./routes/schoolRoutes.js"
 import inviteRoute from "./routes/inviteRoutes.js"
 import notificationRoute from "./routes/notificationRoutes.js"
+import transcriptionRoute from "./routes/transcriptionRoutes.js"
+import { improvedCallModel } from "./utils/improvedAssistant.js"
 
 import { Storage } from '@google-cloud/storage'
 
@@ -175,6 +177,7 @@ app.use('/api', adminRoute);
 app.use('/api', schoolRoute);
 app.use('/api', inviteRoute);
 app.use('/api', notificationRoute);
+app.use('/api', transcriptionRoute);
 
 
 app.post('/api/getUploadUrl', async (req, res) => {
@@ -228,9 +231,10 @@ const callModel = async (state) => {
     // 1. Compute embedding for the current user query
     const queryEmbedding = await computeEmbedding(currentUserQuery);
 
-    // 2. We have two Pinecone namespaces in your snippet: "practicals" and "comments"
+    // 2. We have three Pinecone namespaces: "practicals", "comments", and "transcripts"
     const practicalNamespace = index.namespace("practicals");
     const commentsNamespace = index.namespace("comments");
+    const transcriptsNamespace = index.namespace("transcripts");
 
     // 3. Base filter by role
     //    - If student, only retrieve practicals where user_participant == userId
@@ -300,35 +304,60 @@ const callModel = async (state) => {
         });
     }
 
-    // 8. Combine matches from both practicals & comments
+    // 8. Query the "transcripts" namespace for relevant video transcript segments
+    const transcriptsQueryResponse = await transcriptsNamespace.query({
+        vector: queryEmbedding,
+        topK: 30,
+        includeMetadata: true,
+        filter: combinedPracticalFilter  // Same role-based filter as practicals
+    });
+
+    // 9. Combine matches from practicals, comments, and transcripts
     const combinedMatches = [
         ...(practicalQueryResponse.matches || []),
         ...(commentsQueryResponse.matches || []),
     ];
 
-    // 9. Build retrieved context text
-    const retrievedContext = combinedMatches
+    // Format transcript matches with timestamps for citation
+    const transcriptMatches = (transcriptsQueryResponse.matches || []).map(match => ({
+        ...match,
+        formattedText: `[Transcript from ${match.metadata.practical_name || 'video'} at ${formatTimestamp(match.metadata.start_time)}]: ${match.metadata.text}`
+    }));
+
+    // 10. Build retrieved context text
+    const practicalContext = combinedMatches
         .map(match => match.metadata.text || JSON.stringify(match.metadata))
         .join("\n");
 
-    // 10. Construct an augmented prompt with conversation history + retrieved context
+    const transcriptContext = transcriptMatches
+        .map(match => match.formattedText)
+        .join("\n");
+
+    // 11. Construct an augmented prompt with conversation history + retrieved context
     const prompt = `
-      You are a helpful teaching assistant that will help students and instructors on this app however you can with their activities. 
+      You are a helpful teaching assistant that will help students and instructors on this app however you can with their activities.
       You are knowledgable about anything and everything. But make sure to let the user know if you don't have a sure answer.
       Answer the user's question using the context below:
-      
-      Retrieved Context:
+
+      Retrieved Context (Practicals & Comments):
       --------------------
-      ${retrievedContext}
+      ${practicalContext}
       --------------------
-  
+
+      Video Transcript Context (with timestamps):
+      --------------------
+      ${transcriptContext || "No transcript data available."}
+      --------------------
+
+      When referencing transcript content, include the timestamp so users can find the relevant part of the video.
+
       Conversation History:
       ${messages.map(m => `${m.role}: ${m.content}`).join("\n")}
-  
+
       Provide a detailed answer.
     `;
 
-    // 11. Call the LLM (e.g., ChatOpenAI from LangChain)
+    // 12. Call the LLM (e.g., ChatOpenAI from LangChain)
     const llm = new ChatOpenAI({
         openAIApiKey: process.env.OPEN_AI_API_KEY,
         modelName: 'gpt-4o-mini',  // or 'gpt-3.5-turbo', etc.
@@ -344,11 +373,19 @@ const callModel = async (state) => {
     };
 };
 
+// Helper function to format timestamp as MM:SS
+function formatTimestamp(seconds) {
+    if (!seconds && seconds !== 0) return "0:00";
+    const mins = Math.floor(seconds / 60);
+    const secs = Math.floor(seconds % 60);
+    return `${mins}:${secs.toString().padStart(2, '0')}`;
+}
+
 /*****************************************************
- * Build the graph with memory (from your snippet)
+ * Build the graph with memory (using improved assistant)
  *****************************************************/
 const graph = new StateGraph(StateAnnotation)
-    .addNode("model", callModel)
+    .addNode("model", improvedCallModel)
     .addEdge(START, "model")
     .addEdge("model", END);
 

@@ -289,7 +289,7 @@ export default function MakePractical() {
                 school_id: instructorData[0].school_id,
                 cohort_year: participant_year,
                 transcript_link: "No Transcript",
-                template: templateData.name
+                template: templateData?.name || "Blank Template"
             }
 
             const createNewPracticalOptions = {

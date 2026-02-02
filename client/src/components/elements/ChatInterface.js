@@ -204,6 +204,16 @@ const ChatInterface = () => {
     }, [isAiTyping, currentWordIndex, messages]);
 
     /**
+     * Handle key down in input - Enter sends, Shift+Enter creates new line
+     */
+    const handleKeyDown = (e) => {
+        if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault();
+            handleSendMessage();
+        }
+    };
+
+    /**
      * Handle sending user message
      */
     const handleSendMessage = async () => {
@@ -372,8 +382,9 @@ const ChatInterface = () => {
             <MentionsInput
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
+                onKeyDown={handleKeyDown}
                 style={mentionInputStyle}
-                placeholder="Type your message..."
+                placeholder="Type your message... (Enter to send, Shift+Enter for new line)"
                 allowSuggestionsAboveCursor
             >
                 {/* Mention for Students */}
