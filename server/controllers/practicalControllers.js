@@ -110,6 +110,7 @@ export const createPractical = async (req, res, next) => {
                 const embedding = await computeEmbedding(text);
                 // Build the common metadata (without the whole user_participants array)
                 const baseMetadata = {
+                    practical_id: data.id,
                     practical_name: data.practical_name || data.name,
                     creation_date: data.creation_date,
                     video_link: data.video_link,
@@ -151,6 +152,8 @@ export const createPractical = async (req, res, next) => {
                         },
                     });
                 }
+
+                console.log(records);
 
                 await index.namespace(NAMESPACE).upsert(records);
             } catch (pineconeError) {
@@ -324,49 +327,68 @@ export const getInstructorPracticals = async (req, res, next) => {
 export const updatePractical = async (req, res, next) => {
     try {
         const id = req.params.id;
-        const data = req.body;
+        const incomingData = req.body;
         const practicalRef = doc(db, "practicals", id);
 
-        // Update Firestore document
-        await updateDoc(practicalRef, data);
+        // 1) Fetch the existing doc so we don’t lose any fields that aren’t in req.body
+        const existingSnap = await getDoc(practicalRef);
+        if (!existingSnap.exists()) {
+            return res.status(404).send("Practical not found");
+        }
+        const existingData = existingSnap.data();
 
-        // Build text summary from updated data
-        const text = buildPracticalText(data);
+        // 2) Merge the existing doc fields with the new incoming fields
+        const mergedData = {
+            ...existingData,
+            ...incomingData
+        };
+
+        // 3) Write the merged data back to Firestore
+        //    (We use setDoc(..., mergedData) instead of updateDoc to ensure the entire doc is up-to-date)
+        await setDoc(practicalRef, mergedData);
+
+        // 4) Rebuild the text summary from the *merged* data
+        const text = buildPracticalText(mergedData);
         if (text.trim()) {
             try {
+                // 5) Compute updated embedding
                 const embedding = await computeEmbedding(text);
-                // Delete all existing embedding records for this practical
-                const listResponse = await index
-                    .namespace(NAMESPACE)
-                    .listPaginated({ prefix: `${id}` });
+
+                // 6) Remove all existing vectors for this practical
+                const listResponse = await index.namespace(NAMESPACE).listPaginated({ prefix: `${id}` });
                 const idsToDelete = listResponse.vectors.map((vector) => vector.id);
                 if (idsToDelete && idsToDelete.length > 0) {
                     await index.namespace(NAMESPACE).deleteMany(idsToDelete);
                 }
 
-                // Prepare common metadata
+                // 7) Prepare new metadata from the merged data
                 const baseMetadata = {
-                    practical_name: data.practical_name || data.name,
-                    creation_date: data.creation_date,
-                    video_link: data.video_link,
-                    user_creator: data.user_creator,
-                    user_instructor_id: data.user_instructor_id,
-                    user_instructor_name: data.user_instructor_name,
-                    tasks: data.tasks ? JSON.stringify(data.tasks) : "NA",
-                    comments: data.comments ? JSON.stringify(data.comments) : "NA",
-                    chats: data.chats ? JSON.stringify(data.chats) : "NA",
-                    red_count: data.red_count,
-                    yellow_count: data.yellow_count,
-                    green_count: data.green_count,
-                    avg_rating: data.avg_rating,
-                    school_id: data.school_id,
-                    cohort_year: data.cohort_year ? data.cohort_year : "NA",
-                    transcript_link: data.transcript_link,
+                    practical_id: mergedData.id,
+                    practical_name: mergedData.practical_name || mergedData.name,
+                    creation_date: mergedData.creation_date,
+                    video_link: mergedData.video_link,
+                    user_creator: mergedData.user_creator,
+                    user_instructor_id: mergedData.user_instructor_id,
+                    user_instructor_name: mergedData.user_instructor_name,
+                    tasks: mergedData.tasks ? JSON.stringify(mergedData.tasks) : "NA",
+                    comments: mergedData.comments ? JSON.stringify(mergedData.comments) : "NA",
+                    chats: mergedData.chats ? JSON.stringify(mergedData.chats) : "NA",
+                    red_count: mergedData.red_count,
+                    yellow_count: mergedData.yellow_count,
+                    green_count: mergedData.green_count,
+                    avg_rating: mergedData.avg_rating,
+                    school_id: mergedData.school_id,
+                    cohort_year: mergedData.cohort_year ? mergedData.cohort_year : "NA",
+                    transcript_link: mergedData.transcript_link,
                 };
 
+                // 8) Upsert vectors for each participant
                 let records = [];
-                if (Array.isArray(data.user_participants) && data.user_participants.length > 0) {
-                    data.user_participants.forEach((participant, index) => {
+                if (
+                    Array.isArray(mergedData.user_participants) &&
+                    mergedData.user_participants.length > 0
+                ) {
+                    mergedData.user_participants.forEach((participant, index) => {
                         records.push({
                             id: `${id}_${index}`,
                             values: embedding,
@@ -394,6 +416,7 @@ export const updatePractical = async (req, res, next) => {
         } else {
             console.warn(`Empty text summary for practical ${id}; skipping Pinecone upsert.`);
         }
+
         res.status(200).send("Practical updated successfully");
     } catch (error) {
         res.status(400).send(error.message);

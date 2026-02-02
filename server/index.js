@@ -186,22 +186,29 @@ app.post('/api/getUploadUrl', async (req, res) => {
 
 
 const callModel = async (state) => {
-    // console.log("State in callModel:", state);
+    // Extract config from state
     const { userId, role, filter, isChat } = state.config?.configurable || {};
 
     if (!userId || !role) {
         throw new Error("Missing userId or role in configuration");
     }
 
+    // The conversation messages
     const messages = state.messages;
+
+    // The user's latest query
     const currentUserQuery = messages[messages.length - 1].content;
 
-    // 1. Compute the embedding for the current query.
+    // 1. Compute embedding for the current user query
     const queryEmbedding = await computeEmbedding(currentUserQuery);
 
+    // 2. We have two Pinecone namespaces in your snippet: "practicals" and "comments"
     const practicalNamespace = index.namespace("practicals");
     const commentsNamespace = index.namespace("comments");
 
+    // 3. Base filter by role
+    //    - If student, only retrieve practicals where user_participant == userId
+    //    - If instructor, only retrieve practicals where user_instructor_id == userId
     let baseFilter = {};
     if (role === 'student') {
         baseFilter = { "user_participant": { "$eq": userId } };
@@ -209,15 +216,22 @@ const callModel = async (state) => {
         baseFilter = { "user_instructor_id": { "$eq": userId } };
     }
 
-    // 4. Query the "practicals" namespace by filtering on a metadata field.
+    // 4. Combine user-provided "filter" (from chat UI) with baseFilter
+    //    So that we can also filter by "practical_name" or "user_participant" if user typed # or @
+    const combinedPracticalFilter = {
+        ...baseFilter,
+        ...(filter || {})   // merges in any user-supplied filters
+    };
+
+    // 5. Query the "practicals" namespace in Pinecone
     const practicalQueryResponse = await practicalNamespace.query({
         vector: queryEmbedding,
         topK: 100,
         includeMetadata: true,
-        filter: { ...baseFilter }
+        filter: combinedPracticalFilter
     });
 
-    // 5. Extract comment IDs (as before).
+    // 6. From each matching practical, gather all comment IDs
     let commentIds = [];
     if (practicalQueryResponse.matches) {
         for (const match of practicalQueryResponse.matches) {
@@ -232,83 +246,97 @@ const callModel = async (state) => {
             commentIds = commentIds.concat(practicalComments);
         }
     }
-    commentIds = [...new Set(commentIds)];
+    commentIds = [...new Set(commentIds)]; // unique
 
-    // 6. Query the "comments" namespace similarly using a metadata filter.
+    // 7. Build a filter for the "comments" namespace, only if we have comment IDs
     let commentsQueryResponse = { matches: [] };
     if (commentIds.length > 0) {
+        // By default, we filter comments by the IDs
         let commentFilter = {
-            "comment_id": { "$in": commentIds },
+            "comment_id": { "$in": commentIds }
         };
+
+        // If user also supplied a custom filter, merge that in
+        // (Though typically you'd have different logic for comment-level filters.)
         if (filter) {
             commentFilter = {
                 "comment_id": { "$in": commentIds },
                 ...filter
-            }
+            };
         }
 
-
+        // Query the comments namespace
         commentsQueryResponse = await commentsNamespace.query({
             vector: queryEmbedding,
             topK: 50,
+            includeMetadata: true,
             filter: commentFilter,
-            includeMetadata: true
         });
     }
 
-    // 7. Combine and build retrieved context.
+    // 8. Combine matches from both practicals & comments
     const combinedMatches = [
         ...(practicalQueryResponse.matches || []),
         ...(commentsQueryResponse.matches || []),
     ];
-    // console.log(combinedMatches);
 
+    // 9. Build retrieved context text
     const retrievedContext = combinedMatches
         .map(match => match.metadata.text || JSON.stringify(match.metadata))
         .join("\n");
 
-    // 8. Build an augmented prompt with conversation history and retrieved context.
+    // 10. Construct an augmented prompt with conversation history + retrieved context
     const prompt = `
-      You are a helpful teaching assistant for practical healthcare education.
-      Answer the user's question using the context below.
+      You are a helpful teaching assistant that will help students and instructors on this app however you can with their activities. 
+      You are knowledgable about anything and everything. But make sure to let the user know if you don't have a sure answer.
+      Answer the user's question using the context below:
       
       Retrieved Context:
       --------------------
       ${retrievedContext}
       --------------------
-      
+  
       Conversation History:
       ${messages.map(m => `${m.role}: ${m.content}`).join("\n")}
-      
+  
       Provide a detailed answer.
     `;
 
-    // 9. Call the Chat model.
+    // 11. Call the LLM (e.g., ChatOpenAI from LangChain)
     const llm = new ChatOpenAI({
         openAIApiKey: process.env.OPEN_AI_API_KEY,
-        modelName: 'gpt-4o-mini',
+        modelName: 'gpt-4o-mini',  // or 'gpt-3.5-turbo', etc.
         temperature: 0,
     });
+
+    // Send a single user message with "system" role content
     const result = await llm.invoke([{ role: "system", content: prompt }]);
-    return { messages: messages.concat({ role: "assistant", content: result.content }) };
+
+    // Return the updated conversation state
+    return {
+        messages: messages.concat({ role: "assistant", content: result.content })
+    };
 };
 
-// Construct the state graph by adding our node and defining the flow.
+/*****************************************************
+ * Build the graph with memory (from your snippet)
+ *****************************************************/
 const graph = new StateGraph(StateAnnotation)
     .addNode("model", callModel)
     .addEdge(START, "model")
     .addEdge("model", END);
 
-// Compile the graph with a checkpointer for state persistence.
 const memory = new MemorySaver();
 const graphApp = graph.compile({ checkpointer: memory });
 
-
+/*****************************************************
+ * The Express endpoint that handles the chat
+ *****************************************************/
 app.post('/api/chat', async (req, res) => {
     const { messages, userId, role, threadId, filter } = req.body;
     const conversationId = threadId || uuidv4();
 
-    // Merge configuration into the input state.
+    // Merge config into input state
     const input = {
         messages,
         config: {
@@ -316,27 +344,33 @@ app.post('/api/chat', async (req, res) => {
                 userId,
                 role,
                 filter,
-                isChat: true,
+                isChat: true
             }
         }
     };
 
+    // Optional config for the graph (like a threadId)
     const config = {
         configurable: {
-            thread_id: conversationId,
-        },
+            thread_id: conversationId
+        }
     };
 
     try {
+        // Invoke our state machine/graph with the user input
         const output = await graphApp.invoke(input, config);
+
+        // The last message is the AI's response
         const assistantMessage = output.messages[output.messages.length - 1];
+
+        // Send back threadId and the updated chat messages
         res.json({
             threadId: conversationId,
             response: assistantMessage,
             chatHistory: output.messages
         });
     } catch (error) {
-        console.error("Error in chat endpoint:", error);
+        console.error("Error in /api/chat:", error);
         res.status(500).send("Error processing query");
     }
 });
