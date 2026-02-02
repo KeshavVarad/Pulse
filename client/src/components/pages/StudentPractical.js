@@ -1,5 +1,5 @@
 
-import { useParams } from "react-router-dom"
+import { useParams, useNavigate } from "react-router-dom"
 import { useEffect, useState } from "react";
 import { useAuth } from "../../contexts/AuthContext.js";
 import { useRef, useCallback, useMemo } from "react";
@@ -8,6 +8,7 @@ import YouTube from "react-youtube"
 import { auth } from "../../config/firebase.js";
 import SendIcon from '@mui/icons-material/Send';
 import InsertCommentIcon from "@mui/icons-material/InsertComment"
+import ChatIcon from '@mui/icons-material/Chat';
 
 import { v4 as uuidv4 } from 'uuid';
 import { FormControl, InputLabel, Select, MenuItem, Typography, Box, Button, TextField, Grid, Modal, List, ListItem, ListItemText, Tooltip, TableContainer, Table, TableBody, TableCell, TableRow, TableHead, ButtonGroupContext } from "@mui/material";
@@ -21,6 +22,7 @@ import GCloudVideoPlayer from "../elements/GCloudVideoPlayer.js";
 export default function StudentPractical() {
 
     const { currentUser } = useAuth();
+    const navigate = useNavigate();
 
     const userId = currentUser.uid;
 
@@ -539,7 +541,14 @@ export default function StudentPractical() {
                 }}>
                     <Typography variant="h3"> {practical_name} </Typography>
                     <Typography variant="h5"> Average Rating: {Math.round((avgRating + Number.EPSILON) * 100) / 100} </Typography>
-
+                    <Button
+                        variant="outlined"
+                        startIcon={<ChatIcon />}
+                        onClick={() => navigate(`/aita?practical=${practicalId}&name=${encodeURIComponent(practical_name)}`)}
+                        sx={{ mt: 2 }}
+                    >
+                        Ask about this session
+                    </Button>
                 </Box>
 
 

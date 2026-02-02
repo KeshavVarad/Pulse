@@ -1,18 +1,42 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { Button, List, ListItem, ListItemText, Paper } from '@mui/material';
+import { Button, List, ListItem, ListItemText, Paper, Box, Chip, Typography } from '@mui/material';
+import { useSearchParams } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { auth } from '../../config/firebase';
-import { format } from 'date-fns';
 import ReactMarkdown from 'react-markdown';
 import axios from 'axios';
 import { MentionsInput, Mention } from 'react-mentions';
 
+const DEFAULT_PROMPTS = [
+    { label: 'Summarize my feedback', prompt: 'Summarize my recent feedback from practicals' },
+    { label: 'What should I work on?', prompt: 'Based on my feedback, what areas should I focus on improving?' },
+    { label: 'Explain my last practical', prompt: 'Can you explain what happened in my most recent practical?' },
+];
+
+const getContextualPrompts = (practicalName) => [
+    { label: 'Summarize this session', prompt: `Summarize the feedback from my ${practicalName} practical` },
+    { label: 'What went well?', prompt: `What did I do well in my ${practicalName} practical?` },
+    { label: 'How can I improve?', prompt: `Based on the feedback from ${practicalName}, what should I focus on improving?` },
+];
+
 const ChatInterface = () => {
     const { currentUser } = useAuth();
+    const [searchParams] = useSearchParams();
+
+    // Get contextual parameters from URL
+    const contextPracticalId = searchParams.get('practical');
+    const contextPracticalName = searchParams.get('name');
+
+    const getWelcomeMessage = () => {
+        if (contextPracticalName) {
+            return `I'm ready to help you understand your "${contextPracticalName}" practical session. You can ask me about your feedback, what you did well, or areas for improvement.`;
+        }
+        return "Welcome to the Pulse Assistant! I'm here to assist you with your feedback and questions. Whether you want to summarize your feedback from practicals, explore ways to improve, or ask technical questions, feel free to reach out. Let's make your learning experience as effective as possible.";
+    };
 
     const [messages, setMessages] = useState([
         {
-            text: "Welcome to the Pulse Assistant! I’m here to assist you with your feedback and questions. Whether you want to summarize your feedback from practicals, explore ways to improve, or ask technical questions, feel free to reach out. Let’s make your learning experience as effective as possible.",
+            text: getWelcomeMessage(),
             sender: 'ai',
         },
     ]);
@@ -28,6 +52,12 @@ const ChatInterface = () => {
     const [students, setStudents] = useState([]);
     const [practicals, setPracticals] = useState([]);
     const [schoolId, setSchoolId] = useState(null);
+    const [showSuggestedPrompts, setShowSuggestedPrompts] = useState(true);
+
+    // Get the appropriate suggested prompts based on context
+    const suggestedPrompts = contextPracticalName
+        ? getContextualPrompts(contextPracticalName)
+        : DEFAULT_PROMPTS;
 
     /**
      * Styles for the MentionsInput & mentions
@@ -214,6 +244,70 @@ const ChatInterface = () => {
     };
 
     /**
+     * Handle clicking a suggested prompt - sets input and sends immediately
+     */
+    const handleSuggestedPrompt = (prompt) => {
+        setInput(prompt);
+        setShowSuggestedPrompts(false);
+        // Use setTimeout to ensure state updates before sending
+        setTimeout(() => {
+            handleSendMessageWithText(prompt);
+        }, 0);
+    };
+
+    /**
+     * Send a message with specific text (used by suggested prompts)
+     */
+    const handleSendMessageWithText = async (messageText) => {
+        if (!messageText.trim()) return;
+
+        const userMessageObj = {
+            text: messageText,
+            sender: 'user',
+        };
+        setMessages((prev) => [...prev, userMessageObj]);
+        setInput('');
+
+        try {
+            const conversationHistory = messages.map((msg) => ({
+                role: msg.sender === 'user' ? 'user' : 'assistant',
+                content: msg.text,
+            }));
+
+            // Build filter for context practical if present
+            const contextFilter = contextPracticalId
+                ? { practical_id: { $eq: contextPracticalId } }
+                : {};
+
+            const payload = {
+                messages: [
+                    {
+                        role: 'system',
+                        content:
+                            "You are a helpful teaching assistant for practical healthcare education. " +
+                            "Answer using data from practicals that are relevant to the user based on their id.",
+                    },
+                    ...conversationHistory,
+                    { role: 'user', content: `User: ${messageText}` },
+                ],
+                userId: currentUser.uid,
+                role: userRole,
+                ...(Object.keys(contextFilter).length > 0 ? { filter: contextFilter } : {}),
+            };
+
+            const response = await axios.post(`${process.env.REACT_APP_API_HOST}/api/chat`, payload);
+            const aiMessage = response.data.response;
+            setMessages((prev) => [...prev, { text: aiMessage.content, sender: 'ai' }]);
+
+            setCurrentAiMessage('');
+            setCurrentWordIndex(0);
+            setIsAiTyping(true);
+        } catch (error) {
+            console.error('Error calling API:', error);
+        }
+    };
+
+    /**
      * Handle sending user message
      */
     const handleSendMessage = async () => {
@@ -339,6 +433,23 @@ const ChatInterface = () => {
                 flexDirection: 'column',
             }}
         >
+            {/* Context Header */}
+            {contextPracticalName && (
+                <Box sx={{
+                    backgroundColor: '#e8f5e9',
+                    borderRadius: '8px',
+                    padding: '10px 16px',
+                    marginBottom: '10px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 1,
+                }}>
+                    <Typography variant="body2" sx={{ fontWeight: 500 }}>
+                        Discussing: {contextPracticalName}
+                    </Typography>
+                </Box>
+            )}
+
             {/* Chat Messages */}
             <List style={{ flexGrow: 1, overflowY: 'auto', marginBottom: '10px' }}>
                 {messages.map((msg, index) => {
@@ -377,6 +488,26 @@ const ChatInterface = () => {
                 })}
                 <div ref={endOfMessagesRef} />
             </List>
+
+            {/* Suggested Prompts */}
+            {showSuggestedPrompts && messages.length <= 1 && (
+                <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mb: 2 }}>
+                    {suggestedPrompts.map((item, idx) => (
+                        <Chip
+                            key={idx}
+                            label={item.label}
+                            onClick={() => handleSuggestedPrompt(item.prompt)}
+                            sx={{
+                                cursor: 'pointer',
+                                backgroundColor: '#e3f2fd',
+                                '&:hover': {
+                                    backgroundColor: '#bbdefb',
+                                },
+                            }}
+                        />
+                    ))}
+                </Box>
+            )}
 
             {/* Mentions Input */}
             <MentionsInput
