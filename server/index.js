@@ -42,7 +42,9 @@ import schoolRoute from "./routes/schoolRoutes.js"
 import inviteRoute from "./routes/inviteRoutes.js"
 import notificationRoute from "./routes/notificationRoutes.js"
 import transcriptionRoute from "./routes/transcriptionRoutes.js"
-import { improvedCallModel } from "./utils/improvedAssistant.js"
+import conversationRoute from "./routes/conversationRoutes.js"
+import { improvedCallModel, streamingAssistant } from "./utils/improvedAssistant.js"
+import { agenticStreamingAssistant } from "./utils/agenticAssistant.js"
 
 import { Storage } from '@google-cloud/storage'
 
@@ -178,6 +180,7 @@ app.use('/api', schoolRoute);
 app.use('/api', inviteRoute);
 app.use('/api', notificationRoute);
 app.use('/api', transcriptionRoute);
+app.use('/api/conversations', conversationRoute);
 
 
 app.post('/api/getUploadUrl', async (req, res) => {
@@ -360,7 +363,7 @@ const callModel = async (state) => {
     // 12. Call the LLM (e.g., ChatOpenAI from LangChain)
     const llm = new ChatOpenAI({
         openAIApiKey: process.env.OPEN_AI_API_KEY,
-        modelName: 'gpt-4o-mini',  // or 'gpt-3.5-turbo', etc.
+        modelName: 'gpt-5.2',
         temperature: 0,
     });
 
@@ -438,6 +441,47 @@ app.post('/api/chat', async (req, res) => {
     }
 });
 
+/*****************************************************
+ * Streaming chat endpoint using Server-Sent Events
+ * Uses agentic RAG with tool-based retrieval
+ *****************************************************/
+app.post('/api/chat/stream', async (req, res) => {
+    const { messages, userId, role, filter } = req.body;
+
+    // Set up SSE headers
+    res.setHeader('Content-Type', 'text/event-stream');
+    res.setHeader('Cache-Control', 'no-cache');
+    res.setHeader('Connection', 'keep-alive');
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.flushHeaders();
+
+    try {
+        await agenticStreamingAssistant({
+            userId,
+            role,
+            messages,
+            filter,
+            onChunk: (chunk) => {
+                // Send each chunk as an SSE event
+                res.write(`data: ${JSON.stringify({ chunk })}\n\n`);
+            },
+            onToolCall: (toolInfo) => {
+                // Notify frontend about tool usage (for UI feedback)
+                res.write(`data: ${JSON.stringify({ tool: toolInfo })}\n\n`);
+            },
+            onDone: (fullContent) => {
+                // Send completion event
+                res.write(`data: ${JSON.stringify({ done: true, content: fullContent })}\n\n`);
+                res.end();
+            }
+        });
+    } catch (error) {
+        console.error("Error in /api/chat/stream:", error);
+        res.write(`data: ${JSON.stringify({ error: error.message })}\n\n`);
+        res.end();
+    }
+});
+
 
 app.post('/api/insights', async (req, res) => {
     const { messages, userId, role, threadId } = req.body;
@@ -464,16 +508,20 @@ app.post('/api/insights', async (req, res) => {
     };
 
     try {
+        const startTime = Date.now();
+        console.log(`[Insights] Starting request for user ${userId}`);
         const output = await graphApp.invoke(input, config);
         const assistantMessage = output.messages[output.messages.length - 1];
+        console.log(`[Insights] Completed in ${Date.now() - startTime}ms for user ${userId}`);
         res.json({
             threadId: conversationId,
             response: assistantMessage,
             chatHistory: output.messages
         });
     } catch (error) {
-        console.error("Error in insights endpoint:", error);
-        res.status(500).send("Error processing insights query");
+        console.error("[Insights] Error:", error.message);
+        console.error("[Insights] Full error:", error);
+        res.status(500).json({ error: error.message || "Error processing insights query" });
     }
 });
 

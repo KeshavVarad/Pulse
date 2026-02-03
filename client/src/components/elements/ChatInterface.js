@@ -1,11 +1,17 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { Button, List, ListItem, ListItemText, Paper, Box, Chip, Typography } from '@mui/material';
-import { useSearchParams } from 'react-router-dom';
+import {
+    Button, List, ListItem, ListItemText, Paper, Box, Chip, Typography,
+    IconButton, Collapse, ListItemButton, Dialog, DialogTitle, DialogContent, DialogActions
+} from '@mui/material';
+import { useSearchParams, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { auth } from '../../config/firebase';
-import ReactMarkdown from 'react-markdown';
 import axios from 'axios';
 import { MentionsInput, Mention } from 'react-mentions';
+import AIMessageRenderer from './AIMessageRenderer';
+import HistoryIcon from '@mui/icons-material/History';
+import DeleteIcon from '@mui/icons-material/Delete';
+import AddIcon from '@mui/icons-material/Add';
 
 const DEFAULT_PROMPTS = [
     { label: 'Summarize my feedback', prompt: 'Summarize my recent feedback from practicals' },
@@ -22,10 +28,23 @@ const getContextualPrompts = (practicalName) => [
 const ChatInterface = () => {
     const { currentUser } = useAuth();
     const [searchParams] = useSearchParams();
+    const navigate = useNavigate();
+    const location = useLocation();
 
     // Get contextual parameters from URL
     const contextPracticalId = searchParams.get('practical');
     const contextPracticalName = searchParams.get('name');
+
+    // Check for forked conversation from guided reflection
+    const forkedConversation = location.state?.forkedConversation;
+    const forkedFrom = location.state?.forkedFrom;
+
+    // Handle timestamp click - navigate to practical page with timestamp
+    const handleTimestampClick = (seconds) => {
+        if (contextPracticalId) {
+            navigate(`/practical/${contextPracticalId}?t=${seconds}`);
+        }
+    };
 
     const getWelcomeMessage = () => {
         if (contextPracticalName) {
@@ -44,20 +63,46 @@ const ChatInterface = () => {
     const endOfMessagesRef = useRef(null);
 
     const [userRole, setUserRole] = useState('student');
-    const [isAiTyping, setIsAiTyping] = useState(true);
-    const [currentAiMessage, setCurrentAiMessage] = useState('');
-    const [currentWordIndex, setCurrentWordIndex] = useState(0);
-    const typingDelay = 100; // Delay between words in ms
+    const [isAiTyping, setIsAiTyping] = useState(false);
+    const [streamingContent, setStreamingContent] = useState('');
+    const [currentTool, setCurrentTool] = useState(null);
 
     const [students, setStudents] = useState([]);
     const [practicals, setPracticals] = useState([]);
     const [schoolId, setSchoolId] = useState(null);
     const [showSuggestedPrompts, setShowSuggestedPrompts] = useState(true);
 
+    // Conversation persistence state
+    const [conversationId, setConversationId] = useState(null);
+    const [pastConversations, setPastConversations] = useState([]);
+    const [showHistory, setShowHistory] = useState(false);
+    const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+    const [conversationToDelete, setConversationToDelete] = useState(null);
+    const [isForkedConversation, setIsForkedConversation] = useState(false);
+
     // Get the appropriate suggested prompts based on context
     const suggestedPrompts = contextPracticalName
         ? getContextualPrompts(contextPracticalName)
         : DEFAULT_PROMPTS;
+
+    // Handle forked conversation from guided reflection
+    useEffect(() => {
+        if (forkedConversation && forkedFrom === 'guided_reflection') {
+            // Add a system message indicating this is a continuation
+            const continuationMessage = {
+                text: "This conversation was continued from a Guided Reflection. Feel free to ask follow-up questions or explore the topics more freely.",
+                sender: 'ai',
+            };
+
+            // Set the forked messages with the continuation message
+            setMessages([...forkedConversation, continuationMessage]);
+            setShowSuggestedPrompts(false);
+            setIsForkedConversation(true);
+
+            // Clear the location state to prevent re-loading on navigation
+            navigate(location.pathname, { replace: true, state: {} });
+        }
+    }, [forkedConversation, forkedFrom]);
 
     /**
      * Styles for the MentionsInput & mentions
@@ -195,43 +240,129 @@ const ChatInterface = () => {
 
         if (currentUser) {
             fetchUserData();
+            fetchPastConversations();
         }
     }, [currentUser]);
 
+    // Fetch past conversations
+    const fetchPastConversations = async () => {
+        if (!currentUser) return;
+        try {
+            const response = await fetch(
+                `${process.env.REACT_APP_API_HOST}/api/conversations/${currentUser.uid}?type=chat&limitCount=10`
+            );
+            const data = await response.json();
+            setPastConversations(data.conversations || []);
+        } catch (error) {
+            console.error('Error fetching past conversations:', error);
+        }
+    };
+
+    // Save conversation to backend
+    const saveConversation = async (msgs) => {
+        if (!currentUser || msgs.length <= 1) return; // Don't save if only welcome message
+
+        try {
+            const payload = {
+                conversationId,
+                userId: currentUser.uid,
+                type: 'chat',
+                messages: msgs.map(m => ({
+                    role: m.sender === 'user' ? 'user' : 'assistant',
+                    content: m.text,
+                })),
+                metadata: {
+                    contextPracticalId,
+                    contextPracticalName,
+                },
+            };
+
+            const response = await fetch(
+                `${process.env.REACT_APP_API_HOST}/api/conversations`,
+                {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload),
+                }
+            );
+            const data = await response.json();
+
+            if (data.conversationId && !conversationId) {
+                setConversationId(data.conversationId);
+            }
+
+            fetchPastConversations();
+        } catch (error) {
+            console.error('Error saving conversation:', error);
+        }
+    };
+
+    // Load a past conversation
+    const loadConversation = async (convId) => {
+        try {
+            const response = await fetch(
+                `${process.env.REACT_APP_API_HOST}/api/conversations/detail/${convId}`
+            );
+            const data = await response.json();
+
+            if (data.messages) {
+                setMessages(data.messages.map(m => ({
+                    text: m.content,
+                    sender: m.role === 'user' ? 'user' : 'ai',
+                })));
+                setConversationId(convId);
+                setShowHistory(false);
+                setShowSuggestedPrompts(false);
+                setIsForkedConversation(false);
+            }
+        } catch (error) {
+            console.error('Error loading conversation:', error);
+        }
+    };
+
+    // Delete a conversation
+    const deleteConversation = async (convId) => {
+        try {
+            await fetch(
+                `${process.env.REACT_APP_API_HOST}/api/conversations/${convId}`,
+                { method: 'DELETE' }
+            );
+            fetchPastConversations();
+            setDeleteDialogOpen(false);
+            setConversationToDelete(null);
+        } catch (error) {
+            console.error('Error deleting conversation:', error);
+        }
+    };
+
+    // Start a new conversation
+    const startNewConversation = () => {
+        setMessages([{ text: getWelcomeMessage(), sender: 'ai' }]);
+        setConversationId(null);
+        setShowSuggestedPrompts(true);
+        setShowHistory(false);
+        setIsForkedConversation(false);
+    };
+
+    const formatDate = (timestamp) => {
+        if (!timestamp) return '';
+        const date = new Date(timestamp);
+        return date.toLocaleDateString('en-US', {
+            month: 'short',
+            day: 'numeric',
+            hour: 'numeric',
+            minute: '2-digit',
+        });
+    };
+
     /**
-     * Autoscroll to bottom when messages change
+     * Autoscroll to bottom when messages change or streaming content updates
      */
     useEffect(() => {
         if (endOfMessagesRef.current) {
             endOfMessagesRef.current.scrollIntoView({ behavior: 'smooth' });
         }
-    }, [messages, currentWordIndex]);
-
-    /**
-     * Typewriter effect for AI messages
-     */
-    useEffect(() => {
-        if (!isAiTyping) return;
-
-        const lastMsg = messages[messages.length - 1];
-        const isLatestAi = lastMsg && lastMsg.sender === 'ai';
-
-        if (isLatestAi) {
-            const words = lastMsg.text.split(' ');
-            if (currentWordIndex < words.length) {
-                const timer = setTimeout(() => {
-                    setCurrentAiMessage((prev) => (prev ? prev + ' ' : '') + words[currentWordIndex]);
-                    setCurrentWordIndex((prevIndex) => prevIndex + 1);
-                }, typingDelay);
-
-                return () => clearTimeout(timer);
-            } else {
-                setIsAiTyping(false);
-            }
-        } else {
-            setIsAiTyping(false);
-        }
-    }, [isAiTyping, currentWordIndex, messages]);
+    }, [messages, streamingContent]);
 
     /**
      * Handle key down in input - Enter sends, Shift+Enter creates new line
@@ -267,6 +398,8 @@ const ChatInterface = () => {
         };
         setMessages((prev) => [...prev, userMessageObj]);
         setInput('');
+        setIsAiTyping(true);
+        setStreamingContent('');
 
         try {
             const conversationHistory = messages.map((msg) => ({
@@ -295,15 +428,52 @@ const ChatInterface = () => {
                 ...(Object.keys(contextFilter).length > 0 ? { filter: contextFilter } : {}),
             };
 
-            const response = await axios.post(`${process.env.REACT_APP_API_HOST}/api/chat`, payload);
-            const aiMessage = response.data.response;
-            setMessages((prev) => [...prev, { text: aiMessage.content, sender: 'ai' }]);
+            // Use streaming endpoint
+            const response = await fetch(`${process.env.REACT_APP_API_HOST}/api/chat/stream`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload),
+            });
 
-            setCurrentAiMessage('');
-            setCurrentWordIndex(0);
-            setIsAiTyping(true);
+            const reader = response.body.getReader();
+            const decoder = new TextDecoder();
+            let fullContent = '';
+
+            while (true) {
+                const { done, value } = await reader.read();
+                if (done) break;
+
+                const chunk = decoder.decode(value);
+                const lines = chunk.split('\n').filter(line => line.startsWith('data: '));
+
+                for (const line of lines) {
+                    try {
+                        const data = JSON.parse(line.slice(6));
+                        if (data.tool) {
+                            setCurrentTool(data.tool.name);
+                        }
+                        if (data.chunk) {
+                            setCurrentTool(null);
+                            fullContent += data.chunk;
+                            setStreamingContent(fullContent);
+                        }
+                        if (data.done) {
+                            const newMessages = [...messages, userMessageObj, { text: data.content, sender: 'ai' }];
+                            setMessages(newMessages);
+                            setStreamingContent('');
+                            setCurrentTool(null);
+                            setIsAiTyping(false);
+                            saveConversation(newMessages);
+                        }
+                    } catch (e) {
+                        // Ignore parse errors
+                    }
+                }
+            }
         } catch (error) {
             console.error('Error calling API:', error);
+            setCurrentTool(null);
+            setIsAiTyping(false);
         }
     };
 
@@ -336,8 +506,10 @@ const ChatInterface = () => {
         };
         setMessages((prev) => [...prev, userMessageObj]);
 
-        // Clear the input
+        // Clear the input and start streaming state
         setInput('');
+        setIsAiTyping(true);
+        setStreamingContent('');
 
         // 4. Build the user prompt for the backend
         const prompt = `User: ${userMessageRaw}`;
@@ -402,25 +574,61 @@ const ChatInterface = () => {
                 ...(Object.keys(customFilter).length > 0 ? { filter: customFilter } : {}),
             };
 
-            // 6. Send to backend
-            const response = await axios.post(`${process.env.REACT_APP_API_HOST}/api/chat`, payload);
+            // 6. Send to streaming backend
+            const response = await fetch(`${process.env.REACT_APP_API_HOST}/api/chat/stream`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload),
+            });
 
-            // 7. Receive the AI response, store in local state
-            const aiMessage = response.data.response;
-            setMessages((prev) => [...prev, { text: aiMessage.content, sender: 'ai' }]);
+            const reader = response.body.getReader();
+            const decoder = new TextDecoder();
+            let fullContent = '';
 
-            // Reset typing effect for the new AI message
-            setCurrentAiMessage('');
-            setCurrentWordIndex(0);
-            setIsAiTyping(true);
+            while (true) {
+                const { done, value } = await reader.read();
+                if (done) break;
+
+                const chunk = decoder.decode(value);
+                const lines = chunk.split('\n').filter(line => line.startsWith('data: '));
+
+                for (const line of lines) {
+                    try {
+                        const data = JSON.parse(line.slice(6));
+                        if (data.tool) {
+                            // Show which tool is being used
+                            setCurrentTool(data.tool.name);
+                        }
+                        if (data.chunk) {
+                            setCurrentTool(null); // Clear tool status when streaming starts
+                            fullContent += data.chunk;
+                            setStreamingContent(fullContent);
+                        }
+                        if (data.done) {
+                            const newMessages = [...messages, userMessageObj, { text: data.content, sender: 'ai' }];
+                            setMessages(newMessages);
+                            setStreamingContent('');
+                            setCurrentTool(null);
+                            setIsAiTyping(false);
+                            saveConversation(newMessages);
+                        }
+                        if (data.error) {
+                            console.error('Streaming error:', data.error);
+                            setCurrentTool(null);
+                            setIsAiTyping(false);
+                        }
+                    } catch (e) {
+                        // Ignore parse errors
+                    }
+                }
+            }
         } catch (error) {
             console.error('Error calling API:', error);
+            setCurrentTool(null);
+            setIsAiTyping(false);
         }
     };
 
-    // Get the last AI message to see if we show typewriter
-    const lastMessage = messages[messages.length - 1];
-    const aiMessageText = lastMessage.sender === 'ai' ? lastMessage.text : '';
 
     return (
         <Paper
@@ -433,6 +641,107 @@ const ChatInterface = () => {
                 flexDirection: 'column',
             }}
         >
+            {/* Header with History Toggle */}
+            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                    <Typography variant="h6" sx={{ fontWeight: 'bold' }}>
+                        Pulse Assistant
+                    </Typography>
+                    <Chip
+                        label="Full Mode"
+                        size="small"
+                        sx={{
+                            backgroundColor: '#e8f5e9',
+                            color: '#2e7d32',
+                            fontSize: '0.7rem',
+                            height: '22px',
+                        }}
+                    />
+                </Box>
+                <Box>
+                    <IconButton
+                        onClick={() => setShowHistory(!showHistory)}
+                        title="View past conversations"
+                        sx={{ color: showHistory ? '#1976d2' : 'inherit' }}
+                        size="small"
+                    >
+                        <HistoryIcon />
+                    </IconButton>
+                    <IconButton
+                        onClick={startNewConversation}
+                        title="New conversation"
+                        size="small"
+                    >
+                        <AddIcon />
+                    </IconButton>
+                </Box>
+            </Box>
+
+            {/* Past Conversations Panel */}
+            <Collapse in={showHistory}>
+                <Box sx={{ mb: 2, p: 2, backgroundColor: '#f5f5f5', borderRadius: 2, maxHeight: '150px', overflowY: 'auto' }}>
+                    <Typography variant="subtitle2" sx={{ mb: 1, fontWeight: 600 }}>
+                        Past Conversations
+                    </Typography>
+                    {pastConversations.length === 0 ? (
+                        <Typography variant="body2" sx={{ color: '#666' }}>
+                            No past conversations yet.
+                        </Typography>
+                    ) : (
+                        <List dense disablePadding>
+                            {pastConversations.map((conv) => (
+                                <ListItem
+                                    key={conv.id}
+                                    disablePadding
+                                    secondaryAction={
+                                        <IconButton
+                                            edge="end"
+                                            size="small"
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                setConversationToDelete(conv.id);
+                                                setDeleteDialogOpen(true);
+                                            }}
+                                        >
+                                            <DeleteIcon fontSize="small" />
+                                        </IconButton>
+                                    }
+                                >
+                                    <ListItemButton
+                                        onClick={() => loadConversation(conv.id)}
+                                        selected={conv.id === conversationId}
+                                        sx={{ borderRadius: 1 }}
+                                    >
+                                        <ListItemText
+                                            primary={conv.title}
+                                            secondary={formatDate(conv.updatedAt)}
+                                            primaryTypographyProps={{ noWrap: true, sx: { fontSize: '0.875rem' } }}
+                                            secondaryTypographyProps={{ sx: { fontSize: '0.75rem' } }}
+                                        />
+                                    </ListItemButton>
+                                </ListItem>
+                            ))}
+                        </List>
+                    )}
+                </Box>
+            </Collapse>
+
+            {/* Delete Confirmation Dialog */}
+            <Dialog open={deleteDialogOpen} onClose={() => setDeleteDialogOpen(false)}>
+                <DialogTitle>Delete Conversation?</DialogTitle>
+                <DialogContent>
+                    <Typography>
+                        Are you sure you want to delete this conversation? This action cannot be undone.
+                    </Typography>
+                </DialogContent>
+                <DialogActions>
+                    <Button onClick={() => setDeleteDialogOpen(false)}>Cancel</Button>
+                    <Button onClick={() => deleteConversation(conversationToDelete)} color="error">
+                        Delete
+                    </Button>
+                </DialogActions>
+            </Dialog>
+
             {/* Context Header */}
             {contextPracticalName && (
                 <Box sx={{
@@ -450,42 +759,123 @@ const ChatInterface = () => {
                 </Box>
             )}
 
+            {/* Forked from Guided Reflection indicator */}
+            {isForkedConversation && (
+                <Box sx={{
+                    backgroundColor: '#e3f2fd',
+                    borderRadius: '8px',
+                    padding: '8px 16px',
+                    marginBottom: '10px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 1,
+                }}>
+                    <Typography variant="body2" sx={{ fontWeight: 500, color: '#1565c0' }}>
+                        Continued from Guided Reflection
+                    </Typography>
+                </Box>
+            )}
+
             {/* Chat Messages */}
             <List style={{ flexGrow: 1, overflowY: 'auto', marginBottom: '10px' }}>
                 {messages.map((msg, index) => {
                     const isUser = msg.sender === 'user';
                     const isAi = msg.sender === 'ai';
+
                     return (
                         <ListItem
                             key={index}
                             style={{
                                 justifyContent: isUser ? 'flex-end' : 'flex-start',
-                                backgroundColor: isUser ? '#d1e7dd' : '#f8d7da',
+                                backgroundColor: isUser ? '#d1e7dd' : '#f5f5f5',
                                 borderRadius: '8px',
                                 margin: '5px',
                                 padding: '10px',
-                                maxWidth: '70%',
+                                maxWidth: isAi ? '85%' : '70%',
                                 alignSelf: isUser ? 'flex-end' : 'flex-start',
                             }}
                         >
                             <ListItemText
                                 primary={
-                                    <span style={{ fontWeight: isAi ? 'bold' : 'normal' }}>
-                                        {isAi ? 'AI: ' : 'You: '}
-                                        <ReactMarkdown>
-                                            {isAi
-                                                ? // If it's the most recent AI message being typed out:
-                                                msg.text === aiMessageText
-                                                    ? currentAiMessage
-                                                    : msg.text
-                                                : msg.text}
-                                        </ReactMarkdown>
-                                    </span>
+                                    isAi ? (
+                                        <Box>
+                                            <Typography variant="caption" sx={{ fontWeight: 600, color: '#666', mb: 0.5, display: 'block' }}>
+                                                AI Assistant
+                                            </Typography>
+                                            <AIMessageRenderer
+                                                content={msg.text}
+                                                onTimestampClick={contextPracticalId ? handleTimestampClick : null}
+                                            />
+                                        </Box>
+                                    ) : (
+                                        <span>
+                                            <strong>You:</strong> {msg.text}
+                                        </span>
+                                    )
                                 }
                             />
                         </ListItem>
                     );
                 })}
+                {/* Show streaming content while AI is typing */}
+                {isAiTyping && streamingContent && (
+                    <ListItem
+                        style={{
+                            justifyContent: 'flex-start',
+                            backgroundColor: '#f5f5f5',
+                            borderRadius: '8px',
+                            margin: '5px',
+                            padding: '10px',
+                            maxWidth: '85%',
+                            alignSelf: 'flex-start',
+                        }}
+                    >
+                        <ListItemText
+                            primary={
+                                <Box>
+                                    <Typography variant="caption" sx={{ fontWeight: 600, color: '#666', mb: 0.5, display: 'block' }}>
+                                        AI Assistant
+                                    </Typography>
+                                    <AIMessageRenderer
+                                        content={streamingContent}
+                                        onTimestampClick={contextPracticalId ? handleTimestampClick : null}
+                                    />
+                                </Box>
+                            }
+                        />
+                    </ListItem>
+                )}
+                {/* Show typing indicator when waiting for first chunk */}
+                {isAiTyping && !streamingContent && (
+                    <ListItem
+                        style={{
+                            justifyContent: 'flex-start',
+                            backgroundColor: '#f5f5f5',
+                            borderRadius: '8px',
+                            margin: '5px',
+                            padding: '10px',
+                            maxWidth: '85%',
+                            alignSelf: 'flex-start',
+                        }}
+                    >
+                        <ListItemText
+                            primary={
+                                <Box>
+                                    <Typography variant="caption" sx={{ fontWeight: 600, color: '#666', mb: 0.5, display: 'block' }}>
+                                        AI Assistant
+                                    </Typography>
+                                    <Typography variant="body2" sx={{ color: '#999', fontStyle: 'italic' }}>
+                                        {currentTool === 'search_transcripts' && 'Searching video transcripts...'}
+                                        {currentTool === 'get_practical_summary' && 'Looking up practical details...'}
+                                        {currentTool === 'search_feedback' && 'Searching feedback...'}
+                                        {currentTool === 'list_practicals' && 'Listing practicals...'}
+                                        {!currentTool && 'Thinking...'}
+                                    </Typography>
+                                </Box>
+                            }
+                        />
+                    </ListItem>
+                )}
                 <div ref={endOfMessagesRef} />
             </List>
 
